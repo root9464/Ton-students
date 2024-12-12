@@ -15,6 +15,31 @@ export default {
       colors: {
         background: 'var(--background)',
         foreground: 'var(--foreground)',
+
+        uiBackground: '#E3E7EE',
+        uiBlue: '#007AFF',
+        uiRed: '#E91E65',
+        uiGreen: '#00DD6D',
+        uiGray: '#707579',
+        uiDeepDarkBLue: '#1C274C',
+        uiDeepLightBlue: '#93A2BA',
+        uiLightBlue: '#C8D0DC',
+      },
+
+      backgroundImage: {
+        uiLightBLueGradient: 'linear-gradient(227deg, rgba(0, 122, 255, 0.05) 3%, rgba(0, 122, 255, 0.07) 100%)',
+      },
+
+      height: {
+        contentFlow: 'calc(100% - 160px)',
+      },
+
+      minHeight: {
+        contentFlow: 'calc(100% - 160px)',
+      },
+
+      width: {
+        menuWidth: 'calc(100% - (20px * 2))',
       },
     },
   },
