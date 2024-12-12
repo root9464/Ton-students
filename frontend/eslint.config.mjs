@@ -6,6 +6,7 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import customRulesPlugin from './plugin/eslint.rules.mjs';
 
 export default tseslint.config(
   { ignores: ['dist'] },
@@ -37,7 +38,7 @@ export default tseslint.config(
       '@typescript-eslint': tseslint.plugin,
       '@next/next': nextPlugin,
       react: pluginReact,
-      // 'custom-rules': customRulesPlugin,
+      'custom-rules': customRulesPlugin,
     },
 
     rules: {
@@ -70,7 +71,7 @@ export default tseslint.config(
       'no-unneeded-ternary': ['error', { defaultAssignment: false }],
       '@next/next/no-img-element': 'error',
       '@next/next/no-html-link-for-pages': 'error',
-      // 'custom-rules/no-data-or-empty': 'error',
+      'custom-rules/no-data-or-empty': 'error',
     },
   },
 
