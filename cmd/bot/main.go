@@ -5,9 +5,10 @@ import (
 	"root/pkg/config"
 	"time"
 
-	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
+	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/sirupsen/logrus"
 
 	command "root/internal/bot/handler"
 )
@@ -30,15 +31,22 @@ func main() {
 	})
 	updater := ext.NewUpdater(dispatcher, nil)
 
-
 	dispatcher.AddHandler(handlers.NewCommand("start", command.Start))
+
+	// Обработчик команды /support
+	dispatcher.AddHandler(handlers.NewCommand("support", func(b *gotgbot.Bot, ctx *ext.Context) error {
+		return command.SupportStart(b, ctx, cfg.AdminId, logrus.New())
+	}))
+	
+
+	
 
 	err = updater.StartPolling(b, &ext.PollingOpts{
 		DropPendingUpdates: true,
 		GetUpdatesOpts: &gotgbot.GetUpdatesOpts{
-			Timeout: 10,
+			Timeout: 60,
 			RequestOpts: &gotgbot.RequestOpts{
-				Timeout: time.Second * 10,
+				Timeout: time.Second * 60,
 			},
 		},
 	})
