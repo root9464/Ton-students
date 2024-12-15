@@ -2,9 +2,9 @@ package lib
 
 import (
 	"context"
-	ent "root/database"
 
 	_ "github.com/lib/pq"
+	"github.com/root9464/Ton-students/backend/ent"
 
 	"github.com/sirupsen/logrus"
 )

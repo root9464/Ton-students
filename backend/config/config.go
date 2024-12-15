@@ -1,6 +1,10 @@
 package config
 
-import "github.com/gofiber/fiber/v2/middleware/cors"
+import (
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/joho/godotenv"
+	"github.com/spf13/viper"
+)
 
 var CORS_CONFIG = cors.New(
 	cors.Config{
@@ -8,3 +12,32 @@ var CORS_CONFIG = cors.New(
 		AllowCredentials: true,
 	},
 )
+
+type Config struct {
+	TelegramBotToken string `mapstructure:"TELEGRAM_BOT_TOKEN"`
+	DatabaseUrl      string `mapstructure:"DATABASE_URL"`
+}
+
+func LoadConfig(path string) (config Config, err error) {
+	viper.AddConfigPath(path)
+	viper.SetConfigName(".env")
+	viper.SetConfigType("env")
+
+	viper.AutomaticEnv()
+
+	err = viper.ReadInConfig()
+	if err != nil {
+		return
+	}
+
+	err = viper.Unmarshal(&config)
+	return
+}
+
+func Load(path string) error {
+	err := godotenv.Load(path)
+	if err != nil {
+		return err
+	}
+	return nil
+}

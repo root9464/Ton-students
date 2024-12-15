@@ -1,36 +1,39 @@
 package main
 
 import (
-	"root/config"
-	"root/core/routes"
-	"root/shared/lib"
-	"root/shared/utils"
-
-	"github.com/gofiber/fiber/v2"
+	"github.com/root9464/Ton-students/backend/config"
+	"github.com/root9464/Ton-students/backend/core/app"
+	"github.com/root9464/Ton-students/backend/shared/lib"
+	"github.com/root9464/Ton-students/backend/shared/logger"
 )
 
 func main() {
-	const port = ":6069"
+	// const port = ":6069"
+	//
+	log := logger.GetLogger()
+	config, err := config.LoadConfig(".")
+	if err != nil {
+		log.Fatalf("✖ Failed to load config: %s", err.Error())
+	}
+	log.Info("✔  Config loaded")
 
-	log := utils.Logger()
-
-	_, err := lib.ConnectDatabase(log)
+	_, err = lib.ConnectDatabase(log.Logger)
+	//
 	if err != nil {
 		log.WithError(err).Fatal("Failed to connect to the database")
 	}
 
-	app := fiber.New()
-	app.Use(config.CORS_CONFIG)
-
-	db, err := lib.ConnectDatabase(log)
+	_, err = lib.ConnectDatabase(log.Logger)
 	if err != nil {
 		log.WithError(err).Fatal("Failed to connect to the database")
 	}
 
-	routes.Routes(app, db, log)
-
-	if err := app.Listen(port); err != nil {
-		log.WithError(err).Fatal("Failed to start the server")
+	app, err := app.NewApp(&config, log)
+	if err != nil {
+		log.WithError(err).Fatal("Failed to create the app")
 	}
 
+	if err := app.Run(); err != nil {
+		log.WithError(err).Fatal("Failed to run the app")
+	}
 }
