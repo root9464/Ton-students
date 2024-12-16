@@ -15,12 +15,17 @@ type User struct {
 
 // Fields определяют поля модели User
 func (User) Fields() []ent.Field {
-	return []ent.Field{field.Int64("id").Unique().Immutable(),
+	return []ent.Field{
+		field.Int64("id").Unique().Immutable(),
 		field.String("firstName").Default(""),
 		field.String("lastName").Default(""),
 		field.String("username").NotEmpty().Unique(),
-		field.Bool("isPremium").Default(false),
+		field.JSON("info", map[string]interface{}{}).Default(map[string]interface{}{
+			"information": "",
+			"description": "",
+		}),
 		field.Enum("role").Values("user", "creator", "moderator", "administrator").Default("user"),
+		field.Bool("isPremium").Default(false),
 		field.String("hash").NotEmpty().Validate(func(hash string) error {
 			matched, err := regexp.MatchString("^[a-fA-F0-9]{64}$", hash)
 			if err != nil || !matched {
