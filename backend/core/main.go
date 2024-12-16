@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	_ "github.com/lib/pq"
 
 	"github.com/gofiber/fiber/v2"
@@ -24,13 +26,17 @@ func main() {
 	app.Use(config.CORS_CONFIG)
 	app.Use(middleware.LoggerMiddleware())
 
-	_, err = ent.Open("postgres", globalConfig.DatabaseUrl)
+	db, err := ent.Open("postgres", globalConfig.DatabaseUrl)
 	if err != nil {
 		log.Fatalf("failed opening connection to postgres: %v", err)
 	}
 
+	if err := db.Schema.Create(context.Background()); err != nil {
+		log.Fatalf("failed creating schema resources: %v", err)
+	}
+
 	log.Info("connected to the database successfully")
-	routes.AllRoutes(app)
+	routes.AllRoutes(app, log, &globalConfig, db)
 
 	log.Infof("🌐 Server is running on %s", port)
 	log.Info("✅ Server started successfully")

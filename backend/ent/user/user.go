@@ -13,16 +13,16 @@ const (
 	Label = "user"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldUsername holds the string denoting the username field in the database.
+	FieldUsername = "username"
 	// FieldFirstName holds the string denoting the firstname field in the database.
 	FieldFirstName = "first_name"
 	// FieldLastName holds the string denoting the lastname field in the database.
 	FieldLastName = "last_name"
-	// FieldUsername holds the string denoting the username field in the database.
-	FieldUsername = "username"
-	// FieldInfo holds the string denoting the info field in the database.
-	FieldInfo = "info"
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
+	// FieldInfo holds the string denoting the info field in the database.
+	FieldInfo = "info"
 	// FieldIsPremium holds the string denoting the ispremium field in the database.
 	FieldIsPremium = "is_premium"
 	// FieldHash holds the string denoting the hash field in the database.
@@ -34,11 +34,11 @@ const (
 // Columns holds all SQL columns for user fields.
 var Columns = []string{
 	FieldID,
+	FieldUsername,
 	FieldFirstName,
 	FieldLastName,
-	FieldUsername,
-	FieldInfo,
 	FieldRole,
+	FieldInfo,
 	FieldIsPremium,
 	FieldHash,
 }
@@ -54,12 +54,12 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// UsernameValidator is a validator for the "username" field. It is called by the builders before save.
+	UsernameValidator func(string) error
 	// DefaultFirstName holds the default value on creation for the "firstName" field.
 	DefaultFirstName string
 	// DefaultLastName holds the default value on creation for the "lastName" field.
 	DefaultLastName string
-	// UsernameValidator is a validator for the "username" field. It is called by the builders before save.
-	UsernameValidator func(string) error
 	// DefaultInfo holds the default value on creation for the "info" field.
 	DefaultInfo map[string]interface{}
 	// DefaultIsPremium holds the default value on creation for the "isPremium" field.
@@ -104,6 +104,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByUsername orders the results by the username field.
+func ByUsername(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUsername, opts...).ToFunc()
+}
+
 // ByFirstName orders the results by the firstName field.
 func ByFirstName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldFirstName, opts...).ToFunc()
@@ -112,11 +117,6 @@ func ByFirstName(opts ...sql.OrderTermOption) OrderOption {
 // ByLastName orders the results by the lastName field.
 func ByLastName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLastName, opts...).ToFunc()
-}
-
-// ByUsername orders the results by the username field.
-func ByUsername(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldUsername, opts...).ToFunc()
 }
 
 // ByRole orders the results by the role field.

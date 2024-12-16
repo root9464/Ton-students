@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/telegram-mini-apps/init-data-golang"
+	initdata "github.com/telegram-mini-apps/init-data-golang"
 )
 
 func main() {
@@ -25,5 +25,5 @@ func main() {
 
 	user, _ := initdata.Parse(initData)
 
-	fmt.Println("Init data is valid")
+	fmt.Println(user.Hash)
 }

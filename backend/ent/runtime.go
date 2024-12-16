@@ -13,20 +13,20 @@ import (
 func init() {
 	userFields := schema.User{}.Fields()
 	_ = userFields
+	// userDescUsername is the schema descriptor for username field.
+	userDescUsername := userFields[1].Descriptor()
+	// user.UsernameValidator is a validator for the "username" field. It is called by the builders before save.
+	user.UsernameValidator = userDescUsername.Validators[0].(func(string) error)
 	// userDescFirstName is the schema descriptor for firstName field.
-	userDescFirstName := userFields[1].Descriptor()
+	userDescFirstName := userFields[2].Descriptor()
 	// user.DefaultFirstName holds the default value on creation for the firstName field.
 	user.DefaultFirstName = userDescFirstName.Default.(string)
 	// userDescLastName is the schema descriptor for lastName field.
-	userDescLastName := userFields[2].Descriptor()
+	userDescLastName := userFields[3].Descriptor()
 	// user.DefaultLastName holds the default value on creation for the lastName field.
 	user.DefaultLastName = userDescLastName.Default.(string)
-	// userDescUsername is the schema descriptor for username field.
-	userDescUsername := userFields[3].Descriptor()
-	// user.UsernameValidator is a validator for the "username" field. It is called by the builders before save.
-	user.UsernameValidator = userDescUsername.Validators[0].(func(string) error)
 	// userDescInfo is the schema descriptor for info field.
-	userDescInfo := userFields[4].Descriptor()
+	userDescInfo := userFields[5].Descriptor()
 	// user.DefaultInfo holds the default value on creation for the info field.
 	user.DefaultInfo = userDescInfo.Default.(map[string]interface{})
 	// userDescIsPremium is the schema descriptor for isPremium field.

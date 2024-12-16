@@ -27,6 +27,20 @@ func (uu *UserUpdate) Where(ps ...predicate.User) *UserUpdate {
 	return uu
 }
 
+// SetUsername sets the "username" field.
+func (uu *UserUpdate) SetUsername(s string) *UserUpdate {
+	uu.mutation.SetUsername(s)
+	return uu
+}
+
+// SetNillableUsername sets the "username" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableUsername(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetUsername(*s)
+	}
+	return uu
+}
+
 // SetFirstName sets the "firstName" field.
 func (uu *UserUpdate) SetFirstName(s string) *UserUpdate {
 	uu.mutation.SetFirstName(s)
@@ -55,26 +69,6 @@ func (uu *UserUpdate) SetNillableLastName(s *string) *UserUpdate {
 	return uu
 }
 
-// SetUsername sets the "username" field.
-func (uu *UserUpdate) SetUsername(s string) *UserUpdate {
-	uu.mutation.SetUsername(s)
-	return uu
-}
-
-// SetNillableUsername sets the "username" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableUsername(s *string) *UserUpdate {
-	if s != nil {
-		uu.SetUsername(*s)
-	}
-	return uu
-}
-
-// SetInfo sets the "info" field.
-func (uu *UserUpdate) SetInfo(m map[string]interface{}) *UserUpdate {
-	uu.mutation.SetInfo(m)
-	return uu
-}
-
 // SetRole sets the "role" field.
 func (uu *UserUpdate) SetRole(u user.Role) *UserUpdate {
 	uu.mutation.SetRole(u)
@@ -86,6 +80,12 @@ func (uu *UserUpdate) SetNillableRole(u *user.Role) *UserUpdate {
 	if u != nil {
 		uu.SetRole(*u)
 	}
+	return uu
+}
+
+// SetInfo sets the "info" field.
+func (uu *UserUpdate) SetInfo(m map[string]interface{}) *UserUpdate {
+	uu.mutation.SetInfo(m)
 	return uu
 }
 
@@ -181,20 +181,20 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := uu.mutation.Username(); ok {
+		_spec.SetField(user.FieldUsername, field.TypeString, value)
+	}
 	if value, ok := uu.mutation.FirstName(); ok {
 		_spec.SetField(user.FieldFirstName, field.TypeString, value)
 	}
 	if value, ok := uu.mutation.LastName(); ok {
 		_spec.SetField(user.FieldLastName, field.TypeString, value)
 	}
-	if value, ok := uu.mutation.Username(); ok {
-		_spec.SetField(user.FieldUsername, field.TypeString, value)
+	if value, ok := uu.mutation.Role(); ok {
+		_spec.SetField(user.FieldRole, field.TypeEnum, value)
 	}
 	if value, ok := uu.mutation.Info(); ok {
 		_spec.SetField(user.FieldInfo, field.TypeJSON, value)
-	}
-	if value, ok := uu.mutation.Role(); ok {
-		_spec.SetField(user.FieldRole, field.TypeEnum, value)
 	}
 	if value, ok := uu.mutation.IsPremium(); ok {
 		_spec.SetField(user.FieldIsPremium, field.TypeBool, value)
@@ -220,6 +220,20 @@ type UserUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *UserMutation
+}
+
+// SetUsername sets the "username" field.
+func (uuo *UserUpdateOne) SetUsername(s string) *UserUpdateOne {
+	uuo.mutation.SetUsername(s)
+	return uuo
+}
+
+// SetNillableUsername sets the "username" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableUsername(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetUsername(*s)
+	}
+	return uuo
 }
 
 // SetFirstName sets the "firstName" field.
@@ -250,26 +264,6 @@ func (uuo *UserUpdateOne) SetNillableLastName(s *string) *UserUpdateOne {
 	return uuo
 }
 
-// SetUsername sets the "username" field.
-func (uuo *UserUpdateOne) SetUsername(s string) *UserUpdateOne {
-	uuo.mutation.SetUsername(s)
-	return uuo
-}
-
-// SetNillableUsername sets the "username" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableUsername(s *string) *UserUpdateOne {
-	if s != nil {
-		uuo.SetUsername(*s)
-	}
-	return uuo
-}
-
-// SetInfo sets the "info" field.
-func (uuo *UserUpdateOne) SetInfo(m map[string]interface{}) *UserUpdateOne {
-	uuo.mutation.SetInfo(m)
-	return uuo
-}
-
 // SetRole sets the "role" field.
 func (uuo *UserUpdateOne) SetRole(u user.Role) *UserUpdateOne {
 	uuo.mutation.SetRole(u)
@@ -281,6 +275,12 @@ func (uuo *UserUpdateOne) SetNillableRole(u *user.Role) *UserUpdateOne {
 	if u != nil {
 		uuo.SetRole(*u)
 	}
+	return uuo
+}
+
+// SetInfo sets the "info" field.
+func (uuo *UserUpdateOne) SetInfo(m map[string]interface{}) *UserUpdateOne {
+	uuo.mutation.SetInfo(m)
 	return uuo
 }
 
@@ -406,20 +406,20 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			}
 		}
 	}
+	if value, ok := uuo.mutation.Username(); ok {
+		_spec.SetField(user.FieldUsername, field.TypeString, value)
+	}
 	if value, ok := uuo.mutation.FirstName(); ok {
 		_spec.SetField(user.FieldFirstName, field.TypeString, value)
 	}
 	if value, ok := uuo.mutation.LastName(); ok {
 		_spec.SetField(user.FieldLastName, field.TypeString, value)
 	}
-	if value, ok := uuo.mutation.Username(); ok {
-		_spec.SetField(user.FieldUsername, field.TypeString, value)
+	if value, ok := uuo.mutation.Role(); ok {
+		_spec.SetField(user.FieldRole, field.TypeEnum, value)
 	}
 	if value, ok := uuo.mutation.Info(); ok {
 		_spec.SetField(user.FieldInfo, field.TypeJSON, value)
-	}
-	if value, ok := uuo.mutation.Role(); ok {
-		_spec.SetField(user.FieldRole, field.TypeEnum, value)
 	}
 	if value, ok := uuo.mutation.IsPremium(); ok {
 		_spec.SetField(user.FieldIsPremium, field.TypeBool, value)

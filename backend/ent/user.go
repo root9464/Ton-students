@@ -17,16 +17,16 @@ type User struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int64 `json:"id,omitempty"`
+	// Username holds the value of the "username" field.
+	Username string `json:"username,omitempty"`
 	// FirstName holds the value of the "firstName" field.
 	FirstName string `json:"firstName,omitempty"`
 	// LastName holds the value of the "lastName" field.
 	LastName string `json:"lastName,omitempty"`
-	// Username holds the value of the "username" field.
-	Username string `json:"username,omitempty"`
-	// Info holds the value of the "info" field.
-	Info map[string]interface{} `json:"info,omitempty"`
 	// Role holds the value of the "role" field.
 	Role user.Role `json:"role,omitempty"`
+	// Info holds the value of the "info" field.
+	Info map[string]interface{} `json:"info,omitempty"`
 	// IsPremium holds the value of the "isPremium" field.
 	IsPremium bool `json:"isPremium,omitempty"`
 	// Hash holds the value of the "hash" field.
@@ -45,7 +45,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case user.FieldID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldFirstName, user.FieldLastName, user.FieldUsername, user.FieldRole, user.FieldHash:
+		case user.FieldUsername, user.FieldFirstName, user.FieldLastName, user.FieldRole, user.FieldHash:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -68,6 +68,12 @@ func (u *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			u.ID = int64(value.Int64)
+		case user.FieldUsername:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field username", values[i])
+			} else if value.Valid {
+				u.Username = value.String
+			}
 		case user.FieldFirstName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field firstName", values[i])
@@ -80,11 +86,11 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.LastName = value.String
 			}
-		case user.FieldUsername:
+		case user.FieldRole:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field username", values[i])
+				return fmt.Errorf("unexpected type %T for field role", values[i])
 			} else if value.Valid {
-				u.Username = value.String
+				u.Role = user.Role(value.String)
 			}
 		case user.FieldInfo:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -93,12 +99,6 @@ func (u *User) assignValues(columns []string, values []any) error {
 				if err := json.Unmarshal(*value, &u.Info); err != nil {
 					return fmt.Errorf("unmarshal field info: %w", err)
 				}
-			}
-		case user.FieldRole:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field role", values[i])
-			} else if value.Valid {
-				u.Role = user.Role(value.String)
 			}
 		case user.FieldIsPremium:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -148,20 +148,20 @@ func (u *User) String() string {
 	var builder strings.Builder
 	builder.WriteString("User(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", u.ID))
+	builder.WriteString("username=")
+	builder.WriteString(u.Username)
+	builder.WriteString(", ")
 	builder.WriteString("firstName=")
 	builder.WriteString(u.FirstName)
 	builder.WriteString(", ")
 	builder.WriteString("lastName=")
 	builder.WriteString(u.LastName)
 	builder.WriteString(", ")
-	builder.WriteString("username=")
-	builder.WriteString(u.Username)
+	builder.WriteString("role=")
+	builder.WriteString(fmt.Sprintf("%v", u.Role))
 	builder.WriteString(", ")
 	builder.WriteString("info=")
 	builder.WriteString(fmt.Sprintf("%v", u.Info))
-	builder.WriteString(", ")
-	builder.WriteString("role=")
-	builder.WriteString(fmt.Sprintf("%v", u.Role))
 	builder.WriteString(", ")
 	builder.WriteString("isPremium=")
 	builder.WriteString(fmt.Sprintf("%v", u.IsPremium))

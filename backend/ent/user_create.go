@@ -19,6 +19,12 @@ type UserCreate struct {
 	hooks    []Hook
 }
 
+// SetUsername sets the "username" field.
+func (uc *UserCreate) SetUsername(s string) *UserCreate {
+	uc.mutation.SetUsername(s)
+	return uc
+}
+
 // SetFirstName sets the "firstName" field.
 func (uc *UserCreate) SetFirstName(s string) *UserCreate {
 	uc.mutation.SetFirstName(s)
@@ -47,18 +53,6 @@ func (uc *UserCreate) SetNillableLastName(s *string) *UserCreate {
 	return uc
 }
 
-// SetUsername sets the "username" field.
-func (uc *UserCreate) SetUsername(s string) *UserCreate {
-	uc.mutation.SetUsername(s)
-	return uc
-}
-
-// SetInfo sets the "info" field.
-func (uc *UserCreate) SetInfo(m map[string]interface{}) *UserCreate {
-	uc.mutation.SetInfo(m)
-	return uc
-}
-
 // SetRole sets the "role" field.
 func (uc *UserCreate) SetRole(u user.Role) *UserCreate {
 	uc.mutation.SetRole(u)
@@ -70,6 +64,12 @@ func (uc *UserCreate) SetNillableRole(u *user.Role) *UserCreate {
 	if u != nil {
 		uc.SetRole(*u)
 	}
+	return uc
+}
+
+// SetInfo sets the "info" field.
+func (uc *UserCreate) SetInfo(m map[string]interface{}) *UserCreate {
+	uc.mutation.SetInfo(m)
 	return uc
 }
 
@@ -142,13 +142,13 @@ func (uc *UserCreate) defaults() {
 		v := user.DefaultLastName
 		uc.mutation.SetLastName(v)
 	}
-	if _, ok := uc.mutation.Info(); !ok {
-		v := user.DefaultInfo
-		uc.mutation.SetInfo(v)
-	}
 	if _, ok := uc.mutation.Role(); !ok {
 		v := user.DefaultRole
 		uc.mutation.SetRole(v)
+	}
+	if _, ok := uc.mutation.Info(); !ok {
+		v := user.DefaultInfo
+		uc.mutation.SetInfo(v)
 	}
 	if _, ok := uc.mutation.IsPremium(); !ok {
 		v := user.DefaultIsPremium
@@ -158,12 +158,6 @@ func (uc *UserCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (uc *UserCreate) check() error {
-	if _, ok := uc.mutation.FirstName(); !ok {
-		return &ValidationError{Name: "firstName", err: errors.New(`ent: missing required field "User.firstName"`)}
-	}
-	if _, ok := uc.mutation.LastName(); !ok {
-		return &ValidationError{Name: "lastName", err: errors.New(`ent: missing required field "User.lastName"`)}
-	}
 	if _, ok := uc.mutation.Username(); !ok {
 		return &ValidationError{Name: "username", err: errors.New(`ent: missing required field "User.username"`)}
 	}
@@ -172,8 +166,11 @@ func (uc *UserCreate) check() error {
 			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
 		}
 	}
-	if _, ok := uc.mutation.Info(); !ok {
-		return &ValidationError{Name: "info", err: errors.New(`ent: missing required field "User.info"`)}
+	if _, ok := uc.mutation.FirstName(); !ok {
+		return &ValidationError{Name: "firstName", err: errors.New(`ent: missing required field "User.firstName"`)}
+	}
+	if _, ok := uc.mutation.LastName(); !ok {
+		return &ValidationError{Name: "lastName", err: errors.New(`ent: missing required field "User.lastName"`)}
 	}
 	if _, ok := uc.mutation.Role(); !ok {
 		return &ValidationError{Name: "role", err: errors.New(`ent: missing required field "User.role"`)}
@@ -182,6 +179,9 @@ func (uc *UserCreate) check() error {
 		if err := user.RoleValidator(v); err != nil {
 			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
 		}
+	}
+	if _, ok := uc.mutation.Info(); !ok {
+		return &ValidationError{Name: "info", err: errors.New(`ent: missing required field "User.info"`)}
 	}
 	if _, ok := uc.mutation.IsPremium(); !ok {
 		return &ValidationError{Name: "isPremium", err: errors.New(`ent: missing required field "User.isPremium"`)}
@@ -226,6 +226,10 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
+	if value, ok := uc.mutation.Username(); ok {
+		_spec.SetField(user.FieldUsername, field.TypeString, value)
+		_node.Username = value
+	}
 	if value, ok := uc.mutation.FirstName(); ok {
 		_spec.SetField(user.FieldFirstName, field.TypeString, value)
 		_node.FirstName = value
@@ -234,17 +238,13 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldLastName, field.TypeString, value)
 		_node.LastName = value
 	}
-	if value, ok := uc.mutation.Username(); ok {
-		_spec.SetField(user.FieldUsername, field.TypeString, value)
-		_node.Username = value
+	if value, ok := uc.mutation.Role(); ok {
+		_spec.SetField(user.FieldRole, field.TypeEnum, value)
+		_node.Role = value
 	}
 	if value, ok := uc.mutation.Info(); ok {
 		_spec.SetField(user.FieldInfo, field.TypeJSON, value)
 		_node.Info = value
-	}
-	if value, ok := uc.mutation.Role(); ok {
-		_spec.SetField(user.FieldRole, field.TypeEnum, value)
-		_node.Role = value
 	}
 	if value, ok := uc.mutation.IsPremium(); ok {
 		_spec.SetField(user.FieldIsPremium, field.TypeBool, value)
