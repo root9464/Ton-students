@@ -53,17 +53,9 @@ func (uc *UserCreate) SetUsername(s string) *UserCreate {
 	return uc
 }
 
-// SetIsPremium sets the "isPremium" field.
-func (uc *UserCreate) SetIsPremium(b bool) *UserCreate {
-	uc.mutation.SetIsPremium(b)
-	return uc
-}
-
-// SetNillableIsPremium sets the "isPremium" field if the given value is not nil.
-func (uc *UserCreate) SetNillableIsPremium(b *bool) *UserCreate {
-	if b != nil {
-		uc.SetIsPremium(*b)
-	}
+// SetInfo sets the "info" field.
+func (uc *UserCreate) SetInfo(m map[string]interface{}) *UserCreate {
+	uc.mutation.SetInfo(m)
 	return uc
 }
 
@@ -77,6 +69,20 @@ func (uc *UserCreate) SetRole(u user.Role) *UserCreate {
 func (uc *UserCreate) SetNillableRole(u *user.Role) *UserCreate {
 	if u != nil {
 		uc.SetRole(*u)
+	}
+	return uc
+}
+
+// SetIsPremium sets the "isPremium" field.
+func (uc *UserCreate) SetIsPremium(b bool) *UserCreate {
+	uc.mutation.SetIsPremium(b)
+	return uc
+}
+
+// SetNillableIsPremium sets the "isPremium" field if the given value is not nil.
+func (uc *UserCreate) SetNillableIsPremium(b *bool) *UserCreate {
+	if b != nil {
+		uc.SetIsPremium(*b)
 	}
 	return uc
 }
@@ -136,13 +142,17 @@ func (uc *UserCreate) defaults() {
 		v := user.DefaultLastName
 		uc.mutation.SetLastName(v)
 	}
-	if _, ok := uc.mutation.IsPremium(); !ok {
-		v := user.DefaultIsPremium
-		uc.mutation.SetIsPremium(v)
+	if _, ok := uc.mutation.Info(); !ok {
+		v := user.DefaultInfo
+		uc.mutation.SetInfo(v)
 	}
 	if _, ok := uc.mutation.Role(); !ok {
 		v := user.DefaultRole
 		uc.mutation.SetRole(v)
+	}
+	if _, ok := uc.mutation.IsPremium(); !ok {
+		v := user.DefaultIsPremium
+		uc.mutation.SetIsPremium(v)
 	}
 }
 
@@ -162,8 +172,8 @@ func (uc *UserCreate) check() error {
 			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
 		}
 	}
-	if _, ok := uc.mutation.IsPremium(); !ok {
-		return &ValidationError{Name: "isPremium", err: errors.New(`ent: missing required field "User.isPremium"`)}
+	if _, ok := uc.mutation.Info(); !ok {
+		return &ValidationError{Name: "info", err: errors.New(`ent: missing required field "User.info"`)}
 	}
 	if _, ok := uc.mutation.Role(); !ok {
 		return &ValidationError{Name: "role", err: errors.New(`ent: missing required field "User.role"`)}
@@ -172,6 +182,9 @@ func (uc *UserCreate) check() error {
 		if err := user.RoleValidator(v); err != nil {
 			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
 		}
+	}
+	if _, ok := uc.mutation.IsPremium(); !ok {
+		return &ValidationError{Name: "isPremium", err: errors.New(`ent: missing required field "User.isPremium"`)}
 	}
 	if _, ok := uc.mutation.Hash(); !ok {
 		return &ValidationError{Name: "hash", err: errors.New(`ent: missing required field "User.hash"`)}
@@ -225,13 +238,17 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldUsername, field.TypeString, value)
 		_node.Username = value
 	}
-	if value, ok := uc.mutation.IsPremium(); ok {
-		_spec.SetField(user.FieldIsPremium, field.TypeBool, value)
-		_node.IsPremium = value
+	if value, ok := uc.mutation.Info(); ok {
+		_spec.SetField(user.FieldInfo, field.TypeJSON, value)
+		_node.Info = value
 	}
 	if value, ok := uc.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
 		_node.Role = value
+	}
+	if value, ok := uc.mutation.IsPremium(); ok {
+		_spec.SetField(user.FieldIsPremium, field.TypeBool, value)
+		_node.IsPremium = value
 	}
 	if value, ok := uc.mutation.Hash(); ok {
 		_spec.SetField(user.FieldHash, field.TypeString, value)

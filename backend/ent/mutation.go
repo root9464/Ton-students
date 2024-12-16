@@ -35,8 +35,9 @@ type UserMutation struct {
 	firstName     *string
 	lastName      *string
 	username      *string
-	isPremium     *bool
+	info          *map[string]interface{}
 	role          *user.Role
+	isPremium     *bool
 	hash          *string
 	clearedFields map[string]struct{}
 	done          bool
@@ -256,40 +257,40 @@ func (m *UserMutation) ResetUsername() {
 	m.username = nil
 }
 
-// SetIsPremium sets the "isPremium" field.
-func (m *UserMutation) SetIsPremium(b bool) {
-	m.isPremium = &b
+// SetInfo sets the "info" field.
+func (m *UserMutation) SetInfo(value map[string]interface{}) {
+	m.info = &value
 }
 
-// IsPremium returns the value of the "isPremium" field in the mutation.
-func (m *UserMutation) IsPremium() (r bool, exists bool) {
-	v := m.isPremium
+// Info returns the value of the "info" field in the mutation.
+func (m *UserMutation) Info() (r map[string]interface{}, exists bool) {
+	v := m.info
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldIsPremium returns the old "isPremium" field's value of the User entity.
+// OldInfo returns the old "info" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldIsPremium(ctx context.Context) (v bool, err error) {
+func (m *UserMutation) OldInfo(ctx context.Context) (v map[string]interface{}, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsPremium is only allowed on UpdateOne operations")
+		return v, errors.New("OldInfo is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsPremium requires an ID field in the mutation")
+		return v, errors.New("OldInfo requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsPremium: %w", err)
+		return v, fmt.Errorf("querying old value for OldInfo: %w", err)
 	}
-	return oldValue.IsPremium, nil
+	return oldValue.Info, nil
 }
 
-// ResetIsPremium resets all changes to the "isPremium" field.
-func (m *UserMutation) ResetIsPremium() {
-	m.isPremium = nil
+// ResetInfo resets all changes to the "info" field.
+func (m *UserMutation) ResetInfo() {
+	m.info = nil
 }
 
 // SetRole sets the "role" field.
@@ -326,6 +327,42 @@ func (m *UserMutation) OldRole(ctx context.Context) (v user.Role, err error) {
 // ResetRole resets all changes to the "role" field.
 func (m *UserMutation) ResetRole() {
 	m.role = nil
+}
+
+// SetIsPremium sets the "isPremium" field.
+func (m *UserMutation) SetIsPremium(b bool) {
+	m.isPremium = &b
+}
+
+// IsPremium returns the value of the "isPremium" field in the mutation.
+func (m *UserMutation) IsPremium() (r bool, exists bool) {
+	v := m.isPremium
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsPremium returns the old "isPremium" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldIsPremium(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsPremium is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsPremium requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsPremium: %w", err)
+	}
+	return oldValue.IsPremium, nil
+}
+
+// ResetIsPremium resets all changes to the "isPremium" field.
+func (m *UserMutation) ResetIsPremium() {
+	m.isPremium = nil
 }
 
 // SetHash sets the "hash" field.
@@ -398,7 +435,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.firstName != nil {
 		fields = append(fields, user.FieldFirstName)
 	}
@@ -408,11 +445,14 @@ func (m *UserMutation) Fields() []string {
 	if m.username != nil {
 		fields = append(fields, user.FieldUsername)
 	}
-	if m.isPremium != nil {
-		fields = append(fields, user.FieldIsPremium)
+	if m.info != nil {
+		fields = append(fields, user.FieldInfo)
 	}
 	if m.role != nil {
 		fields = append(fields, user.FieldRole)
+	}
+	if m.isPremium != nil {
+		fields = append(fields, user.FieldIsPremium)
 	}
 	if m.hash != nil {
 		fields = append(fields, user.FieldHash)
@@ -431,10 +471,12 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.LastName()
 	case user.FieldUsername:
 		return m.Username()
-	case user.FieldIsPremium:
-		return m.IsPremium()
+	case user.FieldInfo:
+		return m.Info()
 	case user.FieldRole:
 		return m.Role()
+	case user.FieldIsPremium:
+		return m.IsPremium()
 	case user.FieldHash:
 		return m.Hash()
 	}
@@ -452,10 +494,12 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldLastName(ctx)
 	case user.FieldUsername:
 		return m.OldUsername(ctx)
-	case user.FieldIsPremium:
-		return m.OldIsPremium(ctx)
+	case user.FieldInfo:
+		return m.OldInfo(ctx)
 	case user.FieldRole:
 		return m.OldRole(ctx)
+	case user.FieldIsPremium:
+		return m.OldIsPremium(ctx)
 	case user.FieldHash:
 		return m.OldHash(ctx)
 	}
@@ -488,12 +532,12 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUsername(v)
 		return nil
-	case user.FieldIsPremium:
-		v, ok := value.(bool)
+	case user.FieldInfo:
+		v, ok := value.(map[string]interface{})
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetIsPremium(v)
+		m.SetInfo(v)
 		return nil
 	case user.FieldRole:
 		v, ok := value.(user.Role)
@@ -501,6 +545,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRole(v)
+		return nil
+	case user.FieldIsPremium:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsPremium(v)
 		return nil
 	case user.FieldHash:
 		v, ok := value.(string)
@@ -567,11 +618,14 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldUsername:
 		m.ResetUsername()
 		return nil
-	case user.FieldIsPremium:
-		m.ResetIsPremium()
+	case user.FieldInfo:
+		m.ResetInfo()
 		return nil
 	case user.FieldRole:
 		m.ResetRole()
+		return nil
+	case user.FieldIsPremium:
+		m.ResetIsPremium()
 		return nil
 	case user.FieldHash:
 		m.ResetHash()

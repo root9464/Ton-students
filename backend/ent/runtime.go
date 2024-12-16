@@ -25,12 +25,16 @@ func init() {
 	userDescUsername := userFields[3].Descriptor()
 	// user.UsernameValidator is a validator for the "username" field. It is called by the builders before save.
 	user.UsernameValidator = userDescUsername.Validators[0].(func(string) error)
+	// userDescInfo is the schema descriptor for info field.
+	userDescInfo := userFields[4].Descriptor()
+	// user.DefaultInfo holds the default value on creation for the info field.
+	user.DefaultInfo = userDescInfo.Default.(map[string]interface{})
 	// userDescIsPremium is the schema descriptor for isPremium field.
-	userDescIsPremium := userFields[4].Descriptor()
+	userDescIsPremium := userFields[6].Descriptor()
 	// user.DefaultIsPremium holds the default value on creation for the isPremium field.
 	user.DefaultIsPremium = userDescIsPremium.Default.(bool)
 	// userDescHash is the schema descriptor for hash field.
-	userDescHash := userFields[6].Descriptor()
+	userDescHash := userFields[7].Descriptor()
 	// user.HashValidator is a validator for the "hash" field. It is called by the builders before save.
 	user.HashValidator = func() func(string) error {
 		validators := userDescHash.Validators

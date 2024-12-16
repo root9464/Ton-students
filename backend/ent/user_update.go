@@ -69,17 +69,9 @@ func (uu *UserUpdate) SetNillableUsername(s *string) *UserUpdate {
 	return uu
 }
 
-// SetIsPremium sets the "isPremium" field.
-func (uu *UserUpdate) SetIsPremium(b bool) *UserUpdate {
-	uu.mutation.SetIsPremium(b)
-	return uu
-}
-
-// SetNillableIsPremium sets the "isPremium" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableIsPremium(b *bool) *UserUpdate {
-	if b != nil {
-		uu.SetIsPremium(*b)
-	}
+// SetInfo sets the "info" field.
+func (uu *UserUpdate) SetInfo(m map[string]interface{}) *UserUpdate {
+	uu.mutation.SetInfo(m)
 	return uu
 }
 
@@ -93,6 +85,20 @@ func (uu *UserUpdate) SetRole(u user.Role) *UserUpdate {
 func (uu *UserUpdate) SetNillableRole(u *user.Role) *UserUpdate {
 	if u != nil {
 		uu.SetRole(*u)
+	}
+	return uu
+}
+
+// SetIsPremium sets the "isPremium" field.
+func (uu *UserUpdate) SetIsPremium(b bool) *UserUpdate {
+	uu.mutation.SetIsPremium(b)
+	return uu
+}
+
+// SetNillableIsPremium sets the "isPremium" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableIsPremium(b *bool) *UserUpdate {
+	if b != nil {
+		uu.SetIsPremium(*b)
 	}
 	return uu
 }
@@ -184,11 +190,14 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := uu.mutation.Username(); ok {
 		_spec.SetField(user.FieldUsername, field.TypeString, value)
 	}
-	if value, ok := uu.mutation.IsPremium(); ok {
-		_spec.SetField(user.FieldIsPremium, field.TypeBool, value)
+	if value, ok := uu.mutation.Info(); ok {
+		_spec.SetField(user.FieldInfo, field.TypeJSON, value)
 	}
 	if value, ok := uu.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
+	}
+	if value, ok := uu.mutation.IsPremium(); ok {
+		_spec.SetField(user.FieldIsPremium, field.TypeBool, value)
 	}
 	if value, ok := uu.mutation.Hash(); ok {
 		_spec.SetField(user.FieldHash, field.TypeString, value)
@@ -255,17 +264,9 @@ func (uuo *UserUpdateOne) SetNillableUsername(s *string) *UserUpdateOne {
 	return uuo
 }
 
-// SetIsPremium sets the "isPremium" field.
-func (uuo *UserUpdateOne) SetIsPremium(b bool) *UserUpdateOne {
-	uuo.mutation.SetIsPremium(b)
-	return uuo
-}
-
-// SetNillableIsPremium sets the "isPremium" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableIsPremium(b *bool) *UserUpdateOne {
-	if b != nil {
-		uuo.SetIsPremium(*b)
-	}
+// SetInfo sets the "info" field.
+func (uuo *UserUpdateOne) SetInfo(m map[string]interface{}) *UserUpdateOne {
+	uuo.mutation.SetInfo(m)
 	return uuo
 }
 
@@ -279,6 +280,20 @@ func (uuo *UserUpdateOne) SetRole(u user.Role) *UserUpdateOne {
 func (uuo *UserUpdateOne) SetNillableRole(u *user.Role) *UserUpdateOne {
 	if u != nil {
 		uuo.SetRole(*u)
+	}
+	return uuo
+}
+
+// SetIsPremium sets the "isPremium" field.
+func (uuo *UserUpdateOne) SetIsPremium(b bool) *UserUpdateOne {
+	uuo.mutation.SetIsPremium(b)
+	return uuo
+}
+
+// SetNillableIsPremium sets the "isPremium" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableIsPremium(b *bool) *UserUpdateOne {
+	if b != nil {
+		uuo.SetIsPremium(*b)
 	}
 	return uuo
 }
@@ -400,11 +415,14 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if value, ok := uuo.mutation.Username(); ok {
 		_spec.SetField(user.FieldUsername, field.TypeString, value)
 	}
-	if value, ok := uuo.mutation.IsPremium(); ok {
-		_spec.SetField(user.FieldIsPremium, field.TypeBool, value)
+	if value, ok := uuo.mutation.Info(); ok {
+		_spec.SetField(user.FieldInfo, field.TypeJSON, value)
 	}
 	if value, ok := uuo.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
+	}
+	if value, ok := uuo.mutation.IsPremium(); ok {
+		_spec.SetField(user.FieldIsPremium, field.TypeBool, value)
 	}
 	if value, ok := uuo.mutation.Hash(); ok {
 		_spec.SetField(user.FieldHash, field.TypeString, value)

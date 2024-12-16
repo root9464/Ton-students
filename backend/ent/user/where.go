@@ -272,16 +272,6 @@ func UsernameContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldUsername, v))
 }
 
-// IsPremiumEQ applies the EQ predicate on the "isPremium" field.
-func IsPremiumEQ(v bool) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldIsPremium, v))
-}
-
-// IsPremiumNEQ applies the NEQ predicate on the "isPremium" field.
-func IsPremiumNEQ(v bool) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldIsPremium, v))
-}
-
 // RoleEQ applies the EQ predicate on the "role" field.
 func RoleEQ(v Role) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldRole, v))
@@ -300,6 +290,16 @@ func RoleIn(vs ...Role) predicate.User {
 // RoleNotIn applies the NotIn predicate on the "role" field.
 func RoleNotIn(vs ...Role) predicate.User {
 	return predicate.User(sql.FieldNotIn(FieldRole, vs...))
+}
+
+// IsPremiumEQ applies the EQ predicate on the "isPremium" field.
+func IsPremiumEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldIsPremium, v))
+}
+
+// IsPremiumNEQ applies the NEQ predicate on the "isPremium" field.
+func IsPremiumNEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldIsPremium, v))
 }
 
 // HashEQ applies the EQ predicate on the "hash" field.

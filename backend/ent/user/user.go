@@ -19,10 +19,12 @@ const (
 	FieldLastName = "last_name"
 	// FieldUsername holds the string denoting the username field in the database.
 	FieldUsername = "username"
-	// FieldIsPremium holds the string denoting the ispremium field in the database.
-	FieldIsPremium = "is_premium"
+	// FieldInfo holds the string denoting the info field in the database.
+	FieldInfo = "info"
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
+	// FieldIsPremium holds the string denoting the ispremium field in the database.
+	FieldIsPremium = "is_premium"
 	// FieldHash holds the string denoting the hash field in the database.
 	FieldHash = "hash"
 	// Table holds the table name of the user in the database.
@@ -35,8 +37,9 @@ var Columns = []string{
 	FieldFirstName,
 	FieldLastName,
 	FieldUsername,
-	FieldIsPremium,
+	FieldInfo,
 	FieldRole,
+	FieldIsPremium,
 	FieldHash,
 }
 
@@ -57,6 +60,8 @@ var (
 	DefaultLastName string
 	// UsernameValidator is a validator for the "username" field. It is called by the builders before save.
 	UsernameValidator func(string) error
+	// DefaultInfo holds the default value on creation for the "info" field.
+	DefaultInfo map[string]interface{}
 	// DefaultIsPremium holds the default value on creation for the "isPremium" field.
 	DefaultIsPremium bool
 	// HashValidator is a validator for the "hash" field. It is called by the builders before save.
@@ -114,14 +119,14 @@ func ByUsername(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUsername, opts...).ToFunc()
 }
 
-// ByIsPremium orders the results by the isPremium field.
-func ByIsPremium(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldIsPremium, opts...).ToFunc()
-}
-
 // ByRole orders the results by the role field.
 func ByRole(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRole, opts...).ToFunc()
+}
+
+// ByIsPremium orders the results by the isPremium field.
+func ByIsPremium(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsPremium, opts...).ToFunc()
 }
 
 // ByHash orders the results by the hash field.

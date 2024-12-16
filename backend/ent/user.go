@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -22,10 +23,12 @@ type User struct {
 	LastName string `json:"lastName,omitempty"`
 	// Username holds the value of the "username" field.
 	Username string `json:"username,omitempty"`
-	// IsPremium holds the value of the "isPremium" field.
-	IsPremium bool `json:"isPremium,omitempty"`
+	// Info holds the value of the "info" field.
+	Info map[string]interface{} `json:"info,omitempty"`
 	// Role holds the value of the "role" field.
 	Role user.Role `json:"role,omitempty"`
+	// IsPremium holds the value of the "isPremium" field.
+	IsPremium bool `json:"isPremium,omitempty"`
 	// Hash holds the value of the "hash" field.
 	Hash         string `json:"hash,omitempty"`
 	selectValues sql.SelectValues
@@ -36,6 +39,8 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case user.FieldInfo:
+			values[i] = new([]byte)
 		case user.FieldIsPremium:
 			values[i] = new(sql.NullBool)
 		case user.FieldID:
@@ -81,17 +86,25 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.Username = value.String
 			}
-		case user.FieldIsPremium:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field isPremium", values[i])
-			} else if value.Valid {
-				u.IsPremium = value.Bool
+		case user.FieldInfo:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field info", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &u.Info); err != nil {
+					return fmt.Errorf("unmarshal field info: %w", err)
+				}
 			}
 		case user.FieldRole:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field role", values[i])
 			} else if value.Valid {
 				u.Role = user.Role(value.String)
+			}
+		case user.FieldIsPremium:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field isPremium", values[i])
+			} else if value.Valid {
+				u.IsPremium = value.Bool
 			}
 		case user.FieldHash:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -144,11 +157,14 @@ func (u *User) String() string {
 	builder.WriteString("username=")
 	builder.WriteString(u.Username)
 	builder.WriteString(", ")
-	builder.WriteString("isPremium=")
-	builder.WriteString(fmt.Sprintf("%v", u.IsPremium))
+	builder.WriteString("info=")
+	builder.WriteString(fmt.Sprintf("%v", u.Info))
 	builder.WriteString(", ")
 	builder.WriteString("role=")
 	builder.WriteString(fmt.Sprintf("%v", u.Role))
+	builder.WriteString(", ")
+	builder.WriteString("isPremium=")
+	builder.WriteString(fmt.Sprintf("%v", u.IsPremium))
 	builder.WriteString(", ")
 	builder.WriteString("hash=")
 	builder.WriteString(u.Hash)

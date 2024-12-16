@@ -1,39 +1,40 @@
 package main
 
 import (
-	"github.com/root9464/Ton-students/backend/config"
-	"github.com/root9464/Ton-students/backend/core/app"
-	"github.com/root9464/Ton-students/backend/shared/lib"
-	"github.com/root9464/Ton-students/backend/shared/logger"
+	_ "github.com/lib/pq"
+
+	"github.com/gofiber/fiber/v2"
+	config "github.com/root9464/Ton-students/backend/config"
+	"github.com/root9464/Ton-students/backend/core/routes"
+	"github.com/root9464/Ton-students/backend/ent"
+	"github.com/root9464/Ton-students/backend/shared/middleware"
+	"github.com/root9464/Ton-students/backend/shared/utils"
 )
 
 func main() {
-	// const port = ":6069"
-	//
-	log := logger.GetLogger()
-	config, err := config.LoadConfig(".")
-	if err != nil {
-		log.Fatalf("✖ Failed to load config: %s", err.Error())
-	}
-	log.Info("✔  Config loaded")
+	const port = ":6069"
 
-	_, err = lib.ConnectDatabase(log.Logger)
-	//
+	log := utils.GetLogger()
+	globalConfig, err := config.LoadConfig(".")
 	if err != nil {
-		log.WithError(err).Fatal("Failed to connect to the database")
+		log.Fatal(err)
 	}
 
-	_, err = lib.ConnectDatabase(log.Logger)
+	app := fiber.New()
+	app.Use(config.CORS_CONFIG)
+	app.Use(middleware.LoggerMiddleware())
+
+	_, err = ent.Open("postgres", globalConfig.DatabaseUrl)
 	if err != nil {
-		log.WithError(err).Fatal("Failed to connect to the database")
+		log.Fatalf("failed opening connection to postgres: %v", err)
 	}
 
-	app, err := app.NewApp(&config, log)
-	if err != nil {
-		log.WithError(err).Fatal("Failed to create the app")
-	}
+	log.Info("connected to the database successfully")
+	routes.AllRoutes(app)
 
-	if err := app.Run(); err != nil {
-		log.WithError(err).Fatal("Failed to run the app")
+	log.Infof("🌐 Server is running on %s", port)
+	log.Info("✅ Server started successfully")
+	if err := app.Listen(port); err != nil {
+		log.Fatal("❌ Server startup error:", err)
 	}
 }

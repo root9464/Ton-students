@@ -14,8 +14,9 @@ var (
 		{Name: "first_name", Type: field.TypeString, Default: ""},
 		{Name: "last_name", Type: field.TypeString, Default: ""},
 		{Name: "username", Type: field.TypeString, Unique: true},
-		{Name: "is_premium", Type: field.TypeBool, Default: false},
+		{Name: "info", Type: field.TypeJSON},
 		{Name: "role", Type: field.TypeEnum, Enums: []string{"user", "creator", "moderator", "administrator"}, Default: "user"},
+		{Name: "is_premium", Type: field.TypeBool, Default: false},
 		{Name: "hash", Type: field.TypeString},
 	}
 	// UsersTable holds the schema information for the "users" table.
