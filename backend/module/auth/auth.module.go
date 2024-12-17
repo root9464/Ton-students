@@ -12,5 +12,4 @@ func AuthRoutes(router fiber.Router, log *utils.Logger, envs *config.Config, db 
 	auth := router.Group("auth")
 
 	auth.Post("/authorize", auth_controller.Authorize(log, envs, db))
-
 }

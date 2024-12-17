@@ -16,11 +16,12 @@ var CORS_CONFIG = cors.New(
 type Config struct {
 	TelegramBotToken string `mapstructure:"TELEGRAM_BOT_TOKEN"`
 	DatabaseUrl      string `mapstructure:"DATABASE_URL"`
+	KafkaBrokerUrl   string `mapstructure:"KAFKA_BROKER_URL"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
 	viper.AddConfigPath(path)
-	viper.SetConfigName("../.env")
+	viper.SetConfigName(".env")
 	viper.SetConfigType("env")
 
 	viper.AutomaticEnv()
