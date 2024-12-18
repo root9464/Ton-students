@@ -9,12 +9,12 @@ import (
 	"log"
 	"reflect"
 
-	"github.com/root9464/Ton-students/backend/ent/migrate"
+	"github.com/root9464/Ton-students/ent/migrate"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
-	"github.com/root9464/Ton-students/backend/ent/user"
+	"github.com/root9464/Ton-students/ent/user"
 )
 
 // Client is the client that holds all ent builders.

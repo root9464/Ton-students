@@ -9,7 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/root9464/Ton-students/backend/ent/user"
+	"github.com/root9464/Ton-students/ent/user"
 )
 
 // UserCreate is the builder for creating a User entity.

@@ -5,12 +5,12 @@ package enttest
 import (
 	"context"
 
-	"github.com/root9464/Ton-students/backend/ent"
+	"github.com/root9464/Ton-students/ent"
 	// required by schema hooks.
-	_ "github.com/root9464/Ton-students/backend/ent/runtime"
+	_ "github.com/root9464/Ton-students/ent/runtime"
 
 	"entgo.io/ent/dialect/sql/schema"
-	"github.com/root9464/Ton-students/backend/ent/migrate"
+	"github.com/root9464/Ton-students/ent/migrate"
 )
 
 type (

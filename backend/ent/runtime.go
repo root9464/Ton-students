@@ -3,8 +3,8 @@
 package ent
 
 import (
-	"github.com/root9464/Ton-students/backend/ent/schema"
-	"github.com/root9464/Ton-students/backend/ent/user"
+	"github.com/root9464/Ton-students/ent/schema"
+	"github.com/root9464/Ton-students/ent/user"
 )
 
 // The init function reads all schema descriptors with runtime code

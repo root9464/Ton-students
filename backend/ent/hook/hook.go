@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/root9464/Ton-students/backend/ent"
+	"github.com/root9464/Ton-students/ent"
 )
 
 // The UserFunc type is an adapter to allow the use of ordinary

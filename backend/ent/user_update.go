@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/root9464/Ton-students/backend/ent/predicate"
-	"github.com/root9464/Ton-students/backend/ent/user"
+	"github.com/root9464/Ton-students/ent/predicate"
+	"github.com/root9464/Ton-students/ent/user"
 )
 
 // UserUpdate is the builder for updating User entities.

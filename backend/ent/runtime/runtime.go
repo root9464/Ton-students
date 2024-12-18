@@ -2,7 +2,7 @@
 
 package runtime
 
-// The schema-stitching logic is generated in github.com/root9464/Ton-students/backend/ent/runtime.go
+// The schema-stitching logic is generated in github.com/root9464/Ton-students/ent/runtime.go
 
 const (
 	Version = "v0.14.1"                                         // Version of ent codegen.
