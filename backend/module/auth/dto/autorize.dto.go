@@ -1,5 +1,5 @@
-package dto
+package auth_dto
 
 type AutorizeDto struct {
-	InitDataRaw string `json:"init-data-row"`
+	InitDataRaw string `json:"init-data-raw"`
 }

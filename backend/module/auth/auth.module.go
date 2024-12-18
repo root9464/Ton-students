@@ -6,6 +6,7 @@ import (
 	"github.com/root9464/Ton-students/config"
 	auth_controller "github.com/root9464/Ton-students/module/auth/controller"
 	auth_service "github.com/root9464/Ton-students/module/auth/service"
+	user_service "github.com/root9464/Ton-students/module/user/service"
 	"github.com/root9464/Ton-students/shared/logger"
 )
 
@@ -16,23 +17,27 @@ type AuthModule struct {
 	logger    *logger.Logger
 	validator *validator.Validate
 	config    *config.Config
+
+	userService user_service.IUserService
 }
 
 func NewAuthModule(
 	logger *logger.Logger,
 	validator *validator.Validate,
 	config *config.Config,
+	userService user_service.IUserService,
 ) *AuthModule {
 	return &AuthModule{
-		logger:    logger,
-		validator: validator,
-		config:    config,
+		logger:      logger,
+		validator:   validator,
+		config:      config,
+		userService: userService,
 	}
 }
 
 func (m *AuthModule) AuthService() auth_service.IAuthService {
 	if m.authService == nil {
-		m.authService = auth_service.NewAuthService(m.logger, m.validator, m.config)
+		m.authService = auth_service.NewAuthService(m.logger, m.validator, m.config, m.userService)
 	}
 	return m.authService
 }

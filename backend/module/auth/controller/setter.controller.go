@@ -2,27 +2,29 @@ package auth_controller
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/root9464/Ton-students/module/auth/dto"
+	auth_dto "github.com/root9464/Ton-students/module/auth/dto"
 )
 
-func (c *AuthController) Authorize(ctx *fiber.Ctx) error {
-	user := new(dto.AutorizeDto)
+func (c *authController) Authorize(ctx *fiber.Ctx) error {
+	user := new(auth_dto.AutorizeDto)
 
 	if err := ctx.BodyParser(user); err != nil {
-		return &fiber.Error{
-			Code:    400,
-			Message: "Failed to parse body",
-		}
-	}
-
-	if err := c.authService.Authorize(ctx.Context(), user); err != nil {
-		return ctx.JSON(&fiber.Map{
+		return ctx.Status(400).JSON(&fiber.Map{
 			"status":  "failed",
 			"message": err.Error(),
 		})
 	}
 
-	return ctx.JSON(&fiber.Map{
-		"status": "success",
+	if err := c.authService.Authorize(ctx.Context(), user); err != nil {
+		fiberErr := err.(*fiber.Error)
+		return ctx.Status(fiberErr.Code).JSON(&fiber.Map{
+			"status":  "failed",
+			"message": fiberErr.Message,
+		})
+	}
+
+	return ctx.Status(200).JSON(&fiber.Map{
+		"status":  "success",
+		"message": "Authorized",
 	})
 }

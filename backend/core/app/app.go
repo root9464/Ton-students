@@ -11,6 +11,7 @@ import (
 	"github.com/root9464/Ton-students/config"
 	"github.com/root9464/Ton-students/ent"
 	"github.com/root9464/Ton-students/shared/logger"
+	"github.com/root9464/Ton-students/shared/middleware"
 )
 
 type App struct {
@@ -35,6 +36,7 @@ func (a *App) Run() error {
 		AllowOrigins:     "http://localhost:5173, http://0.0.0.0:5173, https://4f67-95-105-125-55.ngrok-free.app",
 		AllowCredentials: true,
 	}))
+	a.app.Use(middleware.LoggerMiddleware())
 
 	a.initDeps()
 
@@ -136,5 +138,6 @@ func (a *App) initRouter() error {
 	api := a.app.Group("/api")
 
 	a.moduleProvider.authModule.AuthRoutes(api)
+	a.moduleProvider.userModule.UserRoutes(api)
 	return nil
 }

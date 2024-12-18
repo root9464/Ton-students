@@ -9,14 +9,14 @@ type IAuthController interface {
 	Authorize(ctx *fiber.Ctx) error
 }
 
-type AuthController struct {
+type authController struct {
 	authService auth_service.IAuthService
 }
 
 func NewAuthController(
 	authService auth_service.IAuthService,
-) *AuthController {
-	return &AuthController{
+) *authController {
+	return &authController{
 		authService: authService,
 	}
 }
