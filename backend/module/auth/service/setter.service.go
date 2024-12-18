@@ -6,7 +6,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	auth_dto "github.com/root9464/Ton-students/module/auth/dto"
-	"github.com/telegram-mini-apps/init-data-golang"
+	user_dto "github.com/root9464/Ton-students/module/user/dto"
+	initdata "github.com/telegram-mini-apps/init-data-golang"
 )
 
 func (s *authService) Authorize(ctx context.Context, dto *auth_dto.AutorizeDto) error {
@@ -29,7 +30,7 @@ func (s *authService) Authorize(ctx context.Context, dto *auth_dto.AutorizeDto) 
 		}
 	}
 
-	if err := s.userService.Create(ctx, dto); err != nil {
+	if err := s.userService.Create(ctx, &user_dto.CreateUserDto{InitDataRaw: dto.InitDataRaw}); err != nil {
 	}
 
 	return nil
