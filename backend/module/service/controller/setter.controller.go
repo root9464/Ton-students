@@ -2,9 +2,7 @@ package service_controller
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/root9464/Ton-students/ent"
 	service_dto "github.com/root9464/Ton-students/module/service/dto"
-	"github.com/root9464/Ton-students/shared/utils"
 )
 
 func (c *serviceController) CreateService(ctx *fiber.Ctx) error {
@@ -17,15 +15,7 @@ func (c *serviceController) CreateService(ctx *fiber.Ctx) error {
 		})
 	}
 
-	convert, err := utils.ConvertDtoToEntity[ent.Service](data)
-	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(&fiber.Map{
-			"status":  "failed",
-			"message": "Invalid request body: " + err.Error(),
-		})
-	}
-
-	service, err := c.serviceService.CreateService(ctx.Context(), convert)
+	service, err := c.serviceService.CreateService(ctx.Context(), data)
 	if err != nil {
 		if fiberErr, ok := err.(*fiber.Error); ok {
 			return ctx.Status(fiberErr.Code).JSON(&fiber.Map{

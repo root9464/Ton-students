@@ -2,12 +2,14 @@ package app
 
 import (
 	auth_module "github.com/root9464/Ton-students/module/auth"
+	service_module "github.com/root9464/Ton-students/module/service"
 	user_module "github.com/root9464/Ton-students/module/user"
 )
 
 type moduleProvider struct {
-	authModule *auth_module.AuthModule
-	userModule *user_module.UserModule
+	authModule    *auth_module.AuthModule
+	userModule    *user_module.UserModule
+	serviceModule *service_module.ServiceModule
 
 	app *App
 }
@@ -45,5 +47,10 @@ func (p *moduleProvider) UserModule() error {
 
 func (p *moduleProvider) AuthModule() error {
 	p.authModule = auth_module.NewAuthModule(p.app.logger, p.app.validator, p.app.config, p.userModule.UserService())
+	return nil
+}
+
+func (p *moduleProvider) ServiceModule() error {
+	p.serviceModule = service_module.NewServiceModule(p.app.logger, p.app.validator, p.app.db)
 	return nil
 }
