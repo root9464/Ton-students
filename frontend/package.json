@@ -11,6 +11,7 @@
   "dependencies": {
     "@next/eslint-plugin-next": "^15.1.0",
     "@nextui-org/button": "^2.2.7",
+    "@nextui-org/input": "^2.4.6",
     "@nextui-org/system": "^2.4.4",
     "@nextui-org/theme": "^2.4.3",
     "@tanstack/eslint-plugin-query": "^5.62.1",

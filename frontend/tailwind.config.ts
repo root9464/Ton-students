@@ -32,6 +32,10 @@ export default {
 
       height: {
         contentFlow: 'calc(100% - 160px)',
+        ui60: '60px',
+        ui50: '50px',
+        ui45: '45px',
+        ui30: '30px',
       },
 
       minHeight: {
@@ -45,5 +49,20 @@ export default {
   },
 
   darkMode: 'class',
-  plugins: [nextui()],
+  plugins: [
+    nextui({
+      themes: {
+        light: {
+          colors: {
+            primary: '#007AFF',
+          },
+        },
+        dark: {
+          colors: {
+            primary: '#33FF00',
+          },
+        },
+      },
+    }),
+  ],
 } satisfies Config;
