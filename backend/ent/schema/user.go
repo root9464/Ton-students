@@ -5,10 +5,11 @@ import (
 	"regexp"
 
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
-// UserSchema описывает таблицу пользователей в базе данныхtype User struct {
+// User описывает таблицу пользователей в базе данных
 type User struct {
 	ent.Schema
 }
@@ -17,7 +18,7 @@ type User struct {
 func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int64("id").Immutable(),
-		field.Text("username").NotEmpty().Unique(),
+		field.Text("userName").NotEmpty().Unique(),
 		field.Text("firstName").Default(""),
 		field.Text("lastName").Default(""),
 		field.Enum("role").Values("user", "creator", "moderator", "administrator").Default("user"),
@@ -38,5 +39,7 @@ func (User) Fields() []ent.Field {
 
 // Edges определяют связи с другими таблицами (если они есть)
 func (User) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.To("services", Service.Type).StorageKey(edge.Column("user_name")),
+	}
 }

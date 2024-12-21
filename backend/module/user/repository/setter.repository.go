@@ -14,7 +14,7 @@ func (r *userRepository) Create(ctx context.Context, user *tma.InitData) (*ent.U
 		SetID(user.User.ID).
 		SetFirstName(user.User.FirstName).
 		SetLastName(user.User.LastName).
-		SetUsername(user.User.Username).
+		SetUserName(user.User.Username).
 		SetIsPremium(user.User.IsPremium).
 		SetHash(user.Hash).
 		Save(ctx)
@@ -30,7 +30,7 @@ func (r *userRepository) Update(ctx context.Context, user *tma.InitData) (*ent.U
 	getUser, err := r.db.User.UpdateOneID(user.User.ID).
 		SetFirstName(user.User.FirstName).
 		SetLastName(user.User.LastName).
-		SetUsername(user.User.Username).
+		SetUserName(user.User.Username).
 		SetIsPremium(user.User.IsPremium).
 		Save(ctx)
 

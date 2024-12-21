@@ -8,10 +8,33 @@ import (
 )
 
 var (
+	// ServicesColumns holds the columns for the "services" table.
+	ServicesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "user_name", Type: field.TypeString, Size: 2147483647},
+		{Name: "title", Type: field.TypeString, Size: 2147483647},
+		{Name: "description", Type: field.TypeJSON},
+		{Name: "tags", Type: field.TypeJSON},
+		{Name: "price", Type: field.TypeInt16},
+	}
+	// ServicesTable holds the schema information for the "services" table.
+	ServicesTable = &schema.Table{
+		Name:       "services",
+		Columns:    ServicesColumns,
+		PrimaryKey: []*schema.Column{ServicesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "services_users_services",
+				Columns:    []*schema.Column{ServicesColumns[1]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
-		{Name: "username", Type: field.TypeString, Unique: true, Size: 2147483647},
+		{Name: "user_name", Type: field.TypeString, Unique: true, Size: 2147483647},
 		{Name: "first_name", Type: field.TypeString, Size: 2147483647, Default: ""},
 		{Name: "last_name", Type: field.TypeString, Size: 2147483647, Default: ""},
 		{Name: "role", Type: field.TypeEnum, Enums: []string{"user", "creator", "moderator", "administrator"}, Default: "user"},
@@ -27,9 +50,11 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		ServicesTable,
 		UsersTable,
 	}
 )
 
 func init() {
+	ServicesTable.ForeignKeys[0].RefTable = UsersTable
 }
