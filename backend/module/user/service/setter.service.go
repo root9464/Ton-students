@@ -51,9 +51,13 @@ func (s *userService) Create(ctx context.Context, dto interface{}) (*ent.User, e
 		Hash:         initData.Hash,
 	}
 
-	modelUser := new(ent.User)
-	if err := utils.DtoToModel(&srcUser, modelUser); err != nil {
-		return nil, err
+	modelUser, err := utils.ConvertDtoToEntity[ent.User](&srcUser)
+	if err != nil {
+		s.logger.Warnf("convert dto to entity error: %s", err.Error())
+		return nil, &fiber.Error{
+			Code:    500,
+			Message: err.Error(),
+		}
 	}
 
 	s.logger.Infof("%v", modelUser)
