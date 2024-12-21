@@ -11,9 +11,9 @@ import (
 var _ IUserRepository = (*userRepository)(nil)
 
 type IUserRepository interface {
-	Create(ctx context.Context, user *initdata.InitData) error
+	Create(ctx context.Context, user *initdata.InitData) (*ent.User, error)
 	GetByID(ctx context.Context, id int64) (*ent.User, error)
-	Update(ctx context.Context, user *initdata.InitData) error
+	Update(ctx context.Context, user *initdata.InitData) (*ent.User, error)
 }
 
 type userRepository struct {

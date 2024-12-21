@@ -6,16 +6,17 @@ import (
 )
 
 func (c *authController) Authorize(ctx *fiber.Ctx) error {
-	user := new(auth_dto.AutorizeDto)
+	data := new(auth_dto.AutorizeDto)
 
-	if err := ctx.BodyParser(user); err != nil {
+	if err := ctx.BodyParser(data); err != nil {
 		return ctx.Status(400).JSON(&fiber.Map{
 			"status":  "failed",
 			"message": err.Error(),
 		})
 	}
 
-	if err := c.authService.Authorize(ctx.Context(), user); err != nil {
+	user, err := c.authService.Authorize(ctx.Context(), data)
+	if err != nil {
 		fiberErr := err.(*fiber.Error)
 		return ctx.Status(fiberErr.Code).JSON(&fiber.Map{
 			"status":  "failed",
@@ -26,5 +27,6 @@ func (c *authController) Authorize(ctx *fiber.Ctx) error {
 	return ctx.Status(200).JSON(&fiber.Map{
 		"status":  "success",
 		"message": "Authorized",
+		"data":    user,
 	})
 }

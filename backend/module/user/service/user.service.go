@@ -12,7 +12,7 @@ import (
 var _ IUserService = (*userService)(nil)
 
 type IUserService interface {
-	Create(ctx context.Context, dto interface{}) error
+	Create(ctx context.Context, dto interface{}) (*ent.User, error)
 	GetByID(ctx context.Context, id int64) (*ent.User, error)
 }
 

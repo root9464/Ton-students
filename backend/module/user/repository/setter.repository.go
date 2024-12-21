@@ -8,9 +8,9 @@ import (
 	tma "github.com/telegram-mini-apps/init-data-golang"
 )
 
-func (r *userRepository) Create(ctx context.Context, user *tma.InitData) error {
+func (r *userRepository) Create(ctx context.Context, user *tma.InitData) (*ent.User, error) {
 	r.logger.Info("Creating user...")
-	_, err := r.db.User.Create().
+	getUser, err := r.db.User.Create().
 		SetID(user.User.ID).
 		SetFirstName(user.User.FirstName).
 		SetLastName(user.User.LastName).
@@ -20,26 +20,26 @@ func (r *userRepository) Create(ctx context.Context, user *tma.InitData) error {
 		Save(ctx)
 	if err != nil {
 		r.logger.Errorf("Error creating user: %v", err)
-		return err
+		return nil, err
 	}
 	r.logger.Info("User create successfully")
-	return nil
+	return getUser, nil
 }
 
-func (r *userRepository) Update(ctx context.Context, user *tma.InitData) error {
-	err := r.db.User.UpdateOneID(user.User.ID).
+func (r *userRepository) Update(ctx context.Context, user *tma.InitData) (*ent.User, error) {
+	getUser, err := r.db.User.UpdateOneID(user.User.ID).
 		SetFirstName(user.User.FirstName).
 		SetLastName(user.User.LastName).
 		SetUsername(user.User.Username).
 		SetIsPremium(user.User.IsPremium).
-		Exec(ctx)
+		Save(ctx)
 
 	switch {
 	case ent.IsNotFound(err):
-		return fmt.Errorf("user not found")
+		return nil, fmt.Errorf("user not found")
 	case err != nil:
-		return err
+		return nil, err
 	}
 
-	return nil
+	return getUser, nil
 }
