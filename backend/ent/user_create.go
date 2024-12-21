@@ -25,30 +25,58 @@ func (uc *UserCreate) SetUsername(s string) *UserCreate {
 	return uc
 }
 
-// SetFirstName sets the "firstName" field.
-func (uc *UserCreate) SetFirstName(s string) *UserCreate {
-	uc.mutation.SetFirstName(s)
+// SetFirstname sets the "firstname" field.
+func (uc *UserCreate) SetFirstname(s string) *UserCreate {
+	uc.mutation.SetFirstname(s)
 	return uc
 }
 
-// SetNillableFirstName sets the "firstName" field if the given value is not nil.
-func (uc *UserCreate) SetNillableFirstName(s *string) *UserCreate {
+// SetNillableFirstname sets the "firstname" field if the given value is not nil.
+func (uc *UserCreate) SetNillableFirstname(s *string) *UserCreate {
 	if s != nil {
-		uc.SetFirstName(*s)
+		uc.SetFirstname(*s)
 	}
 	return uc
 }
 
-// SetLastName sets the "lastName" field.
-func (uc *UserCreate) SetLastName(s string) *UserCreate {
-	uc.mutation.SetLastName(s)
+// SetLastname sets the "lastname" field.
+func (uc *UserCreate) SetLastname(s string) *UserCreate {
+	uc.mutation.SetLastname(s)
 	return uc
 }
 
-// SetNillableLastName sets the "lastName" field if the given value is not nil.
-func (uc *UserCreate) SetNillableLastName(s *string) *UserCreate {
+// SetNillableLastname sets the "lastname" field if the given value is not nil.
+func (uc *UserCreate) SetNillableLastname(s *string) *UserCreate {
 	if s != nil {
-		uc.SetLastName(*s)
+		uc.SetLastname(*s)
+	}
+	return uc
+}
+
+// SetNickname sets the "nickname" field.
+func (uc *UserCreate) SetNickname(s string) *UserCreate {
+	uc.mutation.SetNickname(s)
+	return uc
+}
+
+// SetNillableNickname sets the "nickname" field if the given value is not nil.
+func (uc *UserCreate) SetNillableNickname(s *string) *UserCreate {
+	if s != nil {
+		uc.SetNickname(*s)
+	}
+	return uc
+}
+
+// SetSelectedName sets the "selectedName" field.
+func (uc *UserCreate) SetSelectedName(un user.SelectedName) *UserCreate {
+	uc.mutation.SetSelectedName(un)
+	return uc
+}
+
+// SetNillableSelectedName sets the "selectedName" field if the given value is not nil.
+func (uc *UserCreate) SetNillableSelectedName(un *user.SelectedName) *UserCreate {
+	if un != nil {
+		uc.SetSelectedName(*un)
 	}
 	return uc
 }
@@ -134,13 +162,21 @@ func (uc *UserCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (uc *UserCreate) defaults() {
-	if _, ok := uc.mutation.FirstName(); !ok {
-		v := user.DefaultFirstName
-		uc.mutation.SetFirstName(v)
+	if _, ok := uc.mutation.Firstname(); !ok {
+		v := user.DefaultFirstname
+		uc.mutation.SetFirstname(v)
 	}
-	if _, ok := uc.mutation.LastName(); !ok {
-		v := user.DefaultLastName
-		uc.mutation.SetLastName(v)
+	if _, ok := uc.mutation.Lastname(); !ok {
+		v := user.DefaultLastname
+		uc.mutation.SetLastname(v)
+	}
+	if _, ok := uc.mutation.Nickname(); !ok {
+		v := user.DefaultNickname
+		uc.mutation.SetNickname(v)
+	}
+	if _, ok := uc.mutation.SelectedName(); !ok {
+		v := user.DefaultSelectedName
+		uc.mutation.SetSelectedName(v)
 	}
 	if _, ok := uc.mutation.Role(); !ok {
 		v := user.DefaultRole
@@ -166,11 +202,22 @@ func (uc *UserCreate) check() error {
 			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
 		}
 	}
-	if _, ok := uc.mutation.FirstName(); !ok {
-		return &ValidationError{Name: "firstName", err: errors.New(`ent: missing required field "User.firstName"`)}
+	if _, ok := uc.mutation.Firstname(); !ok {
+		return &ValidationError{Name: "firstname", err: errors.New(`ent: missing required field "User.firstname"`)}
 	}
-	if _, ok := uc.mutation.LastName(); !ok {
-		return &ValidationError{Name: "lastName", err: errors.New(`ent: missing required field "User.lastName"`)}
+	if _, ok := uc.mutation.Lastname(); !ok {
+		return &ValidationError{Name: "lastname", err: errors.New(`ent: missing required field "User.lastname"`)}
+	}
+	if _, ok := uc.mutation.Nickname(); !ok {
+		return &ValidationError{Name: "nickname", err: errors.New(`ent: missing required field "User.nickname"`)}
+	}
+	if _, ok := uc.mutation.SelectedName(); !ok {
+		return &ValidationError{Name: "selectedName", err: errors.New(`ent: missing required field "User.selectedName"`)}
+	}
+	if v, ok := uc.mutation.SelectedName(); ok {
+		if err := user.SelectedNameValidator(v); err != nil {
+			return &ValidationError{Name: "selectedName", err: fmt.Errorf(`ent: validator failed for field "User.selectedName": %w`, err)}
+		}
 	}
 	if _, ok := uc.mutation.Role(); !ok {
 		return &ValidationError{Name: "role", err: errors.New(`ent: missing required field "User.role"`)}
@@ -230,13 +277,21 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldUsername, field.TypeString, value)
 		_node.Username = value
 	}
-	if value, ok := uc.mutation.FirstName(); ok {
-		_spec.SetField(user.FieldFirstName, field.TypeString, value)
-		_node.FirstName = value
+	if value, ok := uc.mutation.Firstname(); ok {
+		_spec.SetField(user.FieldFirstname, field.TypeString, value)
+		_node.Firstname = value
 	}
-	if value, ok := uc.mutation.LastName(); ok {
-		_spec.SetField(user.FieldLastName, field.TypeString, value)
-		_node.LastName = value
+	if value, ok := uc.mutation.Lastname(); ok {
+		_spec.SetField(user.FieldLastname, field.TypeString, value)
+		_node.Lastname = value
+	}
+	if value, ok := uc.mutation.Nickname(); ok {
+		_spec.SetField(user.FieldNickname, field.TypeString, value)
+		_node.Nickname = value
+	}
+	if value, ok := uc.mutation.SelectedName(); ok {
+		_spec.SetField(user.FieldSelectedName, field.TypeEnum, value)
+		_node.SelectedName = value
 	}
 	if value, ok := uc.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)

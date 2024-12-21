@@ -14,6 +14,7 @@ var _ IUserService = (*userService)(nil)
 type IUserService interface {
 	Create(ctx context.Context, dto interface{}) (*ent.User, error)
 	GetByID(ctx context.Context, id int64) (*ent.User, error)
+	// UpdateInfo(ctx context.Context, id int64, dto *user_dto.UpdateUserDto) (*ent.User, error)
 }
 
 type userService struct {

@@ -15,10 +15,14 @@ const (
 	FieldID = "id"
 	// FieldUsername holds the string denoting the username field in the database.
 	FieldUsername = "username"
-	// FieldFirstName holds the string denoting the firstname field in the database.
-	FieldFirstName = "first_name"
-	// FieldLastName holds the string denoting the lastname field in the database.
-	FieldLastName = "last_name"
+	// FieldFirstname holds the string denoting the firstname field in the database.
+	FieldFirstname = "firstname"
+	// FieldLastname holds the string denoting the lastname field in the database.
+	FieldLastname = "lastname"
+	// FieldNickname holds the string denoting the nickname field in the database.
+	FieldNickname = "nickname"
+	// FieldSelectedName holds the string denoting the selectedname field in the database.
+	FieldSelectedName = "selected_name"
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
 	// FieldInfo holds the string denoting the info field in the database.
@@ -35,8 +39,10 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldUsername,
-	FieldFirstName,
-	FieldLastName,
+	FieldFirstname,
+	FieldLastname,
+	FieldNickname,
+	FieldSelectedName,
 	FieldRole,
 	FieldInfo,
 	FieldIsPremium,
@@ -56,10 +62,12 @@ func ValidColumn(column string) bool {
 var (
 	// UsernameValidator is a validator for the "username" field. It is called by the builders before save.
 	UsernameValidator func(string) error
-	// DefaultFirstName holds the default value on creation for the "firstName" field.
-	DefaultFirstName string
-	// DefaultLastName holds the default value on creation for the "lastName" field.
-	DefaultLastName string
+	// DefaultFirstname holds the default value on creation for the "firstname" field.
+	DefaultFirstname string
+	// DefaultLastname holds the default value on creation for the "lastname" field.
+	DefaultLastname string
+	// DefaultNickname holds the default value on creation for the "nickname" field.
+	DefaultNickname string
 	// DefaultInfo holds the default value on creation for the "info" field.
 	DefaultInfo map[string]interface{}
 	// DefaultIsPremium holds the default value on creation for the "isPremium" field.
@@ -67,6 +75,34 @@ var (
 	// HashValidator is a validator for the "hash" field. It is called by the builders before save.
 	HashValidator func(string) error
 )
+
+// SelectedName defines the type for the "selectedName" enum field.
+type SelectedName string
+
+// SelectedNameUsername is the default value of the SelectedName enum.
+const DefaultSelectedName = SelectedNameUsername
+
+// SelectedName values.
+const (
+	SelectedNameFirstname SelectedName = "firstname"
+	SelectedNameLastname  SelectedName = "lastname"
+	SelectedNameNickname  SelectedName = "nickname"
+	SelectedNameUsername  SelectedName = "username"
+)
+
+func (sn SelectedName) String() string {
+	return string(sn)
+}
+
+// SelectedNameValidator is a validator for the "selectedName" field enum values. It is called by the builders before save.
+func SelectedNameValidator(sn SelectedName) error {
+	switch sn {
+	case SelectedNameFirstname, SelectedNameLastname, SelectedNameNickname, SelectedNameUsername:
+		return nil
+	default:
+		return fmt.Errorf("user: invalid enum value for selectedName field: %q", sn)
+	}
+}
 
 // Role defines the type for the "role" enum field.
 type Role string
@@ -109,14 +145,24 @@ func ByUsername(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUsername, opts...).ToFunc()
 }
 
-// ByFirstName orders the results by the firstName field.
-func ByFirstName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldFirstName, opts...).ToFunc()
+// ByFirstname orders the results by the firstname field.
+func ByFirstname(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFirstname, opts...).ToFunc()
 }
 
-// ByLastName orders the results by the lastName field.
-func ByLastName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldLastName, opts...).ToFunc()
+// ByLastname orders the results by the lastname field.
+func ByLastname(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLastname, opts...).ToFunc()
+}
+
+// ByNickname orders the results by the nickname field.
+func ByNickname(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNickname, opts...).ToFunc()
+}
+
+// BySelectedName orders the results by the selectedName field.
+func BySelectedName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSelectedName, opts...).ToFunc()
 }
 
 // ByRole orders the results by the role field.

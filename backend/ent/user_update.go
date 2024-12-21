@@ -41,30 +41,58 @@ func (uu *UserUpdate) SetNillableUsername(s *string) *UserUpdate {
 	return uu
 }
 
-// SetFirstName sets the "firstName" field.
-func (uu *UserUpdate) SetFirstName(s string) *UserUpdate {
-	uu.mutation.SetFirstName(s)
+// SetFirstname sets the "firstname" field.
+func (uu *UserUpdate) SetFirstname(s string) *UserUpdate {
+	uu.mutation.SetFirstname(s)
 	return uu
 }
 
-// SetNillableFirstName sets the "firstName" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableFirstName(s *string) *UserUpdate {
+// SetNillableFirstname sets the "firstname" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableFirstname(s *string) *UserUpdate {
 	if s != nil {
-		uu.SetFirstName(*s)
+		uu.SetFirstname(*s)
 	}
 	return uu
 }
 
-// SetLastName sets the "lastName" field.
-func (uu *UserUpdate) SetLastName(s string) *UserUpdate {
-	uu.mutation.SetLastName(s)
+// SetLastname sets the "lastname" field.
+func (uu *UserUpdate) SetLastname(s string) *UserUpdate {
+	uu.mutation.SetLastname(s)
 	return uu
 }
 
-// SetNillableLastName sets the "lastName" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableLastName(s *string) *UserUpdate {
+// SetNillableLastname sets the "lastname" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableLastname(s *string) *UserUpdate {
 	if s != nil {
-		uu.SetLastName(*s)
+		uu.SetLastname(*s)
+	}
+	return uu
+}
+
+// SetNickname sets the "nickname" field.
+func (uu *UserUpdate) SetNickname(s string) *UserUpdate {
+	uu.mutation.SetNickname(s)
+	return uu
+}
+
+// SetNillableNickname sets the "nickname" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableNickname(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetNickname(*s)
+	}
+	return uu
+}
+
+// SetSelectedName sets the "selectedName" field.
+func (uu *UserUpdate) SetSelectedName(un user.SelectedName) *UserUpdate {
+	uu.mutation.SetSelectedName(un)
+	return uu
+}
+
+// SetNillableSelectedName sets the "selectedName" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableSelectedName(un *user.SelectedName) *UserUpdate {
+	if un != nil {
+		uu.SetSelectedName(*un)
 	}
 	return uu
 }
@@ -156,6 +184,11 @@ func (uu *UserUpdate) check() error {
 			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
 		}
 	}
+	if v, ok := uu.mutation.SelectedName(); ok {
+		if err := user.SelectedNameValidator(v); err != nil {
+			return &ValidationError{Name: "selectedName", err: fmt.Errorf(`ent: validator failed for field "User.selectedName": %w`, err)}
+		}
+	}
 	if v, ok := uu.mutation.Role(); ok {
 		if err := user.RoleValidator(v); err != nil {
 			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
@@ -184,11 +217,17 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := uu.mutation.Username(); ok {
 		_spec.SetField(user.FieldUsername, field.TypeString, value)
 	}
-	if value, ok := uu.mutation.FirstName(); ok {
-		_spec.SetField(user.FieldFirstName, field.TypeString, value)
+	if value, ok := uu.mutation.Firstname(); ok {
+		_spec.SetField(user.FieldFirstname, field.TypeString, value)
 	}
-	if value, ok := uu.mutation.LastName(); ok {
-		_spec.SetField(user.FieldLastName, field.TypeString, value)
+	if value, ok := uu.mutation.Lastname(); ok {
+		_spec.SetField(user.FieldLastname, field.TypeString, value)
+	}
+	if value, ok := uu.mutation.Nickname(); ok {
+		_spec.SetField(user.FieldNickname, field.TypeString, value)
+	}
+	if value, ok := uu.mutation.SelectedName(); ok {
+		_spec.SetField(user.FieldSelectedName, field.TypeEnum, value)
 	}
 	if value, ok := uu.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
@@ -236,30 +275,58 @@ func (uuo *UserUpdateOne) SetNillableUsername(s *string) *UserUpdateOne {
 	return uuo
 }
 
-// SetFirstName sets the "firstName" field.
-func (uuo *UserUpdateOne) SetFirstName(s string) *UserUpdateOne {
-	uuo.mutation.SetFirstName(s)
+// SetFirstname sets the "firstname" field.
+func (uuo *UserUpdateOne) SetFirstname(s string) *UserUpdateOne {
+	uuo.mutation.SetFirstname(s)
 	return uuo
 }
 
-// SetNillableFirstName sets the "firstName" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableFirstName(s *string) *UserUpdateOne {
+// SetNillableFirstname sets the "firstname" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableFirstname(s *string) *UserUpdateOne {
 	if s != nil {
-		uuo.SetFirstName(*s)
+		uuo.SetFirstname(*s)
 	}
 	return uuo
 }
 
-// SetLastName sets the "lastName" field.
-func (uuo *UserUpdateOne) SetLastName(s string) *UserUpdateOne {
-	uuo.mutation.SetLastName(s)
+// SetLastname sets the "lastname" field.
+func (uuo *UserUpdateOne) SetLastname(s string) *UserUpdateOne {
+	uuo.mutation.SetLastname(s)
 	return uuo
 }
 
-// SetNillableLastName sets the "lastName" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableLastName(s *string) *UserUpdateOne {
+// SetNillableLastname sets the "lastname" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableLastname(s *string) *UserUpdateOne {
 	if s != nil {
-		uuo.SetLastName(*s)
+		uuo.SetLastname(*s)
+	}
+	return uuo
+}
+
+// SetNickname sets the "nickname" field.
+func (uuo *UserUpdateOne) SetNickname(s string) *UserUpdateOne {
+	uuo.mutation.SetNickname(s)
+	return uuo
+}
+
+// SetNillableNickname sets the "nickname" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableNickname(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetNickname(*s)
+	}
+	return uuo
+}
+
+// SetSelectedName sets the "selectedName" field.
+func (uuo *UserUpdateOne) SetSelectedName(un user.SelectedName) *UserUpdateOne {
+	uuo.mutation.SetSelectedName(un)
+	return uuo
+}
+
+// SetNillableSelectedName sets the "selectedName" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableSelectedName(un *user.SelectedName) *UserUpdateOne {
+	if un != nil {
+		uuo.SetSelectedName(*un)
 	}
 	return uuo
 }
@@ -364,6 +431,11 @@ func (uuo *UserUpdateOne) check() error {
 			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
 		}
 	}
+	if v, ok := uuo.mutation.SelectedName(); ok {
+		if err := user.SelectedNameValidator(v); err != nil {
+			return &ValidationError{Name: "selectedName", err: fmt.Errorf(`ent: validator failed for field "User.selectedName": %w`, err)}
+		}
+	}
 	if v, ok := uuo.mutation.Role(); ok {
 		if err := user.RoleValidator(v); err != nil {
 			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
@@ -409,11 +481,17 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if value, ok := uuo.mutation.Username(); ok {
 		_spec.SetField(user.FieldUsername, field.TypeString, value)
 	}
-	if value, ok := uuo.mutation.FirstName(); ok {
-		_spec.SetField(user.FieldFirstName, field.TypeString, value)
+	if value, ok := uuo.mutation.Firstname(); ok {
+		_spec.SetField(user.FieldFirstname, field.TypeString, value)
 	}
-	if value, ok := uuo.mutation.LastName(); ok {
-		_spec.SetField(user.FieldLastName, field.TypeString, value)
+	if value, ok := uuo.mutation.Lastname(); ok {
+		_spec.SetField(user.FieldLastname, field.TypeString, value)
+	}
+	if value, ok := uuo.mutation.Nickname(); ok {
+		_spec.SetField(user.FieldNickname, field.TypeString, value)
+	}
+	if value, ok := uuo.mutation.SelectedName(); ok {
+		_spec.SetField(user.FieldSelectedName, field.TypeEnum, value)
 	}
 	if value, ok := uuo.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)

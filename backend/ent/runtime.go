@@ -17,24 +17,28 @@ func init() {
 	userDescUsername := userFields[1].Descriptor()
 	// user.UsernameValidator is a validator for the "username" field. It is called by the builders before save.
 	user.UsernameValidator = userDescUsername.Validators[0].(func(string) error)
-	// userDescFirstName is the schema descriptor for firstName field.
-	userDescFirstName := userFields[2].Descriptor()
-	// user.DefaultFirstName holds the default value on creation for the firstName field.
-	user.DefaultFirstName = userDescFirstName.Default.(string)
-	// userDescLastName is the schema descriptor for lastName field.
-	userDescLastName := userFields[3].Descriptor()
-	// user.DefaultLastName holds the default value on creation for the lastName field.
-	user.DefaultLastName = userDescLastName.Default.(string)
+	// userDescFirstname is the schema descriptor for firstname field.
+	userDescFirstname := userFields[2].Descriptor()
+	// user.DefaultFirstname holds the default value on creation for the firstname field.
+	user.DefaultFirstname = userDescFirstname.Default.(string)
+	// userDescLastname is the schema descriptor for lastname field.
+	userDescLastname := userFields[3].Descriptor()
+	// user.DefaultLastname holds the default value on creation for the lastname field.
+	user.DefaultLastname = userDescLastname.Default.(string)
+	// userDescNickname is the schema descriptor for nickname field.
+	userDescNickname := userFields[4].Descriptor()
+	// user.DefaultNickname holds the default value on creation for the nickname field.
+	user.DefaultNickname = userDescNickname.Default.(string)
 	// userDescInfo is the schema descriptor for info field.
-	userDescInfo := userFields[5].Descriptor()
+	userDescInfo := userFields[7].Descriptor()
 	// user.DefaultInfo holds the default value on creation for the info field.
 	user.DefaultInfo = userDescInfo.Default.(map[string]interface{})
 	// userDescIsPremium is the schema descriptor for isPremium field.
-	userDescIsPremium := userFields[6].Descriptor()
+	userDescIsPremium := userFields[8].Descriptor()
 	// user.DefaultIsPremium holds the default value on creation for the isPremium field.
 	user.DefaultIsPremium = userDescIsPremium.Default.(bool)
 	// userDescHash is the schema descriptor for hash field.
-	userDescHash := userFields[7].Descriptor()
+	userDescHash := userFields[9].Descriptor()
 	// user.HashValidator is a validator for the "hash" field. It is called by the builders before save.
 	user.HashValidator = func() func(string) error {
 		validators := userDescHash.Validators

@@ -7,6 +7,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/root9464/Ton-students/ent"
 	user_dto "github.com/root9464/Ton-students/module/user/dto"
+	"github.com/root9464/Ton-students/shared/utils"
 	initdata "github.com/telegram-mini-apps/init-data-golang"
 )
 
@@ -38,13 +39,30 @@ func (s *userService) Create(ctx context.Context, dto interface{}) (*ent.User, e
 		}
 	}
 
-	s.logger.Infof("initData: %v", initData.User.ID)
+	srcUser := user_dto.SrcUser{
+		FirstName:    initData.User.FirstName,
+		ID:           initData.User.ID,
+		IsBot:        initData.User.IsBot,
+		IsPremium:    initData.User.IsPremium,
+		LastName:     initData.User.LastName,
+		UserName:     initData.User.Username,
+		LanguageCode: initData.User.LanguageCode,
+		PhotoURL:     initData.User.PhotoURL,
+		Hash:         initData.Hash,
+	}
 
-	user, err := s.repo.Update(ctx, &initData)
+	modelUser := new(ent.User)
+	if err := utils.DtoToModel(&srcUser, modelUser); err != nil {
+		return nil, err
+	}
+
+	s.logger.Infof("%v", modelUser)
+
+	user, err := s.repo.Update(ctx, modelUser)
 	if err != nil {
 		if err.Error() == "user not found" {
 			s.logger.Info("User not found create")
-			user, err := s.repo.Create(ctx, &initData)
+			user, err := s.repo.Create(ctx, modelUser)
 			if err != nil {
 				s.logger.Warnf("create user error: %s", err.Error())
 				return nil, &fiber.Error{
@@ -62,3 +80,24 @@ func (s *userService) Create(ctx context.Context, dto interface{}) (*ent.User, e
 
 	return user, nil
 }
+
+// func (s *userService) UpdateInfo(ctx context.Context, id int64, dto *user_dto.UpdateUserDto) (*ent.User, error) {
+// 	if err := s.validator.Struct(dto); err != nil {
+// 		s.logger.Warnf("validate error: %s", err.Error())
+// 		return nil, &fiber.Error{
+// 			Code:    400,
+// 			Message: err.Error(),
+// 		}
+// 	}
+//
+// 	user, err := s.repo.Update(ctx, id, dto)
+// 	if err != nil {
+// 		s.logger.Warnf("update user error: %s", err.Error())
+// 		return nil, &fiber.Error{
+// 			Code:    500,
+// 			Message: err.Error(),
+// 		}
+// 	}
+//
+// 	return nil, nil
+// }

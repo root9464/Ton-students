@@ -33,8 +33,10 @@ type UserMutation struct {
 	typ           string
 	id            *int64
 	username      *string
-	firstName     *string
-	lastName      *string
+	firstname     *string
+	lastname      *string
+	nickname      *string
+	selectedName  *user.SelectedName
 	role          *user.Role
 	info          *map[string]interface{}
 	isPremium     *bool
@@ -185,76 +187,148 @@ func (m *UserMutation) ResetUsername() {
 	m.username = nil
 }
 
-// SetFirstName sets the "firstName" field.
-func (m *UserMutation) SetFirstName(s string) {
-	m.firstName = &s
+// SetFirstname sets the "firstname" field.
+func (m *UserMutation) SetFirstname(s string) {
+	m.firstname = &s
 }
 
-// FirstName returns the value of the "firstName" field in the mutation.
-func (m *UserMutation) FirstName() (r string, exists bool) {
-	v := m.firstName
+// Firstname returns the value of the "firstname" field in the mutation.
+func (m *UserMutation) Firstname() (r string, exists bool) {
+	v := m.firstname
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldFirstName returns the old "firstName" field's value of the User entity.
+// OldFirstname returns the old "firstname" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldFirstName(ctx context.Context) (v string, err error) {
+func (m *UserMutation) OldFirstname(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldFirstName is only allowed on UpdateOne operations")
+		return v, errors.New("OldFirstname is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldFirstName requires an ID field in the mutation")
+		return v, errors.New("OldFirstname requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldFirstName: %w", err)
+		return v, fmt.Errorf("querying old value for OldFirstname: %w", err)
 	}
-	return oldValue.FirstName, nil
+	return oldValue.Firstname, nil
 }
 
-// ResetFirstName resets all changes to the "firstName" field.
-func (m *UserMutation) ResetFirstName() {
-	m.firstName = nil
+// ResetFirstname resets all changes to the "firstname" field.
+func (m *UserMutation) ResetFirstname() {
+	m.firstname = nil
 }
 
-// SetLastName sets the "lastName" field.
-func (m *UserMutation) SetLastName(s string) {
-	m.lastName = &s
+// SetLastname sets the "lastname" field.
+func (m *UserMutation) SetLastname(s string) {
+	m.lastname = &s
 }
 
-// LastName returns the value of the "lastName" field in the mutation.
-func (m *UserMutation) LastName() (r string, exists bool) {
-	v := m.lastName
+// Lastname returns the value of the "lastname" field in the mutation.
+func (m *UserMutation) Lastname() (r string, exists bool) {
+	v := m.lastname
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldLastName returns the old "lastName" field's value of the User entity.
+// OldLastname returns the old "lastname" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldLastName(ctx context.Context) (v string, err error) {
+func (m *UserMutation) OldLastname(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldLastName is only allowed on UpdateOne operations")
+		return v, errors.New("OldLastname is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldLastName requires an ID field in the mutation")
+		return v, errors.New("OldLastname requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldLastName: %w", err)
+		return v, fmt.Errorf("querying old value for OldLastname: %w", err)
 	}
-	return oldValue.LastName, nil
+	return oldValue.Lastname, nil
 }
 
-// ResetLastName resets all changes to the "lastName" field.
-func (m *UserMutation) ResetLastName() {
-	m.lastName = nil
+// ResetLastname resets all changes to the "lastname" field.
+func (m *UserMutation) ResetLastname() {
+	m.lastname = nil
+}
+
+// SetNickname sets the "nickname" field.
+func (m *UserMutation) SetNickname(s string) {
+	m.nickname = &s
+}
+
+// Nickname returns the value of the "nickname" field in the mutation.
+func (m *UserMutation) Nickname() (r string, exists bool) {
+	v := m.nickname
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNickname returns the old "nickname" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldNickname(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNickname is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNickname requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNickname: %w", err)
+	}
+	return oldValue.Nickname, nil
+}
+
+// ResetNickname resets all changes to the "nickname" field.
+func (m *UserMutation) ResetNickname() {
+	m.nickname = nil
+}
+
+// SetSelectedName sets the "selectedName" field.
+func (m *UserMutation) SetSelectedName(un user.SelectedName) {
+	m.selectedName = &un
+}
+
+// SelectedName returns the value of the "selectedName" field in the mutation.
+func (m *UserMutation) SelectedName() (r user.SelectedName, exists bool) {
+	v := m.selectedName
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSelectedName returns the old "selectedName" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldSelectedName(ctx context.Context) (v user.SelectedName, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSelectedName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSelectedName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSelectedName: %w", err)
+	}
+	return oldValue.SelectedName, nil
+}
+
+// ResetSelectedName resets all changes to the "selectedName" field.
+func (m *UserMutation) ResetSelectedName() {
+	m.selectedName = nil
 }
 
 // SetRole sets the "role" field.
@@ -435,15 +509,21 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 9)
 	if m.username != nil {
 		fields = append(fields, user.FieldUsername)
 	}
-	if m.firstName != nil {
-		fields = append(fields, user.FieldFirstName)
+	if m.firstname != nil {
+		fields = append(fields, user.FieldFirstname)
 	}
-	if m.lastName != nil {
-		fields = append(fields, user.FieldLastName)
+	if m.lastname != nil {
+		fields = append(fields, user.FieldLastname)
+	}
+	if m.nickname != nil {
+		fields = append(fields, user.FieldNickname)
+	}
+	if m.selectedName != nil {
+		fields = append(fields, user.FieldSelectedName)
 	}
 	if m.role != nil {
 		fields = append(fields, user.FieldRole)
@@ -467,10 +547,14 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case user.FieldUsername:
 		return m.Username()
-	case user.FieldFirstName:
-		return m.FirstName()
-	case user.FieldLastName:
-		return m.LastName()
+	case user.FieldFirstname:
+		return m.Firstname()
+	case user.FieldLastname:
+		return m.Lastname()
+	case user.FieldNickname:
+		return m.Nickname()
+	case user.FieldSelectedName:
+		return m.SelectedName()
 	case user.FieldRole:
 		return m.Role()
 	case user.FieldInfo:
@@ -490,10 +574,14 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 	switch name {
 	case user.FieldUsername:
 		return m.OldUsername(ctx)
-	case user.FieldFirstName:
-		return m.OldFirstName(ctx)
-	case user.FieldLastName:
-		return m.OldLastName(ctx)
+	case user.FieldFirstname:
+		return m.OldFirstname(ctx)
+	case user.FieldLastname:
+		return m.OldLastname(ctx)
+	case user.FieldNickname:
+		return m.OldNickname(ctx)
+	case user.FieldSelectedName:
+		return m.OldSelectedName(ctx)
 	case user.FieldRole:
 		return m.OldRole(ctx)
 	case user.FieldInfo:
@@ -518,19 +606,33 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUsername(v)
 		return nil
-	case user.FieldFirstName:
+	case user.FieldFirstname:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetFirstName(v)
+		m.SetFirstname(v)
 		return nil
-	case user.FieldLastName:
+	case user.FieldLastname:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetLastName(v)
+		m.SetLastname(v)
+		return nil
+	case user.FieldNickname:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNickname(v)
+		return nil
+	case user.FieldSelectedName:
+		v, ok := value.(user.SelectedName)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSelectedName(v)
 		return nil
 	case user.FieldRole:
 		v, ok := value.(user.Role)
@@ -612,11 +714,17 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldUsername:
 		m.ResetUsername()
 		return nil
-	case user.FieldFirstName:
-		m.ResetFirstName()
+	case user.FieldFirstname:
+		m.ResetFirstname()
 		return nil
-	case user.FieldLastName:
-		m.ResetLastName()
+	case user.FieldLastname:
+		m.ResetLastname()
+		return nil
+	case user.FieldNickname:
+		m.ResetNickname()
+		return nil
+	case user.FieldSelectedName:
+		m.ResetSelectedName()
 		return nil
 	case user.FieldRole:
 		m.ResetRole()

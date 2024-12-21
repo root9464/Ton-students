@@ -57,14 +57,19 @@ func Username(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldUsername, v))
 }
 
-// FirstName applies equality check predicate on the "firstName" field. It's identical to FirstNameEQ.
-func FirstName(v string) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldFirstName, v))
+// Firstname applies equality check predicate on the "firstname" field. It's identical to FirstnameEQ.
+func Firstname(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldFirstname, v))
 }
 
-// LastName applies equality check predicate on the "lastName" field. It's identical to LastNameEQ.
-func LastName(v string) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldLastName, v))
+// Lastname applies equality check predicate on the "lastname" field. It's identical to LastnameEQ.
+func Lastname(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldLastname, v))
+}
+
+// Nickname applies equality check predicate on the "nickname" field. It's identical to NicknameEQ.
+func Nickname(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldNickname, v))
 }
 
 // IsPremium applies equality check predicate on the "isPremium" field. It's identical to IsPremiumEQ.
@@ -142,134 +147,219 @@ func UsernameContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldUsername, v))
 }
 
-// FirstNameEQ applies the EQ predicate on the "firstName" field.
-func FirstNameEQ(v string) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldFirstName, v))
+// FirstnameEQ applies the EQ predicate on the "firstname" field.
+func FirstnameEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldFirstname, v))
 }
 
-// FirstNameNEQ applies the NEQ predicate on the "firstName" field.
-func FirstNameNEQ(v string) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldFirstName, v))
+// FirstnameNEQ applies the NEQ predicate on the "firstname" field.
+func FirstnameNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldFirstname, v))
 }
 
-// FirstNameIn applies the In predicate on the "firstName" field.
-func FirstNameIn(vs ...string) predicate.User {
-	return predicate.User(sql.FieldIn(FieldFirstName, vs...))
+// FirstnameIn applies the In predicate on the "firstname" field.
+func FirstnameIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldFirstname, vs...))
 }
 
-// FirstNameNotIn applies the NotIn predicate on the "firstName" field.
-func FirstNameNotIn(vs ...string) predicate.User {
-	return predicate.User(sql.FieldNotIn(FieldFirstName, vs...))
+// FirstnameNotIn applies the NotIn predicate on the "firstname" field.
+func FirstnameNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldFirstname, vs...))
 }
 
-// FirstNameGT applies the GT predicate on the "firstName" field.
-func FirstNameGT(v string) predicate.User {
-	return predicate.User(sql.FieldGT(FieldFirstName, v))
+// FirstnameGT applies the GT predicate on the "firstname" field.
+func FirstnameGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldFirstname, v))
 }
 
-// FirstNameGTE applies the GTE predicate on the "firstName" field.
-func FirstNameGTE(v string) predicate.User {
-	return predicate.User(sql.FieldGTE(FieldFirstName, v))
+// FirstnameGTE applies the GTE predicate on the "firstname" field.
+func FirstnameGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldFirstname, v))
 }
 
-// FirstNameLT applies the LT predicate on the "firstName" field.
-func FirstNameLT(v string) predicate.User {
-	return predicate.User(sql.FieldLT(FieldFirstName, v))
+// FirstnameLT applies the LT predicate on the "firstname" field.
+func FirstnameLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldFirstname, v))
 }
 
-// FirstNameLTE applies the LTE predicate on the "firstName" field.
-func FirstNameLTE(v string) predicate.User {
-	return predicate.User(sql.FieldLTE(FieldFirstName, v))
+// FirstnameLTE applies the LTE predicate on the "firstname" field.
+func FirstnameLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldFirstname, v))
 }
 
-// FirstNameContains applies the Contains predicate on the "firstName" field.
-func FirstNameContains(v string) predicate.User {
-	return predicate.User(sql.FieldContains(FieldFirstName, v))
+// FirstnameContains applies the Contains predicate on the "firstname" field.
+func FirstnameContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldFirstname, v))
 }
 
-// FirstNameHasPrefix applies the HasPrefix predicate on the "firstName" field.
-func FirstNameHasPrefix(v string) predicate.User {
-	return predicate.User(sql.FieldHasPrefix(FieldFirstName, v))
+// FirstnameHasPrefix applies the HasPrefix predicate on the "firstname" field.
+func FirstnameHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldFirstname, v))
 }
 
-// FirstNameHasSuffix applies the HasSuffix predicate on the "firstName" field.
-func FirstNameHasSuffix(v string) predicate.User {
-	return predicate.User(sql.FieldHasSuffix(FieldFirstName, v))
+// FirstnameHasSuffix applies the HasSuffix predicate on the "firstname" field.
+func FirstnameHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldFirstname, v))
 }
 
-// FirstNameEqualFold applies the EqualFold predicate on the "firstName" field.
-func FirstNameEqualFold(v string) predicate.User {
-	return predicate.User(sql.FieldEqualFold(FieldFirstName, v))
+// FirstnameEqualFold applies the EqualFold predicate on the "firstname" field.
+func FirstnameEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldFirstname, v))
 }
 
-// FirstNameContainsFold applies the ContainsFold predicate on the "firstName" field.
-func FirstNameContainsFold(v string) predicate.User {
-	return predicate.User(sql.FieldContainsFold(FieldFirstName, v))
+// FirstnameContainsFold applies the ContainsFold predicate on the "firstname" field.
+func FirstnameContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldFirstname, v))
 }
 
-// LastNameEQ applies the EQ predicate on the "lastName" field.
-func LastNameEQ(v string) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldLastName, v))
+// LastnameEQ applies the EQ predicate on the "lastname" field.
+func LastnameEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldLastname, v))
 }
 
-// LastNameNEQ applies the NEQ predicate on the "lastName" field.
-func LastNameNEQ(v string) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldLastName, v))
+// LastnameNEQ applies the NEQ predicate on the "lastname" field.
+func LastnameNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldLastname, v))
 }
 
-// LastNameIn applies the In predicate on the "lastName" field.
-func LastNameIn(vs ...string) predicate.User {
-	return predicate.User(sql.FieldIn(FieldLastName, vs...))
+// LastnameIn applies the In predicate on the "lastname" field.
+func LastnameIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldLastname, vs...))
 }
 
-// LastNameNotIn applies the NotIn predicate on the "lastName" field.
-func LastNameNotIn(vs ...string) predicate.User {
-	return predicate.User(sql.FieldNotIn(FieldLastName, vs...))
+// LastnameNotIn applies the NotIn predicate on the "lastname" field.
+func LastnameNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldLastname, vs...))
 }
 
-// LastNameGT applies the GT predicate on the "lastName" field.
-func LastNameGT(v string) predicate.User {
-	return predicate.User(sql.FieldGT(FieldLastName, v))
+// LastnameGT applies the GT predicate on the "lastname" field.
+func LastnameGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldLastname, v))
 }
 
-// LastNameGTE applies the GTE predicate on the "lastName" field.
-func LastNameGTE(v string) predicate.User {
-	return predicate.User(sql.FieldGTE(FieldLastName, v))
+// LastnameGTE applies the GTE predicate on the "lastname" field.
+func LastnameGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldLastname, v))
 }
 
-// LastNameLT applies the LT predicate on the "lastName" field.
-func LastNameLT(v string) predicate.User {
-	return predicate.User(sql.FieldLT(FieldLastName, v))
+// LastnameLT applies the LT predicate on the "lastname" field.
+func LastnameLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldLastname, v))
 }
 
-// LastNameLTE applies the LTE predicate on the "lastName" field.
-func LastNameLTE(v string) predicate.User {
-	return predicate.User(sql.FieldLTE(FieldLastName, v))
+// LastnameLTE applies the LTE predicate on the "lastname" field.
+func LastnameLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldLastname, v))
 }
 
-// LastNameContains applies the Contains predicate on the "lastName" field.
-func LastNameContains(v string) predicate.User {
-	return predicate.User(sql.FieldContains(FieldLastName, v))
+// LastnameContains applies the Contains predicate on the "lastname" field.
+func LastnameContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldLastname, v))
 }
 
-// LastNameHasPrefix applies the HasPrefix predicate on the "lastName" field.
-func LastNameHasPrefix(v string) predicate.User {
-	return predicate.User(sql.FieldHasPrefix(FieldLastName, v))
+// LastnameHasPrefix applies the HasPrefix predicate on the "lastname" field.
+func LastnameHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldLastname, v))
 }
 
-// LastNameHasSuffix applies the HasSuffix predicate on the "lastName" field.
-func LastNameHasSuffix(v string) predicate.User {
-	return predicate.User(sql.FieldHasSuffix(FieldLastName, v))
+// LastnameHasSuffix applies the HasSuffix predicate on the "lastname" field.
+func LastnameHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldLastname, v))
 }
 
-// LastNameEqualFold applies the EqualFold predicate on the "lastName" field.
-func LastNameEqualFold(v string) predicate.User {
-	return predicate.User(sql.FieldEqualFold(FieldLastName, v))
+// LastnameEqualFold applies the EqualFold predicate on the "lastname" field.
+func LastnameEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldLastname, v))
 }
 
-// LastNameContainsFold applies the ContainsFold predicate on the "lastName" field.
-func LastNameContainsFold(v string) predicate.User {
-	return predicate.User(sql.FieldContainsFold(FieldLastName, v))
+// LastnameContainsFold applies the ContainsFold predicate on the "lastname" field.
+func LastnameContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldLastname, v))
+}
+
+// NicknameEQ applies the EQ predicate on the "nickname" field.
+func NicknameEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldNickname, v))
+}
+
+// NicknameNEQ applies the NEQ predicate on the "nickname" field.
+func NicknameNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldNickname, v))
+}
+
+// NicknameIn applies the In predicate on the "nickname" field.
+func NicknameIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldNickname, vs...))
+}
+
+// NicknameNotIn applies the NotIn predicate on the "nickname" field.
+func NicknameNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldNickname, vs...))
+}
+
+// NicknameGT applies the GT predicate on the "nickname" field.
+func NicknameGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldNickname, v))
+}
+
+// NicknameGTE applies the GTE predicate on the "nickname" field.
+func NicknameGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldNickname, v))
+}
+
+// NicknameLT applies the LT predicate on the "nickname" field.
+func NicknameLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldNickname, v))
+}
+
+// NicknameLTE applies the LTE predicate on the "nickname" field.
+func NicknameLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldNickname, v))
+}
+
+// NicknameContains applies the Contains predicate on the "nickname" field.
+func NicknameContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldNickname, v))
+}
+
+// NicknameHasPrefix applies the HasPrefix predicate on the "nickname" field.
+func NicknameHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldNickname, v))
+}
+
+// NicknameHasSuffix applies the HasSuffix predicate on the "nickname" field.
+func NicknameHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldNickname, v))
+}
+
+// NicknameEqualFold applies the EqualFold predicate on the "nickname" field.
+func NicknameEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldNickname, v))
+}
+
+// NicknameContainsFold applies the ContainsFold predicate on the "nickname" field.
+func NicknameContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldNickname, v))
+}
+
+// SelectedNameEQ applies the EQ predicate on the "selectedName" field.
+func SelectedNameEQ(v SelectedName) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldSelectedName, v))
+}
+
+// SelectedNameNEQ applies the NEQ predicate on the "selectedName" field.
+func SelectedNameNEQ(v SelectedName) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldSelectedName, v))
+}
+
+// SelectedNameIn applies the In predicate on the "selectedName" field.
+func SelectedNameIn(vs ...SelectedName) predicate.User {
+	return predicate.User(sql.FieldIn(FieldSelectedName, vs...))
+}
+
+// SelectedNameNotIn applies the NotIn predicate on the "selectedName" field.
+func SelectedNameNotIn(vs ...SelectedName) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldSelectedName, vs...))
 }
 
 // RoleEQ applies the EQ predicate on the "role" field.
