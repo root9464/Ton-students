@@ -20,7 +20,7 @@ func (s *authService) Authorize(ctx context.Context, dto *auth_dto.AutorizeDto) 
 	}
 
 	botToken := s.config.TelegramBotToken
-	expIn := 240 * time.Hour
+	expIn := 24 * time.Hour
 
 	if err := initdata.Validate(dto.InitDataRaw, botToken, expIn); err != nil {
 		s.logger.Warnf("validate error: %s", err.Error())
@@ -30,7 +30,9 @@ func (s *authService) Authorize(ctx context.Context, dto *auth_dto.AutorizeDto) 
 		}
 	}
 
-	if err := s.userService.Create(ctx, &user_dto.CreateUserDto{InitDataRaw: dto.InitDataRaw}); err != nil {
+	if err := s.userService.Create(ctx, dto); err != nil {
+		s.logger.Warnf("create user error: %s", err.Error())
+		return err
 	}
 
 	return nil

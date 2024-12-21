@@ -3,6 +3,7 @@ package user_module
 import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/root9464/Ton-students/ent"
 	user_controller "github.com/root9464/Ton-students/module/user/controller"
 	user_repository "github.com/root9464/Ton-students/module/user/repository"
 	user_service "github.com/root9464/Ton-students/module/user/service"
@@ -16,21 +17,24 @@ type UserModule struct {
 
 	logger    *logger.Logger
 	validator *validator.Validate
+	db        *ent.Client
 }
 
 func NewUserModule(
 	logger *logger.Logger,
 	validator *validator.Validate,
+	db *ent.Client,
 ) *UserModule {
 	return &UserModule{
 		logger:    logger,
 		validator: validator,
+		db:        db,
 	}
 }
 
 func (m *UserModule) UserRepo() user_repository.IUserRepository {
 	if m.userRepo == nil {
-		m.userRepo = user_repository.NewUserRepository(nil, m.logger)
+		m.userRepo = user_repository.NewUserRepository(m.db, m.logger)
 	}
 	return m.userRepo
 }
