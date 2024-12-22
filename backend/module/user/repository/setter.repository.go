@@ -5,17 +5,16 @@ import (
 	"fmt"
 
 	"github.com/root9464/Ton-students/ent"
-	tma "github.com/telegram-mini-apps/init-data-golang"
 )
 
-func (r *userRepository) Create(ctx context.Context, user *tma.InitData) (*ent.User, error) {
+func (r *userRepository) Create(ctx context.Context, user *ent.User) (*ent.User, error) {
 	r.logger.Info("Creating user...")
 	getUser, err := r.db.User.Create().
-		SetID(user.User.ID).
-		SetFirstname(user.User.FirstName).
-		SetLastname(user.User.LastName).
-		SetUsername(user.User.Username).
-		SetIsPremium(user.User.IsPremium).
+		SetID(user.ID).
+		SetFirstname(user.Firstname).
+		SetLastname(user.Lastname).
+		SetUsername(user.Username).
+		SetIsPremium(user.IsPremium).
 		SetHash(user.Hash).
 		Save(ctx)
 	if err != nil {
@@ -26,12 +25,12 @@ func (r *userRepository) Create(ctx context.Context, user *tma.InitData) (*ent.U
 	return getUser, nil
 }
 
-func (r *userRepository) Update(ctx context.Context, user *tma.InitData) (*ent.User, error) {
-	getUser, err := r.db.User.UpdateOneID(user.User.ID).
-		SetFirstname(user.User.FirstName).
-		SetLastname(user.User.LastName).
-		SetUsername(user.User.Username).
-		SetIsPremium(user.User.IsPremium).
+func (r *userRepository) Update(ctx context.Context, user *ent.User) (*ent.User, error) {
+	getUser, err := r.db.User.UpdateOneID(user.ID).
+		SetFirstname(user.Firstname).
+		SetLastname(user.Lastname).
+		SetUsername(user.Username).
+		SetIsPremium(user.IsPremium).
 		Save(ctx)
 
 	switch {

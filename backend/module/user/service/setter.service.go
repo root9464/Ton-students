@@ -7,6 +7,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/root9464/Ton-students/ent"
 	user_dto "github.com/root9464/Ton-students/module/user/dto"
+	"github.com/root9464/Ton-students/shared/utils"
 	initdata "github.com/telegram-mini-apps/init-data-golang"
 )
 
@@ -38,27 +39,35 @@ func (s *userService) Create(ctx context.Context, dto interface{}) (*ent.User, e
 		}
 	}
 
-	s.logger.Infof("initData: %v", initData.User.ID)
-
-	user, err := s.repo.Update(ctx, &initData)
+	convert, err := utils.ConvertDtoToEntity[ent.User](&initData)
 	if err != nil {
-		if err.Error() == "user not found" {
-			s.logger.Info("User not found create")
-			user, err := s.repo.Create(ctx, &initData)
-			if err != nil {
-				s.logger.Warnf("create user error: %s", err.Error())
-				return nil, &fiber.Error{
-					Code:    500,
-					Message: err.Error(),
-				}
-			}
-			return user, nil
-		}
 		return nil, &fiber.Error{
-			Code:    500,
+			Code:    400,
 			Message: err.Error(),
 		}
 	}
 
-	return user, nil
+	s.logger.Infof("initData: %v", initData.User.ID)
+
+	// user, err := s.repo.Update(ctx, convert)
+	// if err != nil {
+	// 	if err.Error() == "user not found" {
+	// 		s.logger.Info("User not found create")
+	// 		user, err := s.repo.Create(ctx, convert)
+	// 		if err != nil {
+	// 			s.logger.Warnf("create user error: %s", err.Error())
+	// 			return nil, &fiber.Error{
+	// 				Code:    500,
+	// 				Message: err.Error(),
+	// 			}
+	// 		}
+	// 		return user, nil
+	// 	}
+	// 	return nil, &fiber.Error{
+	// 		Code:    500,
+	// 		Message: err.Error(),
+	// 	}
+	// }
+
+	return convert, nil
 }

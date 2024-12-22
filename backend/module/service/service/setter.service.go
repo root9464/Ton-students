@@ -25,13 +25,13 @@ func (s *servService) CreateService(ctx context.Context, dto *service_dto.Create
 		}
 	}
 
-	createdService, err := s.repo.Create(ctx, service)
-	if err != nil {
-		return nil, &fiber.Error{
-			Code:    500,
-			Message: "Error creating service: " + err.Error(),
-		}
-	}
+	// createdService, err := s.repo.Create(ctx, service)
+	// if err != nil {
+	// 	return nil, &fiber.Error{
+	// 		Code:    500,
+	// 		Message: "Error creating service: " + err.Error(),
+	// 	}
+	// }
 
-	return createdService, nil
+	return service, nil
 }

@@ -5,27 +5,29 @@ import (
 	"reflect"
 )
 
+// ConvertDtoToEntity преобразует DTO в Entity с учетом совпадающих полей.
 func ConvertDtoToEntity[T any](dto interface{}) (*T, error) {
 	result := new(T)
 
 	dtoVal := reflect.ValueOf(dto)
-	if dtoVal.Kind() != reflect.Ptr {
+	if dtoVal.Kind() != reflect.Ptr || dtoVal.Elem().Kind() != reflect.Struct {
 		return nil, errors.New("dto must be a pointer to a struct")
 	}
 
-	dtoElem := dtoVal.Elem()
-	if dtoElem.Kind() != reflect.Struct {
-		return nil, errors.New("dto must be a struct")
-	}
-
 	resultVal := reflect.ValueOf(result).Elem()
+	dtoElem := dtoVal.Elem()
 
-	for i := 0; i < dtoElem.NumField(); i++ {
-		dtoField := dtoElem.Field(i)
-		resultField := resultVal.Field(i)
+	for i := 0; i < resultVal.NumField(); i++ {
+		resultField := resultVal.Type().Field(i)
+		resultFieldValue := resultVal.Field(i)
 
-		if dtoField.Type().AssignableTo(resultField.Type()) {
-			resultField.Set(dtoField)
+		if !resultFieldValue.CanSet() {
+			continue
+		}
+
+		dtoFieldValue := dtoElem.FieldByName(resultField.Name)
+		if dtoFieldValue.IsValid() && dtoFieldValue.Type().AssignableTo(resultFieldValue.Type()) {
+			resultFieldValue.Set(dtoFieldValue)
 		}
 	}
 
