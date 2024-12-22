@@ -11,7 +11,7 @@ func (r *serviceRepository) Create(ctx context.Context, service *ent.Service) (*
 
 	getService, err := r.db.Service.Create().
 		SetID(service.ID).
-		SetUserName(service.UserName).
+		SetUserID(service.UserID).
 		SetTitle(service.Title).
 		SetDescription(service.Description).
 		SetTags(service.Tags).

@@ -17,12 +17,12 @@ type User struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int64 `json:"id,omitempty"`
-	// UserName holds the value of the "userName" field.
-	UserName string `json:"userName,omitempty"`
-	// FirstName holds the value of the "firstName" field.
-	FirstName string `json:"firstName,omitempty"`
-	// LastName holds the value of the "lastName" field.
-	LastName string `json:"lastName,omitempty"`
+	// Username holds the value of the "username" field.
+	Username string `json:"username,omitempty"`
+	// Firstname holds the value of the "firstname" field.
+	Firstname string `json:"firstname,omitempty"`
+	// Lastname holds the value of the "lastname" field.
+	Lastname string `json:"lastname,omitempty"`
 	// Role holds the value of the "role" field.
 	Role user.Role `json:"role,omitempty"`
 	// Info holds the value of the "info" field.
@@ -30,8 +30,29 @@ type User struct {
 	// IsPremium holds the value of the "isPremium" field.
 	IsPremium bool `json:"isPremium,omitempty"`
 	// Hash holds the value of the "hash" field.
-	Hash         string `json:"hash,omitempty"`
+	Hash string `json:"hash,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the UserQuery when eager-loading is set.
+	Edges        UserEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// UserEdges holds the relations/edges for other nodes in the graph.
+type UserEdges struct {
+	// Services holds the value of the services edge.
+	Services []*Service `json:"services,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// ServicesOrErr returns the Services value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ServicesOrErr() ([]*Service, error) {
+	if e.loadedTypes[0] {
+		return e.Services, nil
+	}
+	return nil, &NotLoadedError{edge: "services"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -45,7 +66,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case user.FieldID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldUserName, user.FieldFirstName, user.FieldLastName, user.FieldRole, user.FieldHash:
+		case user.FieldUsername, user.FieldFirstname, user.FieldLastname, user.FieldRole, user.FieldHash:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -68,23 +89,23 @@ func (u *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			u.ID = int64(value.Int64)
-		case user.FieldUserName:
+		case user.FieldUsername:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field userName", values[i])
+				return fmt.Errorf("unexpected type %T for field username", values[i])
 			} else if value.Valid {
-				u.UserName = value.String
+				u.Username = value.String
 			}
-		case user.FieldFirstName:
+		case user.FieldFirstname:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field firstName", values[i])
+				return fmt.Errorf("unexpected type %T for field firstname", values[i])
 			} else if value.Valid {
-				u.FirstName = value.String
+				u.Firstname = value.String
 			}
-		case user.FieldLastName:
+		case user.FieldLastname:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field lastName", values[i])
+				return fmt.Errorf("unexpected type %T for field lastname", values[i])
 			} else if value.Valid {
-				u.LastName = value.String
+				u.Lastname = value.String
 			}
 		case user.FieldRole:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -125,6 +146,11 @@ func (u *User) Value(name string) (ent.Value, error) {
 	return u.selectValues.Get(name)
 }
 
+// QueryServices queries the "services" edge of the User entity.
+func (u *User) QueryServices() *ServiceQuery {
+	return NewUserClient(u.config).QueryServices(u)
+}
+
 // Update returns a builder for updating this User.
 // Note that you need to call User.Unwrap() before calling this method if this User
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -148,14 +174,14 @@ func (u *User) String() string {
 	var builder strings.Builder
 	builder.WriteString("User(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", u.ID))
-	builder.WriteString("userName=")
-	builder.WriteString(u.UserName)
+	builder.WriteString("username=")
+	builder.WriteString(u.Username)
 	builder.WriteString(", ")
-	builder.WriteString("firstName=")
-	builder.WriteString(u.FirstName)
+	builder.WriteString("firstname=")
+	builder.WriteString(u.Firstname)
 	builder.WriteString(", ")
-	builder.WriteString("lastName=")
-	builder.WriteString(u.LastName)
+	builder.WriteString("lastname=")
+	builder.WriteString(u.Lastname)
 	builder.WriteString(", ")
 	builder.WriteString("role=")
 	builder.WriteString(fmt.Sprintf("%v", u.Role))

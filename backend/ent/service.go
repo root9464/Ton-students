@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/root9464/Ton-students/ent/service"
+	"github.com/root9464/Ton-students/ent/user"
 )
 
 // Service is the model entity for the Service schema.
@@ -17,8 +18,8 @@ type Service struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int64 `json:"id,omitempty"`
-	// UserName holds the value of the "userName" field.
-	UserName string `json:"userName,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID int64 `json:"user_id,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
 	// Description holds the value of the "description" field.
@@ -26,8 +27,31 @@ type Service struct {
 	// Tags holds the value of the "tags" field.
 	Tags []string `json:"tags,omitempty"`
 	// Price holds the value of the "price" field.
-	Price        int16 `json:"price,omitempty"`
+	Price int16 `json:"price,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the ServiceQuery when eager-loading is set.
+	Edges        ServiceEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// ServiceEdges holds the relations/edges for other nodes in the graph.
+type ServiceEdges struct {
+	// User holds the value of the user edge.
+	User *User `json:"user,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// UserOrErr returns the User value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ServiceEdges) UserOrErr() (*User, error) {
+	if e.User != nil {
+		return e.User, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: user.Label}
+	}
+	return nil, &NotLoadedError{edge: "user"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -37,9 +61,9 @@ func (*Service) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case service.FieldDescription, service.FieldTags:
 			values[i] = new([]byte)
-		case service.FieldID, service.FieldPrice:
+		case service.FieldID, service.FieldUserID, service.FieldPrice:
 			values[i] = new(sql.NullInt64)
-		case service.FieldUserName, service.FieldTitle:
+		case service.FieldTitle:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -62,11 +86,11 @@ func (s *Service) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			s.ID = int64(value.Int64)
-		case service.FieldUserName:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field userName", values[i])
+		case service.FieldUserID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
 			} else if value.Valid {
-				s.UserName = value.String
+				s.UserID = value.Int64
 			}
 		case service.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -109,6 +133,11 @@ func (s *Service) Value(name string) (ent.Value, error) {
 	return s.selectValues.Get(name)
 }
 
+// QueryUser queries the "user" edge of the Service entity.
+func (s *Service) QueryUser() *UserQuery {
+	return NewServiceClient(s.config).QueryUser(s)
+}
+
 // Update returns a builder for updating this Service.
 // Note that you need to call Service.Unwrap() before calling this method if this Service
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -132,8 +161,8 @@ func (s *Service) String() string {
 	var builder strings.Builder
 	builder.WriteString("Service(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", s.ID))
-	builder.WriteString("userName=")
-	builder.WriteString(s.UserName)
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", s.UserID))
 	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(s.Title)

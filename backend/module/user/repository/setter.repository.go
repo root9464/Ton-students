@@ -12,9 +12,9 @@ func (r *userRepository) Create(ctx context.Context, user *tma.InitData) (*ent.U
 	r.logger.Info("Creating user...")
 	getUser, err := r.db.User.Create().
 		SetID(user.User.ID).
-		SetFirstName(user.User.FirstName).
-		SetLastName(user.User.LastName).
-		SetUserName(user.User.Username).
+		SetFirstname(user.User.FirstName).
+		SetLastname(user.User.LastName).
+		SetUsername(user.User.Username).
 		SetIsPremium(user.User.IsPremium).
 		SetHash(user.Hash).
 		Save(ctx)
@@ -28,9 +28,9 @@ func (r *userRepository) Create(ctx context.Context, user *tma.InitData) (*ent.U
 
 func (r *userRepository) Update(ctx context.Context, user *tma.InitData) (*ent.User, error) {
 	getUser, err := r.db.User.UpdateOneID(user.User.ID).
-		SetFirstName(user.User.FirstName).
-		SetLastName(user.User.LastName).
-		SetUserName(user.User.Username).
+		SetFirstname(user.User.FirstName).
+		SetLastname(user.User.LastName).
+		SetUsername(user.User.Username).
 		SetIsPremium(user.User.IsPremium).
 		Save(ctx)
 

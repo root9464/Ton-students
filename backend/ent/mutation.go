@@ -34,7 +34,6 @@ type ServiceMutation struct {
 	op            Op
 	typ           string
 	id            *int64
-	userName      *string
 	title         *string
 	description   *map[string]interface{}
 	tags          *[]string
@@ -42,6 +41,8 @@ type ServiceMutation struct {
 	price         *int16
 	addprice      *int16
 	clearedFields map[string]struct{}
+	user          *int64
+	cleareduser   bool
 	done          bool
 	oldValue      func(context.Context) (*Service, error)
 	predicates    []predicate.Service
@@ -151,40 +152,40 @@ func (m *ServiceMutation) IDs(ctx context.Context) ([]int64, error) {
 	}
 }
 
-// SetUserName sets the "userName" field.
-func (m *ServiceMutation) SetUserName(s string) {
-	m.userName = &s
+// SetUserID sets the "user_id" field.
+func (m *ServiceMutation) SetUserID(i int64) {
+	m.user = &i
 }
 
-// UserName returns the value of the "userName" field in the mutation.
-func (m *ServiceMutation) UserName() (r string, exists bool) {
-	v := m.userName
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *ServiceMutation) UserID() (r int64, exists bool) {
+	v := m.user
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldUserName returns the old "userName" field's value of the Service entity.
+// OldUserID returns the old "user_id" field's value of the Service entity.
 // If the Service object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ServiceMutation) OldUserName(ctx context.Context) (v string, err error) {
+func (m *ServiceMutation) OldUserID(ctx context.Context) (v int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUserName is only allowed on UpdateOne operations")
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUserName requires an ID field in the mutation")
+		return v, errors.New("OldUserID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUserName: %w", err)
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
 	}
-	return oldValue.UserName, nil
+	return oldValue.UserID, nil
 }
 
-// ResetUserName resets all changes to the "userName" field.
-func (m *ServiceMutation) ResetUserName() {
-	m.userName = nil
+// ResetUserID resets all changes to the "user_id" field.
+func (m *ServiceMutation) ResetUserID() {
+	m.user = nil
 }
 
 // SetTitle sets the "title" field.
@@ -366,6 +367,33 @@ func (m *ServiceMutation) ResetPrice() {
 	m.addprice = nil
 }
 
+// ClearUser clears the "user" edge to the User entity.
+func (m *ServiceMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[service.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *ServiceMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *ServiceMutation) UserIDs() (ids []int64) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *ServiceMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
 // Where appends a list predicates to the ServiceMutation builder.
 func (m *ServiceMutation) Where(ps ...predicate.Service) {
 	m.predicates = append(m.predicates, ps...)
@@ -401,8 +429,8 @@ func (m *ServiceMutation) Type() string {
 // AddedFields().
 func (m *ServiceMutation) Fields() []string {
 	fields := make([]string, 0, 5)
-	if m.userName != nil {
-		fields = append(fields, service.FieldUserName)
+	if m.user != nil {
+		fields = append(fields, service.FieldUserID)
 	}
 	if m.title != nil {
 		fields = append(fields, service.FieldTitle)
@@ -424,8 +452,8 @@ func (m *ServiceMutation) Fields() []string {
 // schema.
 func (m *ServiceMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case service.FieldUserName:
-		return m.UserName()
+	case service.FieldUserID:
+		return m.UserID()
 	case service.FieldTitle:
 		return m.Title()
 	case service.FieldDescription:
@@ -443,8 +471,8 @@ func (m *ServiceMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *ServiceMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case service.FieldUserName:
-		return m.OldUserName(ctx)
+	case service.FieldUserID:
+		return m.OldUserID(ctx)
 	case service.FieldTitle:
 		return m.OldTitle(ctx)
 	case service.FieldDescription:
@@ -462,12 +490,12 @@ func (m *ServiceMutation) OldField(ctx context.Context, name string) (ent.Value,
 // type.
 func (m *ServiceMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case service.FieldUserName:
-		v, ok := value.(string)
+	case service.FieldUserID:
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetUserName(v)
+		m.SetUserID(v)
 		return nil
 	case service.FieldTitle:
 		v, ok := value.(string)
@@ -561,8 +589,8 @@ func (m *ServiceMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *ServiceMutation) ResetField(name string) error {
 	switch name {
-	case service.FieldUserName:
-		m.ResetUserName()
+	case service.FieldUserID:
+		m.ResetUserID()
 		return nil
 	case service.FieldTitle:
 		m.ResetTitle()
@@ -582,19 +610,28 @@ func (m *ServiceMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ServiceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.user != nil {
+		edges = append(edges, service.EdgeUser)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *ServiceMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case service.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ServiceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -606,45 +643,65 @@ func (m *ServiceMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ServiceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.cleareduser {
+		edges = append(edges, service.EdgeUser)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *ServiceMutation) EdgeCleared(name string) bool {
+	switch name {
+	case service.EdgeUser:
+		return m.cleareduser
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *ServiceMutation) ClearEdge(name string) error {
+	switch name {
+	case service.EdgeUser:
+		m.ClearUser()
+		return nil
+	}
 	return fmt.Errorf("unknown Service unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *ServiceMutation) ResetEdge(name string) error {
+	switch name {
+	case service.EdgeUser:
+		m.ResetUser()
+		return nil
+	}
 	return fmt.Errorf("unknown Service edge %s", name)
 }
 
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int64
-	userName      *string
-	firstName     *string
-	lastName      *string
-	role          *user.Role
-	info          *map[string]interface{}
-	isPremium     *bool
-	hash          *string
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*User, error)
-	predicates    []predicate.User
+	op              Op
+	typ             string
+	id              *int64
+	username        *string
+	firstname       *string
+	lastname        *string
+	role            *user.Role
+	info            *map[string]interface{}
+	isPremium       *bool
+	hash            *string
+	clearedFields   map[string]struct{}
+	services        map[int64]struct{}
+	removedservices map[int64]struct{}
+	clearedservices bool
+	done            bool
+	oldValue        func(context.Context) (*User, error)
+	predicates      []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -751,112 +808,112 @@ func (m *UserMutation) IDs(ctx context.Context) ([]int64, error) {
 	}
 }
 
-// SetUserName sets the "userName" field.
-func (m *UserMutation) SetUserName(s string) {
-	m.userName = &s
+// SetUsername sets the "username" field.
+func (m *UserMutation) SetUsername(s string) {
+	m.username = &s
 }
 
-// UserName returns the value of the "userName" field in the mutation.
-func (m *UserMutation) UserName() (r string, exists bool) {
-	v := m.userName
+// Username returns the value of the "username" field in the mutation.
+func (m *UserMutation) Username() (r string, exists bool) {
+	v := m.username
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldUserName returns the old "userName" field's value of the User entity.
+// OldUsername returns the old "username" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldUserName(ctx context.Context) (v string, err error) {
+func (m *UserMutation) OldUsername(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUserName is only allowed on UpdateOne operations")
+		return v, errors.New("OldUsername is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUserName requires an ID field in the mutation")
+		return v, errors.New("OldUsername requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUserName: %w", err)
+		return v, fmt.Errorf("querying old value for OldUsername: %w", err)
 	}
-	return oldValue.UserName, nil
+	return oldValue.Username, nil
 }
 
-// ResetUserName resets all changes to the "userName" field.
-func (m *UserMutation) ResetUserName() {
-	m.userName = nil
+// ResetUsername resets all changes to the "username" field.
+func (m *UserMutation) ResetUsername() {
+	m.username = nil
 }
 
-// SetFirstName sets the "firstName" field.
-func (m *UserMutation) SetFirstName(s string) {
-	m.firstName = &s
+// SetFirstname sets the "firstname" field.
+func (m *UserMutation) SetFirstname(s string) {
+	m.firstname = &s
 }
 
-// FirstName returns the value of the "firstName" field in the mutation.
-func (m *UserMutation) FirstName() (r string, exists bool) {
-	v := m.firstName
+// Firstname returns the value of the "firstname" field in the mutation.
+func (m *UserMutation) Firstname() (r string, exists bool) {
+	v := m.firstname
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldFirstName returns the old "firstName" field's value of the User entity.
+// OldFirstname returns the old "firstname" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldFirstName(ctx context.Context) (v string, err error) {
+func (m *UserMutation) OldFirstname(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldFirstName is only allowed on UpdateOne operations")
+		return v, errors.New("OldFirstname is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldFirstName requires an ID field in the mutation")
+		return v, errors.New("OldFirstname requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldFirstName: %w", err)
+		return v, fmt.Errorf("querying old value for OldFirstname: %w", err)
 	}
-	return oldValue.FirstName, nil
+	return oldValue.Firstname, nil
 }
 
-// ResetFirstName resets all changes to the "firstName" field.
-func (m *UserMutation) ResetFirstName() {
-	m.firstName = nil
+// ResetFirstname resets all changes to the "firstname" field.
+func (m *UserMutation) ResetFirstname() {
+	m.firstname = nil
 }
 
-// SetLastName sets the "lastName" field.
-func (m *UserMutation) SetLastName(s string) {
-	m.lastName = &s
+// SetLastname sets the "lastname" field.
+func (m *UserMutation) SetLastname(s string) {
+	m.lastname = &s
 }
 
-// LastName returns the value of the "lastName" field in the mutation.
-func (m *UserMutation) LastName() (r string, exists bool) {
-	v := m.lastName
+// Lastname returns the value of the "lastname" field in the mutation.
+func (m *UserMutation) Lastname() (r string, exists bool) {
+	v := m.lastname
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldLastName returns the old "lastName" field's value of the User entity.
+// OldLastname returns the old "lastname" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldLastName(ctx context.Context) (v string, err error) {
+func (m *UserMutation) OldLastname(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldLastName is only allowed on UpdateOne operations")
+		return v, errors.New("OldLastname is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldLastName requires an ID field in the mutation")
+		return v, errors.New("OldLastname requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldLastName: %w", err)
+		return v, fmt.Errorf("querying old value for OldLastname: %w", err)
 	}
-	return oldValue.LastName, nil
+	return oldValue.Lastname, nil
 }
 
-// ResetLastName resets all changes to the "lastName" field.
-func (m *UserMutation) ResetLastName() {
-	m.lastName = nil
+// ResetLastname resets all changes to the "lastname" field.
+func (m *UserMutation) ResetLastname() {
+	m.lastname = nil
 }
 
 // SetRole sets the "role" field.
@@ -1003,6 +1060,60 @@ func (m *UserMutation) ResetHash() {
 	m.hash = nil
 }
 
+// AddServiceIDs adds the "services" edge to the Service entity by ids.
+func (m *UserMutation) AddServiceIDs(ids ...int64) {
+	if m.services == nil {
+		m.services = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.services[ids[i]] = struct{}{}
+	}
+}
+
+// ClearServices clears the "services" edge to the Service entity.
+func (m *UserMutation) ClearServices() {
+	m.clearedservices = true
+}
+
+// ServicesCleared reports if the "services" edge to the Service entity was cleared.
+func (m *UserMutation) ServicesCleared() bool {
+	return m.clearedservices
+}
+
+// RemoveServiceIDs removes the "services" edge to the Service entity by IDs.
+func (m *UserMutation) RemoveServiceIDs(ids ...int64) {
+	if m.removedservices == nil {
+		m.removedservices = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.services, ids[i])
+		m.removedservices[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedServices returns the removed IDs of the "services" edge to the Service entity.
+func (m *UserMutation) RemovedServicesIDs() (ids []int64) {
+	for id := range m.removedservices {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ServicesIDs returns the "services" edge IDs in the mutation.
+func (m *UserMutation) ServicesIDs() (ids []int64) {
+	for id := range m.services {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetServices resets all changes to the "services" edge.
+func (m *UserMutation) ResetServices() {
+	m.services = nil
+	m.clearedservices = false
+	m.removedservices = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -1038,14 +1149,14 @@ func (m *UserMutation) Type() string {
 // AddedFields().
 func (m *UserMutation) Fields() []string {
 	fields := make([]string, 0, 7)
-	if m.userName != nil {
-		fields = append(fields, user.FieldUserName)
+	if m.username != nil {
+		fields = append(fields, user.FieldUsername)
 	}
-	if m.firstName != nil {
-		fields = append(fields, user.FieldFirstName)
+	if m.firstname != nil {
+		fields = append(fields, user.FieldFirstname)
 	}
-	if m.lastName != nil {
-		fields = append(fields, user.FieldLastName)
+	if m.lastname != nil {
+		fields = append(fields, user.FieldLastname)
 	}
 	if m.role != nil {
 		fields = append(fields, user.FieldRole)
@@ -1067,12 +1178,12 @@ func (m *UserMutation) Fields() []string {
 // schema.
 func (m *UserMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case user.FieldUserName:
-		return m.UserName()
-	case user.FieldFirstName:
-		return m.FirstName()
-	case user.FieldLastName:
-		return m.LastName()
+	case user.FieldUsername:
+		return m.Username()
+	case user.FieldFirstname:
+		return m.Firstname()
+	case user.FieldLastname:
+		return m.Lastname()
 	case user.FieldRole:
 		return m.Role()
 	case user.FieldInfo:
@@ -1090,12 +1201,12 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case user.FieldUserName:
-		return m.OldUserName(ctx)
-	case user.FieldFirstName:
-		return m.OldFirstName(ctx)
-	case user.FieldLastName:
-		return m.OldLastName(ctx)
+	case user.FieldUsername:
+		return m.OldUsername(ctx)
+	case user.FieldFirstname:
+		return m.OldFirstname(ctx)
+	case user.FieldLastname:
+		return m.OldLastname(ctx)
 	case user.FieldRole:
 		return m.OldRole(ctx)
 	case user.FieldInfo:
@@ -1113,26 +1224,26 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 // type.
 func (m *UserMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case user.FieldUserName:
+	case user.FieldUsername:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetUserName(v)
+		m.SetUsername(v)
 		return nil
-	case user.FieldFirstName:
+	case user.FieldFirstname:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetFirstName(v)
+		m.SetFirstname(v)
 		return nil
-	case user.FieldLastName:
+	case user.FieldLastname:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetLastName(v)
+		m.SetLastname(v)
 		return nil
 	case user.FieldRole:
 		v, ok := value.(user.Role)
@@ -1211,14 +1322,14 @@ func (m *UserMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *UserMutation) ResetField(name string) error {
 	switch name {
-	case user.FieldUserName:
-		m.ResetUserName()
+	case user.FieldUsername:
+		m.ResetUsername()
 		return nil
-	case user.FieldFirstName:
-		m.ResetFirstName()
+	case user.FieldFirstname:
+		m.ResetFirstname()
 		return nil
-	case user.FieldLastName:
-		m.ResetLastName()
+	case user.FieldLastname:
+		m.ResetLastname()
 		return nil
 	case user.FieldRole:
 		m.ResetRole()
@@ -1238,48 +1349,84 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.services != nil {
+		edges = append(edges, user.EdgeServices)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *UserMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case user.EdgeServices:
+		ids := make([]ent.Value, 0, len(m.services))
+		for id := range m.services {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.removedservices != nil {
+		edges = append(edges, user.EdgeServices)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *UserMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case user.EdgeServices:
+		ids := make([]ent.Value, 0, len(m.removedservices))
+		for id := range m.removedservices {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedservices {
+		edges = append(edges, user.EdgeServices)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *UserMutation) EdgeCleared(name string) bool {
+	switch name {
+	case user.EdgeServices:
+		return m.clearedservices
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *UserMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown User unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *UserMutation) ResetEdge(name string) error {
+	switch name {
+	case user.EdgeServices:
+		m.ResetServices()
+		return nil
+	}
 	return fmt.Errorf("unknown User edge %s", name)
 }

@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -13,12 +14,12 @@ const (
 	Label = "user"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldUserName holds the string denoting the username field in the database.
-	FieldUserName = "user_name"
-	// FieldFirstName holds the string denoting the firstname field in the database.
-	FieldFirstName = "first_name"
-	// FieldLastName holds the string denoting the lastname field in the database.
-	FieldLastName = "last_name"
+	// FieldUsername holds the string denoting the username field in the database.
+	FieldUsername = "username"
+	// FieldFirstname holds the string denoting the firstname field in the database.
+	FieldFirstname = "firstname"
+	// FieldLastname holds the string denoting the lastname field in the database.
+	FieldLastname = "lastname"
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
 	// FieldInfo holds the string denoting the info field in the database.
@@ -27,16 +28,25 @@ const (
 	FieldIsPremium = "is_premium"
 	// FieldHash holds the string denoting the hash field in the database.
 	FieldHash = "hash"
+	// EdgeServices holds the string denoting the services edge name in mutations.
+	EdgeServices = "services"
 	// Table holds the table name of the user in the database.
 	Table = "users"
+	// ServicesTable is the table that holds the services relation/edge.
+	ServicesTable = "services"
+	// ServicesInverseTable is the table name for the Service entity.
+	// It exists in this package in order to avoid circular dependency with the "service" package.
+	ServicesInverseTable = "services"
+	// ServicesColumn is the table column denoting the services relation/edge.
+	ServicesColumn = "user_id"
 )
 
 // Columns holds all SQL columns for user fields.
 var Columns = []string{
 	FieldID,
-	FieldUserName,
-	FieldFirstName,
-	FieldLastName,
+	FieldUsername,
+	FieldFirstname,
+	FieldLastname,
 	FieldRole,
 	FieldInfo,
 	FieldIsPremium,
@@ -54,12 +64,12 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// UserNameValidator is a validator for the "userName" field. It is called by the builders before save.
-	UserNameValidator func(string) error
-	// DefaultFirstName holds the default value on creation for the "firstName" field.
-	DefaultFirstName string
-	// DefaultLastName holds the default value on creation for the "lastName" field.
-	DefaultLastName string
+	// UsernameValidator is a validator for the "username" field. It is called by the builders before save.
+	UsernameValidator func(string) error
+	// DefaultFirstname holds the default value on creation for the "firstname" field.
+	DefaultFirstname string
+	// DefaultLastname holds the default value on creation for the "lastname" field.
+	DefaultLastname string
 	// DefaultInfo holds the default value on creation for the "info" field.
 	DefaultInfo map[string]interface{}
 	// DefaultIsPremium holds the default value on creation for the "isPremium" field.
@@ -104,19 +114,19 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByUserName orders the results by the userName field.
-func ByUserName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldUserName, opts...).ToFunc()
+// ByUsername orders the results by the username field.
+func ByUsername(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUsername, opts...).ToFunc()
 }
 
-// ByFirstName orders the results by the firstName field.
-func ByFirstName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldFirstName, opts...).ToFunc()
+// ByFirstname orders the results by the firstname field.
+func ByFirstname(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFirstname, opts...).ToFunc()
 }
 
-// ByLastName orders the results by the lastName field.
-func ByLastName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldLastName, opts...).ToFunc()
+// ByLastname orders the results by the lastname field.
+func ByLastname(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLastname, opts...).ToFunc()
 }
 
 // ByRole orders the results by the role field.
@@ -132,4 +142,25 @@ func ByIsPremium(opts ...sql.OrderTermOption) OrderOption {
 // ByHash orders the results by the hash field.
 func ByHash(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldHash, opts...).ToFunc()
+}
+
+// ByServicesCount orders the results by services count.
+func ByServicesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newServicesStep(), opts...)
+	}
+}
+
+// ByServices orders the results by services terms.
+func ByServices(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newServicesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newServicesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ServicesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ServicesTable, ServicesColumn),
+	)
 }

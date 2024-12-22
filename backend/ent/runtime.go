@@ -14,10 +14,6 @@ import (
 func init() {
 	serviceFields := schema.Service{}.Fields()
 	_ = serviceFields
-	// serviceDescUserName is the schema descriptor for userName field.
-	serviceDescUserName := serviceFields[1].Descriptor()
-	// service.UserNameValidator is a validator for the "userName" field. It is called by the builders before save.
-	service.UserNameValidator = serviceDescUserName.Validators[0].(func(string) error)
 	// serviceDescTitle is the schema descriptor for title field.
 	serviceDescTitle := serviceFields[2].Descriptor()
 	// service.TitleValidator is a validator for the "title" field. It is called by the builders before save.
@@ -28,18 +24,18 @@ func init() {
 	service.DefaultDescription = serviceDescDescription.Default.(map[string]interface{})
 	userFields := schema.User{}.Fields()
 	_ = userFields
-	// userDescUserName is the schema descriptor for userName field.
-	userDescUserName := userFields[1].Descriptor()
-	// user.UserNameValidator is a validator for the "userName" field. It is called by the builders before save.
-	user.UserNameValidator = userDescUserName.Validators[0].(func(string) error)
-	// userDescFirstName is the schema descriptor for firstName field.
-	userDescFirstName := userFields[2].Descriptor()
-	// user.DefaultFirstName holds the default value on creation for the firstName field.
-	user.DefaultFirstName = userDescFirstName.Default.(string)
-	// userDescLastName is the schema descriptor for lastName field.
-	userDescLastName := userFields[3].Descriptor()
-	// user.DefaultLastName holds the default value on creation for the lastName field.
-	user.DefaultLastName = userDescLastName.Default.(string)
+	// userDescUsername is the schema descriptor for username field.
+	userDescUsername := userFields[1].Descriptor()
+	// user.UsernameValidator is a validator for the "username" field. It is called by the builders before save.
+	user.UsernameValidator = userDescUsername.Validators[0].(func(string) error)
+	// userDescFirstname is the schema descriptor for firstname field.
+	userDescFirstname := userFields[2].Descriptor()
+	// user.DefaultFirstname holds the default value on creation for the firstname field.
+	user.DefaultFirstname = userDescFirstname.Default.(string)
+	// userDescLastname is the schema descriptor for lastname field.
+	userDescLastname := userFields[3].Descriptor()
+	// user.DefaultLastname holds the default value on creation for the lastname field.
+	user.DefaultLastname = userDescLastname.Default.(string)
 	// userDescInfo is the schema descriptor for info field.
 	userDescInfo := userFields[5].Descriptor()
 	// user.DefaultInfo holds the default value on creation for the info field.

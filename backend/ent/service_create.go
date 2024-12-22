@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/root9464/Ton-students/ent/service"
+	"github.com/root9464/Ton-students/ent/user"
 )
 
 // ServiceCreate is the builder for creating a Service entity.
@@ -19,9 +20,9 @@ type ServiceCreate struct {
 	hooks    []Hook
 }
 
-// SetUserName sets the "userName" field.
-func (sc *ServiceCreate) SetUserName(s string) *ServiceCreate {
-	sc.mutation.SetUserName(s)
+// SetUserID sets the "user_id" field.
+func (sc *ServiceCreate) SetUserID(i int64) *ServiceCreate {
+	sc.mutation.SetUserID(i)
 	return sc
 }
 
@@ -53,6 +54,11 @@ func (sc *ServiceCreate) SetPrice(i int16) *ServiceCreate {
 func (sc *ServiceCreate) SetID(i int64) *ServiceCreate {
 	sc.mutation.SetID(i)
 	return sc
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (sc *ServiceCreate) SetUser(u *User) *ServiceCreate {
+	return sc.SetUserID(u.ID)
 }
 
 // Mutation returns the ServiceMutation object of the builder.
@@ -98,13 +104,8 @@ func (sc *ServiceCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (sc *ServiceCreate) check() error {
-	if _, ok := sc.mutation.UserName(); !ok {
-		return &ValidationError{Name: "userName", err: errors.New(`ent: missing required field "Service.userName"`)}
-	}
-	if v, ok := sc.mutation.UserName(); ok {
-		if err := service.UserNameValidator(v); err != nil {
-			return &ValidationError{Name: "userName", err: fmt.Errorf(`ent: validator failed for field "Service.userName": %w`, err)}
-		}
+	if _, ok := sc.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "Service.user_id"`)}
 	}
 	if _, ok := sc.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Service.title"`)}
@@ -122,6 +123,9 @@ func (sc *ServiceCreate) check() error {
 	}
 	if _, ok := sc.mutation.Price(); !ok {
 		return &ValidationError{Name: "price", err: errors.New(`ent: missing required field "Service.price"`)}
+	}
+	if len(sc.mutation.UserIDs()) == 0 {
+		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "Service.user"`)}
 	}
 	return nil
 }
@@ -155,10 +159,6 @@ func (sc *ServiceCreate) createSpec() (*Service, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := sc.mutation.UserName(); ok {
-		_spec.SetField(service.FieldUserName, field.TypeString, value)
-		_node.UserName = value
-	}
 	if value, ok := sc.mutation.Title(); ok {
 		_spec.SetField(service.FieldTitle, field.TypeString, value)
 		_node.Title = value
@@ -174,6 +174,23 @@ func (sc *ServiceCreate) createSpec() (*Service, *sqlgraph.CreateSpec) {
 	if value, ok := sc.mutation.Price(); ok {
 		_spec.SetField(service.FieldPrice, field.TypeInt16, value)
 		_node.Price = value
+	}
+	if nodes := sc.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   service.UserTable,
+			Columns: []string{service.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.UserID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

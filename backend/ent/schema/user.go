@@ -5,10 +5,11 @@ import (
 	"regexp"
 
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
-// User описывает таблицу пользователей в базе данных
+// User описывает таблицу пользователей
 type User struct {
 	ent.Schema
 }
@@ -17,9 +18,9 @@ type User struct {
 func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int64("id").Immutable(),
-		field.Text("userName").NotEmpty().Unique(),
-		field.Text("firstName").Default(""),
-		field.Text("lastName").Default(""),
+		field.Text("username").NotEmpty().Unique(),
+		field.Text("firstname").Default(""),
+		field.Text("lastname").Default(""),
 		field.Enum("role").Values("user", "creator", "moderator", "administrator").Default("user"),
 		field.JSON("info", map[string]interface{}{}).Default(map[string]interface{}{
 			"information": "",
@@ -36,7 +37,9 @@ func (User) Fields() []ent.Field {
 	}
 }
 
-// Edges определяют связи с другими таблицами (если они есть)
+// Edges определяют связи с другими таблицами
 func (User) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.To("services", Service.Type),
+	}
 }
