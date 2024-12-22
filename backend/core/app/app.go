@@ -141,5 +141,6 @@ func (app *App) initRouter() error {
 
 	app.moduleProvider.authModule.AuthRoutes(api)
 	app.moduleProvider.userModule.UserRoutes(api)
+	app.moduleProvider.serviceModule.ServiceRoutes(api)
 	return nil
 }
