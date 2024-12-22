@@ -66,7 +66,7 @@ func (a *App) initConfig() error {
 		if err != nil {
 			return fmt.Errorf("✖ Failed to load config: %s", err.Error())
 		}
-		a.config = &config
+		a.config = config
 	}
 
 	err := config.Load(".env")

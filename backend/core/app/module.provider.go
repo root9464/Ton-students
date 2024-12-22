@@ -3,11 +3,13 @@ package app
 import (
 	auth_module "github.com/root9464/Ton-students/module/auth"
 	user_module "github.com/root9464/Ton-students/module/user"
+	bot_model "github.com/root9464/Ton-students/module/bot"
 )
 
 type moduleProvider struct {
 	authModule *auth_module.AuthModule
 	userModule *user_module.UserModule
+	botModule  *bot_model.BotModule
 
 	app *App
 }
@@ -47,3 +49,10 @@ func (p *moduleProvider) AuthModule() error {
 	p.authModule = auth_module.NewAuthModule(p.app.logger, p.app.validator, p.app.config, p.userModule.UserService())
 	return nil
 }
+
+
+func (p *moduleProvider) BotModule() error {
+	p.botModule = bot_model.NewBotModule(p.app.logger, p.app.config)
+	return p.botModule.BotModule()
+}
+
