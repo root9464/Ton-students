@@ -7,19 +7,21 @@ import (
 )
 
 // MapStruct is a generic function to map values from one struct to another.
-func MapStruct[T any](src interface{}) (T, error) {
-	var dest T
+func MapStruct[T any](src interface{}) (*T, error) {
+	// Initialize the destination as a pointer to T
+	dest := new(T)
+
 	// Ensure src is a pointer before using reflect.ValueOf
 	srcVal := reflect.ValueOf(src)
 	if srcVal.Kind() != reflect.Ptr {
-		return dest, fmt.Errorf("source must be a pointer")
+		return nil, fmt.Errorf("source must be a pointer")
 	}
 	srcVal = srcVal.Elem() // Dereference the pointer to get the struct
 
-	destVal := reflect.ValueOf(&dest).Elem()
+	destVal := reflect.ValueOf(dest).Elem()
 
 	if srcVal.Kind() != reflect.Struct || destVal.Kind() != reflect.Struct {
-		return dest, fmt.Errorf("source and destination must be structs")
+		return nil, fmt.Errorf("source and destination must be structs")
 	}
 
 	// Iterate over the fields of the source struct
@@ -50,9 +52,9 @@ func MapStruct[T any](src interface{}) (T, error) {
 				// Recursive call for nested structs
 				nestedValue, err := MapStruct[T](srcVal.Field(i).Addr().Interface())
 				if err != nil {
-					return dest, err
+					return nil, err
 				}
-				destField.Set(reflect.ValueOf(nestedValue))
+				destField.Set(reflect.ValueOf(nestedValue).Elem())
 			} else {
 				// Set the field value directly
 				destField.Set(srcVal.Field(i))
@@ -60,5 +62,6 @@ func MapStruct[T any](src interface{}) (T, error) {
 		}
 	}
 
+	// Return a pointer to the destination struct
 	return dest, nil
 }

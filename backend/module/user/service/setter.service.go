@@ -63,11 +63,11 @@ func (s *userService) Create(ctx context.Context, dto interface{}) (*ent.User, e
 
 	s.logger.Infof("%v", convertEntity)
 
-	user, err := s.repo.Update(ctx, &convertEntity)
+	user, err := s.repo.Update(ctx, convertEntity)
 	if err != nil {
 		if err.Error() == "user not found" {
 			s.logger.Info("User not found create")
-			user, err := s.repo.Create(ctx, &convertEntity)
+			user, err := s.repo.Create(ctx, convertEntity)
 			if err != nil {
 				s.logger.Warnf("create user error: %s", err.Error())
 				return nil, &fiber.Error{

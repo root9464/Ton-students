@@ -17,7 +17,7 @@ func (s *servService) CreateService(ctx context.Context, dto *service_dto.Create
 		}
 	}
 
-	service, err := utils.ConvertDtoToEntity[ent.Service](&dto)
+	service, err := utils.MapStruct[ent.Service](&dto)
 	if err != nil {
 		return nil, &fiber.Error{
 			Code:    400,
@@ -33,5 +33,5 @@ func (s *servService) CreateService(ctx context.Context, dto *service_dto.Create
 	// 	}
 	// }
 
-	return service, nil
+	return &service, nil
 }
