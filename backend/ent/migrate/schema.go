@@ -22,14 +22,6 @@ var (
 		Name:       "services",
 		Columns:    ServicesColumns,
 		PrimaryKey: []*schema.Column{ServicesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "services_users_services",
-				Columns:    []*schema.Column{ServicesColumns[1]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
@@ -56,5 +48,4 @@ var (
 )
 
 func init() {
-	ServicesTable.ForeignKeys[0].RefTable = UsersTable
 }

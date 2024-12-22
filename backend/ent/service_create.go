@@ -10,7 +10,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/root9464/Ton-students/ent/service"
-	"github.com/root9464/Ton-students/ent/user"
 )
 
 // ServiceCreate is the builder for creating a Service entity.
@@ -54,17 +53,6 @@ func (sc *ServiceCreate) SetPrice(i int16) *ServiceCreate {
 func (sc *ServiceCreate) SetID(i int64) *ServiceCreate {
 	sc.mutation.SetID(i)
 	return sc
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (sc *ServiceCreate) SetUserID(id int64) *ServiceCreate {
-	sc.mutation.SetUserID(id)
-	return sc
-}
-
-// SetUser sets the "user" edge to the User entity.
-func (sc *ServiceCreate) SetUser(u *User) *ServiceCreate {
-	return sc.SetUserID(u.ID)
 }
 
 // Mutation returns the ServiceMutation object of the builder.
@@ -135,9 +123,6 @@ func (sc *ServiceCreate) check() error {
 	if _, ok := sc.mutation.Price(); !ok {
 		return &ValidationError{Name: "price", err: errors.New(`ent: missing required field "Service.price"`)}
 	}
-	if len(sc.mutation.UserIDs()) == 0 {
-		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "Service.user"`)}
-	}
 	return nil
 }
 
@@ -189,23 +174,6 @@ func (sc *ServiceCreate) createSpec() (*Service, *sqlgraph.CreateSpec) {
 	if value, ok := sc.mutation.Price(); ok {
 		_spec.SetField(service.FieldPrice, field.TypeInt16, value)
 		_node.Price = value
-	}
-	if nodes := sc.mutation.UserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   service.UserTable,
-			Columns: []string{service.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.user_name = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

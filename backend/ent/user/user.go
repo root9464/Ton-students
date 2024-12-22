@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -28,17 +27,8 @@ const (
 	FieldIsPremium = "is_premium"
 	// FieldHash holds the string denoting the hash field in the database.
 	FieldHash = "hash"
-	// EdgeServices holds the string denoting the services edge name in mutations.
-	EdgeServices = "services"
 	// Table holds the table name of the user in the database.
 	Table = "users"
-	// ServicesTable is the table that holds the services relation/edge.
-	ServicesTable = "services"
-	// ServicesInverseTable is the table name for the Service entity.
-	// It exists in this package in order to avoid circular dependency with the "service" package.
-	ServicesInverseTable = "services"
-	// ServicesColumn is the table column denoting the services relation/edge.
-	ServicesColumn = "user_name"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -142,25 +132,4 @@ func ByIsPremium(opts ...sql.OrderTermOption) OrderOption {
 // ByHash orders the results by the hash field.
 func ByHash(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldHash, opts...).ToFunc()
-}
-
-// ByServicesCount orders the results by services count.
-func ByServicesCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newServicesStep(), opts...)
-	}
-}
-
-// ByServices orders the results by services terms.
-func ByServices(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newServicesStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-func newServicesStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ServicesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, ServicesTable, ServicesColumn),
-	)
 }

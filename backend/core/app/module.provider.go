@@ -30,6 +30,7 @@ func (p *moduleProvider) initDeps() error {
 	inits := []func() error{
 		p.UserModule,
 		p.AuthModule,
+		p.ServiceModule,
 	}
 	for _, init := range inits {
 		err := init()

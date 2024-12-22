@@ -9,7 +9,6 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/root9464/Ton-students/ent/service"
 	"github.com/root9464/Ton-students/ent/user"
 )
 
@@ -98,21 +97,6 @@ func (uc *UserCreate) SetHash(s string) *UserCreate {
 func (uc *UserCreate) SetID(i int64) *UserCreate {
 	uc.mutation.SetID(i)
 	return uc
-}
-
-// AddServiceIDs adds the "services" edge to the Service entity by IDs.
-func (uc *UserCreate) AddServiceIDs(ids ...int64) *UserCreate {
-	uc.mutation.AddServiceIDs(ids...)
-	return uc
-}
-
-// AddServices adds the "services" edges to the Service entity.
-func (uc *UserCreate) AddServices(s ...*Service) *UserCreate {
-	ids := make([]int64, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return uc.AddServiceIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -269,22 +253,6 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.Hash(); ok {
 		_spec.SetField(user.FieldHash, field.TypeString, value)
 		_node.Hash = value
-	}
-	if nodes := uc.mutation.ServicesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.ServicesTable,
-			Columns: []string{user.ServicesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeInt64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/root9464/Ton-students/ent/predicate"
 	"github.com/root9464/Ton-students/ent/service"
-	"github.com/root9464/Ton-students/ent/user"
 )
 
 // ServiceUpdate is the builder for updating Service entities.
@@ -96,26 +95,9 @@ func (su *ServiceUpdate) AddPrice(i int16) *ServiceUpdate {
 	return su
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (su *ServiceUpdate) SetUserID(id int64) *ServiceUpdate {
-	su.mutation.SetUserID(id)
-	return su
-}
-
-// SetUser sets the "user" edge to the User entity.
-func (su *ServiceUpdate) SetUser(u *User) *ServiceUpdate {
-	return su.SetUserID(u.ID)
-}
-
 // Mutation returns the ServiceMutation object of the builder.
 func (su *ServiceUpdate) Mutation() *ServiceMutation {
 	return su.mutation
-}
-
-// ClearUser clears the "user" edge to the User entity.
-func (su *ServiceUpdate) ClearUser() *ServiceUpdate {
-	su.mutation.ClearUser()
-	return su
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -157,9 +139,6 @@ func (su *ServiceUpdate) check() error {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Service.title": %w`, err)}
 		}
 	}
-	if su.mutation.UserCleared() && len(su.mutation.UserIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "Service.user"`)
-	}
 	return nil
 }
 
@@ -197,35 +176,6 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := su.mutation.AddedPrice(); ok {
 		_spec.AddField(service.FieldPrice, field.TypeInt16, value)
-	}
-	if su.mutation.UserCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   service.UserTable,
-			Columns: []string{service.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := su.mutation.UserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   service.UserTable,
-			Columns: []string{service.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, su.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -314,26 +264,9 @@ func (suo *ServiceUpdateOne) AddPrice(i int16) *ServiceUpdateOne {
 	return suo
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (suo *ServiceUpdateOne) SetUserID(id int64) *ServiceUpdateOne {
-	suo.mutation.SetUserID(id)
-	return suo
-}
-
-// SetUser sets the "user" edge to the User entity.
-func (suo *ServiceUpdateOne) SetUser(u *User) *ServiceUpdateOne {
-	return suo.SetUserID(u.ID)
-}
-
 // Mutation returns the ServiceMutation object of the builder.
 func (suo *ServiceUpdateOne) Mutation() *ServiceMutation {
 	return suo.mutation
-}
-
-// ClearUser clears the "user" edge to the User entity.
-func (suo *ServiceUpdateOne) ClearUser() *ServiceUpdateOne {
-	suo.mutation.ClearUser()
-	return suo
 }
 
 // Where appends a list predicates to the ServiceUpdate builder.
@@ -387,9 +320,6 @@ func (suo *ServiceUpdateOne) check() error {
 		if err := service.TitleValidator(v); err != nil {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Service.title": %w`, err)}
 		}
-	}
-	if suo.mutation.UserCleared() && len(suo.mutation.UserIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "Service.user"`)
 	}
 	return nil
 }
@@ -445,35 +375,6 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 	}
 	if value, ok := suo.mutation.AddedPrice(); ok {
 		_spec.AddField(service.FieldPrice, field.TypeInt16, value)
-	}
-	if suo.mutation.UserCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   service.UserTable,
-			Columns: []string{service.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := suo.mutation.UserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   service.UserTable,
-			Columns: []string{service.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Service{config: suo.config}
 	_spec.Assign = _node.assignValues

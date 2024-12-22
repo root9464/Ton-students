@@ -2,7 +2,6 @@ package schema
 
 import (
 	"entgo.io/ent"
-	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
@@ -27,7 +26,5 @@ func (Service) Fields() []ent.Field {
 
 // Edges определяют связи с другими таблицами (если они есть)
 func (Service) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.From("user", User.Type).Ref("services").Unique().Required(),
-	}
+	return nil
 }

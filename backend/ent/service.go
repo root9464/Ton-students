@@ -10,7 +10,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/root9464/Ton-students/ent/service"
-	"github.com/root9464/Ton-students/ent/user"
 )
 
 // Service is the model entity for the Service schema.
@@ -27,32 +26,8 @@ type Service struct {
 	// Tags holds the value of the "tags" field.
 	Tags []string `json:"tags,omitempty"`
 	// Price holds the value of the "price" field.
-	Price int16 `json:"price,omitempty"`
-	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the ServiceQuery when eager-loading is set.
-	Edges        ServiceEdges `json:"edges"`
-	user_name    *int64
+	Price        int16 `json:"price,omitempty"`
 	selectValues sql.SelectValues
-}
-
-// ServiceEdges holds the relations/edges for other nodes in the graph.
-type ServiceEdges struct {
-	// User holds the value of the user edge.
-	User *User `json:"user,omitempty"`
-	// loadedTypes holds the information for reporting if a
-	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
-}
-
-// UserOrErr returns the User value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e ServiceEdges) UserOrErr() (*User, error) {
-	if e.User != nil {
-		return e.User, nil
-	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: user.Label}
-	}
-	return nil, &NotLoadedError{edge: "user"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -66,8 +41,6 @@ func (*Service) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case service.FieldUserName, service.FieldTitle:
 			values[i] = new(sql.NullString)
-		case service.ForeignKeys[0]: // user_name
-			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -123,13 +96,6 @@ func (s *Service) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				s.Price = int16(value.Int64)
 			}
-		case service.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field user_name", value)
-			} else if value.Valid {
-				s.user_name = new(int64)
-				*s.user_name = int64(value.Int64)
-			}
 		default:
 			s.selectValues.Set(columns[i], values[i])
 		}
@@ -141,11 +107,6 @@ func (s *Service) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (s *Service) Value(name string) (ent.Value, error) {
 	return s.selectValues.Get(name)
-}
-
-// QueryUser queries the "user" edge of the Service entity.
-func (s *Service) QueryUser() *UserQuery {
-	return NewServiceClient(s.config).QueryUser(s)
 }
 
 // Update returns a builder for updating this Service.

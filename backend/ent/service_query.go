@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/root9464/Ton-students/ent/predicate"
 	"github.com/root9464/Ton-students/ent/service"
-	"github.com/root9464/Ton-students/ent/user"
 )
 
 // ServiceQuery is the builder for querying Service entities.
@@ -23,8 +22,6 @@ type ServiceQuery struct {
 	order      []service.OrderOption
 	inters     []Interceptor
 	predicates []predicate.Service
-	withUser   *UserQuery
-	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -59,28 +56,6 @@ func (sq *ServiceQuery) Unique(unique bool) *ServiceQuery {
 func (sq *ServiceQuery) Order(o ...service.OrderOption) *ServiceQuery {
 	sq.order = append(sq.order, o...)
 	return sq
-}
-
-// QueryUser chains the current query on the "user" edge.
-func (sq *ServiceQuery) QueryUser() *UserQuery {
-	query := (&UserClient{config: sq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := sq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := sq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(service.Table, service.FieldID, selector),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, service.UserTable, service.UserColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // First returns the first Service entity from the query.
@@ -275,22 +250,10 @@ func (sq *ServiceQuery) Clone() *ServiceQuery {
 		order:      append([]service.OrderOption{}, sq.order...),
 		inters:     append([]Interceptor{}, sq.inters...),
 		predicates: append([]predicate.Service{}, sq.predicates...),
-		withUser:   sq.withUser.Clone(),
 		// clone intermediate query.
 		sql:  sq.sql.Clone(),
 		path: sq.path,
 	}
-}
-
-// WithUser tells the query-builder to eager-load the nodes that are connected to
-// the "user" edge. The optional arguments are used to configure the query builder of the edge.
-func (sq *ServiceQuery) WithUser(opts ...func(*UserQuery)) *ServiceQuery {
-	query := (&UserClient{config: sq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	sq.withUser = query
-	return sq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -369,26 +332,15 @@ func (sq *ServiceQuery) prepareQuery(ctx context.Context) error {
 
 func (sq *ServiceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Service, error) {
 	var (
-		nodes       = []*Service{}
-		withFKs     = sq.withFKs
-		_spec       = sq.querySpec()
-		loadedTypes = [1]bool{
-			sq.withUser != nil,
-		}
+		nodes = []*Service{}
+		_spec = sq.querySpec()
 	)
-	if sq.withUser != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, service.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Service).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Service{config: sq.config}
 		nodes = append(nodes, node)
-		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -400,46 +352,7 @@ func (sq *ServiceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Serv
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := sq.withUser; query != nil {
-		if err := sq.loadUser(ctx, query, nodes, nil,
-			func(n *Service, e *User) { n.Edges.User = e }); err != nil {
-			return nil, err
-		}
-	}
 	return nodes, nil
-}
-
-func (sq *ServiceQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*Service, init func(*Service), assign func(*Service, *User)) error {
-	ids := make([]int64, 0, len(nodes))
-	nodeids := make(map[int64][]*Service)
-	for i := range nodes {
-		if nodes[i].user_name == nil {
-			continue
-		}
-		fk := *nodes[i].user_name
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(user.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "user_name" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
 }
 
 func (sq *ServiceQuery) sqlCount(ctx context.Context) (int, error) {

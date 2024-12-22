@@ -4,7 +4,6 @@ package user
 
 import (
 	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/root9464/Ton-students/ent/predicate"
 )
 
@@ -366,29 +365,6 @@ func HashEqualFold(v string) predicate.User {
 // HashContainsFold applies the ContainsFold predicate on the "hash" field.
 func HashContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldHash, v))
-}
-
-// HasServices applies the HasEdge predicate on the "services" edge.
-func HasServices() predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ServicesTable, ServicesColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasServicesWith applies the HasEdge predicate on the "services" edge with a given conditions (other predicates).
-func HasServicesWith(preds ...predicate.Service) predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := newServicesStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
 }
 
 // And groups predicates with the AND operator between them.

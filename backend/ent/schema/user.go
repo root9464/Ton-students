@@ -5,7 +5,6 @@ import (
 	"regexp"
 
 	"entgo.io/ent"
-	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
@@ -39,7 +38,5 @@ func (User) Fields() []ent.Field {
 
 // Edges определяют связи с другими таблицами (если они есть)
 func (User) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("services", Service.Type).StorageKey(edge.Column("user_name")),
-	}
+	return nil
 }

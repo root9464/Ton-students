@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/root9464/Ton-students/ent/predicate"
-	"github.com/root9464/Ton-students/ent/service"
 	"github.com/root9464/Ton-students/ent/user"
 )
 
@@ -118,45 +117,9 @@ func (uu *UserUpdate) SetNillableHash(s *string) *UserUpdate {
 	return uu
 }
 
-// AddServiceIDs adds the "services" edge to the Service entity by IDs.
-func (uu *UserUpdate) AddServiceIDs(ids ...int64) *UserUpdate {
-	uu.mutation.AddServiceIDs(ids...)
-	return uu
-}
-
-// AddServices adds the "services" edges to the Service entity.
-func (uu *UserUpdate) AddServices(s ...*Service) *UserUpdate {
-	ids := make([]int64, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return uu.AddServiceIDs(ids...)
-}
-
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
-}
-
-// ClearServices clears all "services" edges to the Service entity.
-func (uu *UserUpdate) ClearServices() *UserUpdate {
-	uu.mutation.ClearServices()
-	return uu
-}
-
-// RemoveServiceIDs removes the "services" edge to Service entities by IDs.
-func (uu *UserUpdate) RemoveServiceIDs(ids ...int64) *UserUpdate {
-	uu.mutation.RemoveServiceIDs(ids...)
-	return uu
-}
-
-// RemoveServices removes "services" edges to Service entities.
-func (uu *UserUpdate) RemoveServices(s ...*Service) *UserUpdate {
-	ids := make([]int64, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return uu.RemoveServiceIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -238,51 +201,6 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := uu.mutation.Hash(); ok {
 		_spec.SetField(user.FieldHash, field.TypeString, value)
-	}
-	if uu.mutation.ServicesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.ServicesTable,
-			Columns: []string{user.ServicesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeInt64),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.RemovedServicesIDs(); len(nodes) > 0 && !uu.mutation.ServicesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.ServicesTable,
-			Columns: []string{user.ServicesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeInt64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.ServicesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.ServicesTable,
-			Columns: []string{user.ServicesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeInt64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -394,45 +312,9 @@ func (uuo *UserUpdateOne) SetNillableHash(s *string) *UserUpdateOne {
 	return uuo
 }
 
-// AddServiceIDs adds the "services" edge to the Service entity by IDs.
-func (uuo *UserUpdateOne) AddServiceIDs(ids ...int64) *UserUpdateOne {
-	uuo.mutation.AddServiceIDs(ids...)
-	return uuo
-}
-
-// AddServices adds the "services" edges to the Service entity.
-func (uuo *UserUpdateOne) AddServices(s ...*Service) *UserUpdateOne {
-	ids := make([]int64, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return uuo.AddServiceIDs(ids...)
-}
-
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
-}
-
-// ClearServices clears all "services" edges to the Service entity.
-func (uuo *UserUpdateOne) ClearServices() *UserUpdateOne {
-	uuo.mutation.ClearServices()
-	return uuo
-}
-
-// RemoveServiceIDs removes the "services" edge to Service entities by IDs.
-func (uuo *UserUpdateOne) RemoveServiceIDs(ids ...int64) *UserUpdateOne {
-	uuo.mutation.RemoveServiceIDs(ids...)
-	return uuo
-}
-
-// RemoveServices removes "services" edges to Service entities.
-func (uuo *UserUpdateOne) RemoveServices(s ...*Service) *UserUpdateOne {
-	ids := make([]int64, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return uuo.RemoveServiceIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -544,51 +426,6 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if value, ok := uuo.mutation.Hash(); ok {
 		_spec.SetField(user.FieldHash, field.TypeString, value)
-	}
-	if uuo.mutation.ServicesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.ServicesTable,
-			Columns: []string{user.ServicesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeInt64),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.RemovedServicesIDs(); len(nodes) > 0 && !uuo.mutation.ServicesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.ServicesTable,
-			Columns: []string{user.ServicesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeInt64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.ServicesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.ServicesTable,
-			Columns: []string{user.ServicesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeInt64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &User{config: uuo.config}
 	_spec.Assign = _node.assignValues

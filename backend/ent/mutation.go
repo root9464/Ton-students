@@ -42,8 +42,6 @@ type ServiceMutation struct {
 	price         *int16
 	addprice      *int16
 	clearedFields map[string]struct{}
-	user          *int64
-	cleareduser   bool
 	done          bool
 	oldValue      func(context.Context) (*Service, error)
 	predicates    []predicate.Service
@@ -368,45 +366,6 @@ func (m *ServiceMutation) ResetPrice() {
 	m.addprice = nil
 }
 
-// SetUserID sets the "user" edge to the User entity by id.
-func (m *ServiceMutation) SetUserID(id int64) {
-	m.user = &id
-}
-
-// ClearUser clears the "user" edge to the User entity.
-func (m *ServiceMutation) ClearUser() {
-	m.cleareduser = true
-}
-
-// UserCleared reports if the "user" edge to the User entity was cleared.
-func (m *ServiceMutation) UserCleared() bool {
-	return m.cleareduser
-}
-
-// UserID returns the "user" edge ID in the mutation.
-func (m *ServiceMutation) UserID() (id int64, exists bool) {
-	if m.user != nil {
-		return *m.user, true
-	}
-	return
-}
-
-// UserIDs returns the "user" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// UserID instead. It exists only for internal usage by the builders.
-func (m *ServiceMutation) UserIDs() (ids []int64) {
-	if id := m.user; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetUser resets all changes to the "user" edge.
-func (m *ServiceMutation) ResetUser() {
-	m.user = nil
-	m.cleareduser = false
-}
-
 // Where appends a list predicates to the ServiceMutation builder.
 func (m *ServiceMutation) Where(ps ...predicate.Service) {
 	m.predicates = append(m.predicates, ps...)
@@ -623,28 +582,19 @@ func (m *ServiceMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ServiceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.user != nil {
-		edges = append(edges, service.EdgeUser)
-	}
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *ServiceMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case service.EdgeUser:
-		if id := m.user; id != nil {
-			return []ent.Value{*id}
-		}
-	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ServiceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 0)
 	return edges
 }
 
@@ -656,65 +606,45 @@ func (m *ServiceMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ServiceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.cleareduser {
-		edges = append(edges, service.EdgeUser)
-	}
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *ServiceMutation) EdgeCleared(name string) bool {
-	switch name {
-	case service.EdgeUser:
-		return m.cleareduser
-	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *ServiceMutation) ClearEdge(name string) error {
-	switch name {
-	case service.EdgeUser:
-		m.ClearUser()
-		return nil
-	}
 	return fmt.Errorf("unknown Service unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *ServiceMutation) ResetEdge(name string) error {
-	switch name {
-	case service.EdgeUser:
-		m.ResetUser()
-		return nil
-	}
 	return fmt.Errorf("unknown Service edge %s", name)
 }
 
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *int64
-	userName        *string
-	firstName       *string
-	lastName        *string
-	role            *user.Role
-	info            *map[string]interface{}
-	isPremium       *bool
-	hash            *string
-	clearedFields   map[string]struct{}
-	services        map[int64]struct{}
-	removedservices map[int64]struct{}
-	clearedservices bool
-	done            bool
-	oldValue        func(context.Context) (*User, error)
-	predicates      []predicate.User
+	op            Op
+	typ           string
+	id            *int64
+	userName      *string
+	firstName     *string
+	lastName      *string
+	role          *user.Role
+	info          *map[string]interface{}
+	isPremium     *bool
+	hash          *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*User, error)
+	predicates    []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -1073,60 +1003,6 @@ func (m *UserMutation) ResetHash() {
 	m.hash = nil
 }
 
-// AddServiceIDs adds the "services" edge to the Service entity by ids.
-func (m *UserMutation) AddServiceIDs(ids ...int64) {
-	if m.services == nil {
-		m.services = make(map[int64]struct{})
-	}
-	for i := range ids {
-		m.services[ids[i]] = struct{}{}
-	}
-}
-
-// ClearServices clears the "services" edge to the Service entity.
-func (m *UserMutation) ClearServices() {
-	m.clearedservices = true
-}
-
-// ServicesCleared reports if the "services" edge to the Service entity was cleared.
-func (m *UserMutation) ServicesCleared() bool {
-	return m.clearedservices
-}
-
-// RemoveServiceIDs removes the "services" edge to the Service entity by IDs.
-func (m *UserMutation) RemoveServiceIDs(ids ...int64) {
-	if m.removedservices == nil {
-		m.removedservices = make(map[int64]struct{})
-	}
-	for i := range ids {
-		delete(m.services, ids[i])
-		m.removedservices[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedServices returns the removed IDs of the "services" edge to the Service entity.
-func (m *UserMutation) RemovedServicesIDs() (ids []int64) {
-	for id := range m.removedservices {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ServicesIDs returns the "services" edge IDs in the mutation.
-func (m *UserMutation) ServicesIDs() (ids []int64) {
-	for id := range m.services {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetServices resets all changes to the "services" edge.
-func (m *UserMutation) ResetServices() {
-	m.services = nil
-	m.clearedservices = false
-	m.removedservices = nil
-}
-
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -1362,84 +1238,48 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.services != nil {
-		edges = append(edges, user.EdgeServices)
-	}
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *UserMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case user.EdgeServices:
-		ids := make([]ent.Value, 0, len(m.services))
-		for id := range m.services {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.removedservices != nil {
-		edges = append(edges, user.EdgeServices)
-	}
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *UserMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case user.EdgeServices:
-		ids := make([]ent.Value, 0, len(m.removedservices))
-		for id := range m.removedservices {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.clearedservices {
-		edges = append(edges, user.EdgeServices)
-	}
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *UserMutation) EdgeCleared(name string) bool {
-	switch name {
-	case user.EdgeServices:
-		return m.clearedservices
-	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *UserMutation) ClearEdge(name string) error {
-	switch name {
-	}
 	return fmt.Errorf("unknown User unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *UserMutation) ResetEdge(name string) error {
-	switch name {
-	case user.EdgeServices:
-		m.ResetServices()
-		return nil
-	}
 	return fmt.Errorf("unknown User edge %s", name)
 }

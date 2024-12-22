@@ -30,29 +30,8 @@ type User struct {
 	// IsPremium holds the value of the "isPremium" field.
 	IsPremium bool `json:"isPremium,omitempty"`
 	// Hash holds the value of the "hash" field.
-	Hash string `json:"hash,omitempty"`
-	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the UserQuery when eager-loading is set.
-	Edges        UserEdges `json:"edges"`
+	Hash         string `json:"hash,omitempty"`
 	selectValues sql.SelectValues
-}
-
-// UserEdges holds the relations/edges for other nodes in the graph.
-type UserEdges struct {
-	// Services holds the value of the services edge.
-	Services []*Service `json:"services,omitempty"`
-	// loadedTypes holds the information for reporting if a
-	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
-}
-
-// ServicesOrErr returns the Services value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) ServicesOrErr() ([]*Service, error) {
-	if e.loadedTypes[0] {
-		return e.Services, nil
-	}
-	return nil, &NotLoadedError{edge: "services"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -144,11 +123,6 @@ func (u *User) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (u *User) Value(name string) (ent.Value, error) {
 	return u.selectValues.Get(name)
-}
-
-// QueryServices queries the "services" edge of the User entity.
-func (u *User) QueryServices() *ServiceQuery {
-	return NewUserClient(u.config).QueryServices(u)
 }
 
 // Update returns a builder for updating this User.
