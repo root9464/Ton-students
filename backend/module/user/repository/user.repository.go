@@ -13,6 +13,7 @@ type IUserRepository interface {
 	Create(ctx context.Context, user *ent.User) (*ent.User, error)
 	GetByID(ctx context.Context, id int64) (*ent.User, error)
 	Update(ctx context.Context, user *ent.User) (*ent.User, error)
+	// UpdateInfo(ctx context.Context, id int64, dto *user_dto.UpdateUserDto) (*ent.User, error)
 }
 
 type userRepository struct {

@@ -12,6 +12,7 @@ import (
 	"github.com/root9464/Ton-students/ent"
 	"github.com/root9464/Ton-students/shared/logger"
 	"github.com/root9464/Ton-students/shared/middleware"
+	custom_validator "github.com/root9464/Ton-students/shared/validator"
 )
 
 type App struct {
@@ -103,6 +104,7 @@ func (app *App) initLogger() error {
 func (app *App) initValidator() error {
 	if app.validator == nil {
 		app.validator = validator.New()
+		app.validator.RegisterValidation("selected_name", custom_validator.IsValidSelectedName)
 	}
 	return nil
 }
@@ -139,6 +141,5 @@ func (app *App) initRouter() error {
 
 	app.moduleProvider.authModule.AuthRoutes(api)
 	app.moduleProvider.userModule.UserRoutes(api)
-	app.moduleProvider.serviceModule.ServiceRoutes(api)
 	return nil
 }

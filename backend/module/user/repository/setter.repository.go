@@ -16,6 +16,7 @@ func (r *userRepository) Create(ctx context.Context, user *ent.User) (*ent.User,
 		SetUsername(user.Username).
 		SetIsPremium(user.IsPremium).
 		SetHash(user.Hash).
+		SetUsername(user.Username).
 		Save(ctx)
 	if err != nil {
 		r.logger.Errorf("Error creating user: %v", err)
@@ -31,6 +32,7 @@ func (r *userRepository) Update(ctx context.Context, user *ent.User) (*ent.User,
 		SetLastname(user.Lastname).
 		SetUsername(user.Username).
 		SetIsPremium(user.IsPremium).
+		SetHash(user.Hash).
 		Save(ctx)
 
 	switch {
@@ -42,3 +44,6 @@ func (r *userRepository) Update(ctx context.Context, user *ent.User) (*ent.User,
 
 	return getUser, nil
 }
+
+// func (r *userRepository) UpdateInfo(ctx context.Context, id int64, dto *user_dto.UpdateUserDto) (*ent.User, error) {
+// }

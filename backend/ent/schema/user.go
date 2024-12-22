@@ -21,6 +21,8 @@ func (User) Fields() []ent.Field {
 		field.Text("username").NotEmpty().Unique(),
 		field.Text("firstname").Default(""),
 		field.Text("lastname").Default(""),
+		field.Text("nickname").Default(""),
+		field.Enum("selectedName").Values("firstname", "lastname", "nickname", "username").Default("username"),
 		field.Enum("role").Values("user", "creator", "moderator", "administrator").Default("user"),
 		field.JSON("info", map[string]interface{}{}).Default(map[string]interface{}{
 			"information": "",

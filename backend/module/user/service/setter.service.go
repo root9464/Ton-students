@@ -39,35 +39,49 @@ func (s *userService) Create(ctx context.Context, dto interface{}) (*ent.User, e
 		}
 	}
 
-	convert, err := utils.ConvertDtoToEntity[ent.User](&initData)
+	srcUser := user_dto.SrcUser{
+		FirstName:    initData.User.FirstName,
+		ID:           initData.User.ID,
+		IsBot:        initData.User.IsBot,
+		IsPremium:    initData.User.IsPremium,
+		LastName:     initData.User.LastName,
+		UserName:     initData.User.Username,
+		LanguageCode: initData.User.LanguageCode,
+		PhotoURL:     initData.User.PhotoURL,
+		Hash:         initData.Hash,
+	}
+
+	convertEntity, err := utils.MapStruct[ent.User](&srcUser)
+
 	if err != nil {
+		s.logger.Warnf("map struct error: %s", err.Error())
 		return nil, &fiber.Error{
 			Code:    400,
 			Message: err.Error(),
 		}
 	}
 
-	s.logger.Infof("initData: %v", initData.User.ID)
+	s.logger.Infof("%v", convertEntity)
 
-	// user, err := s.repo.Update(ctx, convert)
-	// if err != nil {
-	// 	if err.Error() == "user not found" {
-	// 		s.logger.Info("User not found create")
-	// 		user, err := s.repo.Create(ctx, convert)
-	// 		if err != nil {
-	// 			s.logger.Warnf("create user error: %s", err.Error())
-	// 			return nil, &fiber.Error{
-	// 				Code:    500,
-	// 				Message: err.Error(),
-	// 			}
-	// 		}
-	// 		return user, nil
-	// 	}
-	// 	return nil, &fiber.Error{
-	// 		Code:    500,
-	// 		Message: err.Error(),
-	// 	}
-	// }
+	user, err := s.repo.Update(ctx, &convertEntity)
+	if err != nil {
+		if err.Error() == "user not found" {
+			s.logger.Info("User not found create")
+			user, err := s.repo.Create(ctx, &convertEntity)
+			if err != nil {
+				s.logger.Warnf("create user error: %s", err.Error())
+				return nil, &fiber.Error{
+					Code:    500,
+					Message: err.Error(),
+				}
+			}
+			return user, nil
+		}
+		return nil, &fiber.Error{
+			Code:    500,
+			Message: err.Error(),
+		}
+	}
 
-	return convert, nil
+	return user, nil
 }

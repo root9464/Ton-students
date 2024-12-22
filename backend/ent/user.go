@@ -23,6 +23,10 @@ type User struct {
 	Firstname string `json:"firstname,omitempty"`
 	// Lastname holds the value of the "lastname" field.
 	Lastname string `json:"lastname,omitempty"`
+	// Nickname holds the value of the "nickname" field.
+	Nickname string `json:"nickname,omitempty"`
+	// SelectedName holds the value of the "selectedName" field.
+	SelectedName user.SelectedName `json:"selectedName,omitempty"`
 	// Role holds the value of the "role" field.
 	Role user.Role `json:"role,omitempty"`
 	// Info holds the value of the "info" field.
@@ -66,7 +70,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case user.FieldID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldUsername, user.FieldFirstname, user.FieldLastname, user.FieldRole, user.FieldHash:
+		case user.FieldUsername, user.FieldFirstname, user.FieldLastname, user.FieldNickname, user.FieldSelectedName, user.FieldRole, user.FieldHash:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -106,6 +110,18 @@ func (u *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field lastname", values[i])
 			} else if value.Valid {
 				u.Lastname = value.String
+			}
+		case user.FieldNickname:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field nickname", values[i])
+			} else if value.Valid {
+				u.Nickname = value.String
+			}
+		case user.FieldSelectedName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field selectedName", values[i])
+			} else if value.Valid {
+				u.SelectedName = user.SelectedName(value.String)
 			}
 		case user.FieldRole:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -182,6 +198,12 @@ func (u *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("lastname=")
 	builder.WriteString(u.Lastname)
+	builder.WriteString(", ")
+	builder.WriteString("nickname=")
+	builder.WriteString(u.Nickname)
+	builder.WriteString(", ")
+	builder.WriteString("selectedName=")
+	builder.WriteString(fmt.Sprintf("%v", u.SelectedName))
 	builder.WriteString(", ")
 	builder.WriteString("role=")
 	builder.WriteString(fmt.Sprintf("%v", u.Role))
