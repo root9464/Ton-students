@@ -1,118 +1,72 @@
-package service
+package bot_service
 
 import (
 	"fmt"
 	"strings"
-	"sync"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
-	"github.com/sirupsen/logrus"
-	"root/pkg/config"
+	"github.com/root9464/Ton-students/shared/logger"
+	"github.com/root9464/Ton-students/config"
 )
 
 type BotService struct {
-	bot    *gotgbot.Bot
 	config *config.Config
-	log    *logrus.Logger
+	logger *logger.Logger
 }
 
-var replyState = struct {
-	mu     sync.Mutex
-	active map[int64]int64
-}{
-	active: make(map[int64]int64),
-}
-
-func NewBotService(bot *gotgbot.Bot, config *config.Config, log *logrus.Logger) *BotService {
+func NewBotService(config *config.Config, logger *logger.Logger) *BotService {
 	return &BotService{
-		bot:    bot,
 		config: config,
-		log:    log,
+		logger: logger,
 	}
 }
 
-// Start command logic
-func (s *BotService) Start(b *gotgbot.Bot, ctx *ext.Context) error {
-	userID := ctx.EffectiveUser.Id
+// Start - Логика обработки команды /start
+func (s *BotService) Start(b *gotgbot.Bot, userID int64) error {
+	// Логирование
+	s.logger.Info(fmt.Sprintf("Start command received from user %d", userID))
 
-	// Check if the user is subscribed
-	member, err := b.GetChatMember(s.config.ChannelId, userID, nil)
+	// Отправка сообщения пользователю
+	_, err := b.SendMessage(userID, "Hello! How can I help you?", nil)
 	if err != nil {
-		s.log.WithError(err).Error("Error checking subscription")
-		_, _ = ctx.EffectiveMessage.Reply(b, "Ошибка при проверке подписки. Попробуйте позже.", nil)
-		return err
+		s.logger.Error("Error sending start message: " + err.Error())
 	}
-
-	if member.GetStatus() != "member" && member.GetStatus() != "administrator" && member.GetStatus() != "creator" {
-		_, _ = ctx.EffectiveMessage.Chat.SendMessage(b, "Please subscribe to the channel.", nil)
-		return nil
-	}
-
-	_, err = b.SendMessage(ctx.EffectiveChat.Id, "Hello! How can I help you?", nil)
 	return err
 }
 
-// Support command logic
-func (s *BotService) SupportStart(b *gotgbot.Bot, ctx *ext.Context) error {
-	args := ctx.Args()
+// SupportStart - Логика обработки команды /support
+func (s *BotService) SupportStart(b *gotgbot.Bot, userID int64, args []string) error {
+	// Если нет аргументов, запрашиваем описание проблемы
 	if len(args) == 0 {
-		_, err := ctx.EffectiveMessage.Reply(b, "Please enter your question.", nil)
+		_, err := b.SendMessage(userID, "❓ <b>Введите ваш вопрос</b>\n\nПример:\n<code>/support Как зарегистрироваться?</code>", &gotgbot.SendMessageOpts{ParseMode: "HTML"})
 		return err
 	}
 
+	// Если аргументы есть, обрабатываем их
 	question := strings.Join(args, " ")
-	userID := ctx.EffectiveUser.Id
+	s.logger.Info(fmt.Sprintf("Received support question from user %d: %s", userID, question))
 
-	// Send the support request to the admin
-	_, err := b.SendMessage(s.config.AdminId, fmt.Sprintf("New support request from user %s: %s", ctx.EffectiveUser.Username, question))
+	// Отправляем сообщение администратору
+	_, err := b.SendMessage(s.config.AdminId, fmt.Sprintf("📩 <b>Новый запрос от пользователя</b>\n\n<b>Пользователь:</b> @%s\n<b>ID:</b> <code>%d</code>\n\n<b>Вопрос:</b>\n%s", userID, userID, question), &gotgbot.SendMessageOpts{ParseMode: "HTML"})
 	if err != nil {
-		s.log.Error("Error sending support request:", err)
-		return err
+		s.logger.Error("Error sending support message to admin: " + err.Error())
 	}
 
-	// Reply to the user
-	_, err = b.SendMessage(userID, "Your request has been sent to support.")
+	// Ответ пользователю
+	_, err = b.SendMessage(userID, "✅ <b>Ваш запрос отправлен в поддержку</b>\n\nПожалуйста, ожидайте ответа от администратора.", &gotgbot.SendMessageOpts{ParseMode: "HTML"})
 	return err
 }
 
-// Reply to user query
-func (s *BotService) SupportReply(b *gotgbot.Bot, ctx *ext.Context) error {
-	userIDStr := strings.TrimPrefix(ctx.CallbackQuery.Data, "reply_")
-	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+// SupportReply - Логика для ответа на запросы поддержки
+func (s *BotService) SupportReply(b *gotgbot.Bot, adminID int64, userID int64, messageText string) error {
+	// Отправка сообщения пользователю
+	_, err := b.SendMessage(userID, fmt.Sprintf("📬 <b>Ответ от администратора:</b>\n\n%s", messageText), &gotgbot.SendMessageOpts{ParseMode: "HTML"})
 	if err != nil {
-		s.log.Error("Error parsing userID:", err)
+		s.logger.Error("Error sending response to user: " + err.Error())
 		return err
 	}
 
-	replyState.mu.Lock()
-	replyState.active[ctx.EffectiveUser.Id] = userID
-	replyState.mu.Unlock()
-
-	_, err = b.SendMessage(ctx.EffectiveUser.Id, "Please enter your response to the user.")
-	return err
-}
-
-// Send response to the user
-func (s *BotService) SendAdminResponse(b *gotgbot.Bot, ctx *ext.Context) error {
-	adminID := ctx.EffectiveUser.Id
-	messageText := ctx.EffectiveMessage.Text
-
-	replyState.mu.Lock()
-	userID, ok := replyState.active[adminID]
-	if !ok {
-		replyState.mu.Unlock()
-		_, err := b.SendMessage(adminID, "No active request to reply to.")
-		return err
-	}
-	delete(replyState.active, adminID)
-	replyState.mu.Unlock()
-
-	_, err := b.SendMessage(userID, fmt.Sprintf("Admin response: %s", messageText))
-	if err != nil {
-		s.log.Error("Error sending response to user:", err)
-		return err
-	}
-
-	_, err = b.SendMessage(adminID, "Your response has been sent to the user.")
+	// Подтверждение администратора
+	_, err = b.SendMessage(adminID, "✅ <b>Ваш ответ был успешно отправлен пользователю.</b>", &gotgbot.SendMessageOpts{ParseMode: "HTML"})
 	return err
 }

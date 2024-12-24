@@ -30,6 +30,7 @@ func (p *moduleProvider) initDeps() error {
 	inits := []func() error{
 		p.UserModule,
 		p.AuthModule,
+		p.BotModule,
 	}
 	for _, init := range inits {
 		err := init()
@@ -51,8 +52,12 @@ func (p *moduleProvider) AuthModule() error {
 }
 
 
-func (p *moduleProvider) BotModule() error {
-	p.botModule = bot_model.NewBotModule(p.app.logger, p.app.config)
-	return p.botModule.BotModule()
+func (p* moduleProvider) BotModule()error{
+	botModule,err := bot_model.NewBotModule(p.app.config,p.app.logger)
+	if err != nil{
+		return err
+	}
+	p.botModule = botModule
+	return nil
 }
 

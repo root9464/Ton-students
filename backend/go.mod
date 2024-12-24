@@ -4,6 +4,7 @@ go 1.23.2
 
 require (
 	entgo.io/ent v0.14.1
+	github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-rc.30
 	github.com/go-playground/validator/v10 v10.23.0
 	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/joho/godotenv v1.5.1
@@ -11,6 +12,7 @@ require (
 	github.com/redis/go-redis/v9 v9.7.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/viper v1.19.0
+	github.com/telegram-mini-apps/init-data-golang v1.3.0
 )
 
 require (
@@ -46,7 +48,6 @@ require (
 	github.com/spf13/cast v1.6.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
-	github.com/telegram-mini-apps/init-data-golang v1.3.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.51.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
