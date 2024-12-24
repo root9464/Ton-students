@@ -52,12 +52,21 @@ func (p *moduleProvider) AuthModule() error {
 }
 
 
-func (p* moduleProvider) BotModule()error{
-	botModule,err := bot_model.NewBotModule(p.app.config,p.app.logger)
-	if err != nil{
+func (p *moduleProvider) BotModule() error {
+	botModule, err := bot_model.NewBotModule(p.app.config, p.app.logger)
+	if err != nil {
 		return err
 	}
 	p.botModule = botModule
+
+	// Запуск бота
+	go func() {
+		if err := p.botModule.Start(); err != nil {
+			p.app.logger.Error("Failed to start bot: " + err.Error())
+		}
+	}()
+
 	return nil
 }
+
 
