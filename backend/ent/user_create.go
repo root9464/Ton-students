@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/root9464/Ton-students/ent/service"
 	"github.com/root9464/Ton-students/ent/user"
 )
@@ -129,14 +130,14 @@ func (uc *UserCreate) SetID(i int64) *UserCreate {
 }
 
 // AddServiceIDs adds the "services" edge to the Service entity by IDs.
-func (uc *UserCreate) AddServiceIDs(ids ...int64) *UserCreate {
+func (uc *UserCreate) AddServiceIDs(ids ...uuid.UUID) *UserCreate {
 	uc.mutation.AddServiceIDs(ids...)
 	return uc
 }
 
 // AddServices adds the "services" edges to the Service entity.
 func (uc *UserCreate) AddServices(s ...*Service) *UserCreate {
-	ids := make([]int64, len(s))
+	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
@@ -333,7 +334,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Columns: []string{user.ServicesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeInt64),
+				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

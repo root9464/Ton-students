@@ -14,6 +14,10 @@ type Tx struct {
 	config
 	// Service is the client for interacting with the Service builders.
 	Service *ServiceClient
+	// ServiceTag is the client for interacting with the ServiceTag builders.
+	ServiceTag *ServiceTagClient
+	// Tags is the client for interacting with the Tags builders.
+	Tags *TagsClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -148,6 +152,8 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Service = NewServiceClient(tx.config)
+	tx.ServiceTag = NewServiceTagClient(tx.config)
+	tx.Tags = NewTagsClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 

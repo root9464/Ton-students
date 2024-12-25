@@ -5,51 +5,52 @@ package service
 import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 	"github.com/root9464/Ton-students/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int64) predicate.Service {
+func ID(id uuid.UUID) predicate.Service {
 	return predicate.Service(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int64) predicate.Service {
+func IDEQ(id uuid.UUID) predicate.Service {
 	return predicate.Service(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int64) predicate.Service {
+func IDNEQ(id uuid.UUID) predicate.Service {
 	return predicate.Service(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int64) predicate.Service {
+func IDIn(ids ...uuid.UUID) predicate.Service {
 	return predicate.Service(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int64) predicate.Service {
+func IDNotIn(ids ...uuid.UUID) predicate.Service {
 	return predicate.Service(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int64) predicate.Service {
+func IDGT(id uuid.UUID) predicate.Service {
 	return predicate.Service(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int64) predicate.Service {
+func IDGTE(id uuid.UUID) predicate.Service {
 	return predicate.Service(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int64) predicate.Service {
+func IDLT(id uuid.UUID) predicate.Service {
 	return predicate.Service(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int64) predicate.Service {
+func IDLTE(id uuid.UUID) predicate.Service {
 	return predicate.Service(sql.FieldLTE(FieldID, id))
 }
 
@@ -208,6 +209,29 @@ func HasUser() predicate.Service {
 func HasUserWith(preds ...predicate.User) predicate.Service {
 	return predicate.Service(func(s *sql.Selector) {
 		step := newUserStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasServiceTags applies the HasEdge predicate on the "service_tags" edge.
+func HasServiceTags() predicate.Service {
+	return predicate.Service(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, ServiceTagsTable, ServiceTagsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasServiceTagsWith applies the HasEdge predicate on the "service_tags" edge with a given conditions (other predicates).
+func HasServiceTagsWith(preds ...predicate.ServiceTag) predicate.Service {
+	return predicate.Service(func(s *sql.Selector) {
+		step := newServiceTagsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

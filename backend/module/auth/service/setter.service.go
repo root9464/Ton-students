@@ -20,7 +20,7 @@ func (s *authService) Authorize(ctx context.Context, dto *auth_dto.AutorizeDto) 
 	}
 
 	botToken := s.config.TelegramBotToken
-	expIn := 24 * time.Hour
+	expIn := 0 * time.Hour
 
 	if err := initdata.Validate(dto.InitDataRaw, botToken, expIn); err != nil {
 		s.logger.Warnf("validate error: %s", err.Error())

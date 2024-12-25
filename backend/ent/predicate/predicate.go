@@ -9,5 +9,11 @@ import (
 // Service is the predicate function for service builders.
 type Service func(*sql.Selector)
 
+// ServiceTag is the predicate function for servicetag builders.
+type ServiceTag func(*sql.Selector)
+
+// Tags is the predicate function for tags builders.
+type Tags func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

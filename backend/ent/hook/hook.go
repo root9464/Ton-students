@@ -21,6 +21,30 @@ func (f ServiceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ServiceMutation", m)
 }
 
+// The ServiceTagFunc type is an adapter to allow the use of ordinary
+// function as ServiceTag mutator.
+type ServiceTagFunc func(context.Context, *ent.ServiceTagMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ServiceTagFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ServiceTagMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ServiceTagMutation", m)
+}
+
+// The TagsFunc type is an adapter to allow the use of ordinary
+// function as Tags mutator.
+type TagsFunc func(context.Context, *ent.TagsMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TagsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TagsMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TagsMutation", m)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)

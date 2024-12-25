@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -11,19 +12,22 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/root9464/Ton-students/ent/predicate"
 	"github.com/root9464/Ton-students/ent/service"
+	"github.com/root9464/Ton-students/ent/servicetag"
 	"github.com/root9464/Ton-students/ent/user"
 )
 
 // ServiceQuery is the builder for querying Service entities.
 type ServiceQuery struct {
 	config
-	ctx        *QueryContext
-	order      []service.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Service
-	withUser   *UserQuery
+	ctx             *QueryContext
+	order           []service.OrderOption
+	inters          []Interceptor
+	predicates      []predicate.Service
+	withUser        *UserQuery
+	withServiceTags *ServiceTagQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -82,6 +86,28 @@ func (sq *ServiceQuery) QueryUser() *UserQuery {
 	return query
 }
 
+// QueryServiceTags chains the current query on the "service_tags" edge.
+func (sq *ServiceQuery) QueryServiceTags() *ServiceTagQuery {
+	query := (&ServiceTagClient{config: sq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := sq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := sq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(service.Table, service.FieldID, selector),
+			sqlgraph.To(servicetag.Table, servicetag.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, service.ServiceTagsTable, service.ServiceTagsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Service entity from the query.
 // Returns a *NotFoundError when no Service was found.
 func (sq *ServiceQuery) First(ctx context.Context) (*Service, error) {
@@ -106,8 +132,8 @@ func (sq *ServiceQuery) FirstX(ctx context.Context) *Service {
 
 // FirstID returns the first Service ID from the query.
 // Returns a *NotFoundError when no Service ID was found.
-func (sq *ServiceQuery) FirstID(ctx context.Context) (id int64, err error) {
-	var ids []int64
+func (sq *ServiceQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = sq.Limit(1).IDs(setContextOp(ctx, sq.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
@@ -119,7 +145,7 @@ func (sq *ServiceQuery) FirstID(ctx context.Context) (id int64, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (sq *ServiceQuery) FirstIDX(ctx context.Context) int64 {
+func (sq *ServiceQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := sq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -157,8 +183,8 @@ func (sq *ServiceQuery) OnlyX(ctx context.Context) *Service {
 // OnlyID is like Only, but returns the only Service ID in the query.
 // Returns a *NotSingularError when more than one Service ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (sq *ServiceQuery) OnlyID(ctx context.Context) (id int64, err error) {
-	var ids []int64
+func (sq *ServiceQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = sq.Limit(2).IDs(setContextOp(ctx, sq.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
@@ -174,7 +200,7 @@ func (sq *ServiceQuery) OnlyID(ctx context.Context) (id int64, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (sq *ServiceQuery) OnlyIDX(ctx context.Context) int64 {
+func (sq *ServiceQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := sq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -202,7 +228,7 @@ func (sq *ServiceQuery) AllX(ctx context.Context) []*Service {
 }
 
 // IDs executes the query and returns a list of Service IDs.
-func (sq *ServiceQuery) IDs(ctx context.Context) (ids []int64, err error) {
+func (sq *ServiceQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if sq.ctx.Unique == nil && sq.path != nil {
 		sq.Unique(true)
 	}
@@ -214,7 +240,7 @@ func (sq *ServiceQuery) IDs(ctx context.Context) (ids []int64, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (sq *ServiceQuery) IDsX(ctx context.Context) []int64 {
+func (sq *ServiceQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := sq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -269,12 +295,13 @@ func (sq *ServiceQuery) Clone() *ServiceQuery {
 		return nil
 	}
 	return &ServiceQuery{
-		config:     sq.config,
-		ctx:        sq.ctx.Clone(),
-		order:      append([]service.OrderOption{}, sq.order...),
-		inters:     append([]Interceptor{}, sq.inters...),
-		predicates: append([]predicate.Service{}, sq.predicates...),
-		withUser:   sq.withUser.Clone(),
+		config:          sq.config,
+		ctx:             sq.ctx.Clone(),
+		order:           append([]service.OrderOption{}, sq.order...),
+		inters:          append([]Interceptor{}, sq.inters...),
+		predicates:      append([]predicate.Service{}, sq.predicates...),
+		withUser:        sq.withUser.Clone(),
+		withServiceTags: sq.withServiceTags.Clone(),
 		// clone intermediate query.
 		sql:  sq.sql.Clone(),
 		path: sq.path,
@@ -289,6 +316,17 @@ func (sq *ServiceQuery) WithUser(opts ...func(*UserQuery)) *ServiceQuery {
 		opt(query)
 	}
 	sq.withUser = query
+	return sq
+}
+
+// WithServiceTags tells the query-builder to eager-load the nodes that are connected to
+// the "service_tags" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *ServiceQuery) WithServiceTags(opts ...func(*ServiceTagQuery)) *ServiceQuery {
+	query := (&ServiceTagClient{config: sq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	sq.withServiceTags = query
 	return sq
 }
 
@@ -370,8 +408,9 @@ func (sq *ServiceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Serv
 	var (
 		nodes       = []*Service{}
 		_spec       = sq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			sq.withUser != nil,
+			sq.withServiceTags != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -395,6 +434,13 @@ func (sq *ServiceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Serv
 	if query := sq.withUser; query != nil {
 		if err := sq.loadUser(ctx, query, nodes, nil,
 			func(n *Service, e *User) { n.Edges.User = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := sq.withServiceTags; query != nil {
+		if err := sq.loadServiceTags(ctx, query, nodes,
+			func(n *Service) { n.Edges.ServiceTags = []*ServiceTag{} },
+			func(n *Service, e *ServiceTag) { n.Edges.ServiceTags = append(n.Edges.ServiceTags, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -430,6 +476,37 @@ func (sq *ServiceQuery) loadUser(ctx context.Context, query *UserQuery, nodes []
 	}
 	return nil
 }
+func (sq *ServiceQuery) loadServiceTags(ctx context.Context, query *ServiceTagQuery, nodes []*Service, init func(*Service), assign func(*Service, *ServiceTag)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Service)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.ServiceTag(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(service.ServiceTagsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.service_tag_service
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "service_tag_service" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "service_tag_service" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 
 func (sq *ServiceQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := sq.querySpec()
@@ -441,7 +518,7 @@ func (sq *ServiceQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (sq *ServiceQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(service.Table, service.Columns, sqlgraph.NewFieldSpec(service.FieldID, field.TypeInt64))
+	_spec := sqlgraph.NewQuerySpec(service.Table, service.Columns, sqlgraph.NewFieldSpec(service.FieldID, field.TypeUUID))
 	_spec.From = sq.sql
 	if unique := sq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

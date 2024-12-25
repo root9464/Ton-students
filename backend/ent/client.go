@@ -9,6 +9,7 @@ import (
 	"log"
 	"reflect"
 
+	"github.com/google/uuid"
 	"github.com/root9464/Ton-students/ent/migrate"
 
 	"entgo.io/ent"
@@ -16,6 +17,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/root9464/Ton-students/ent/service"
+	"github.com/root9464/Ton-students/ent/servicetag"
+	"github.com/root9464/Ton-students/ent/tags"
 	"github.com/root9464/Ton-students/ent/user"
 )
 
@@ -26,6 +29,10 @@ type Client struct {
 	Schema *migrate.Schema
 	// Service is the client for interacting with the Service builders.
 	Service *ServiceClient
+	// ServiceTag is the client for interacting with the ServiceTag builders.
+	ServiceTag *ServiceTagClient
+	// Tags is the client for interacting with the Tags builders.
+	Tags *TagsClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -40,6 +47,8 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Service = NewServiceClient(c.config)
+	c.ServiceTag = NewServiceTagClient(c.config)
+	c.Tags = NewTagsClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -131,10 +140,12 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:     ctx,
-		config:  cfg,
-		Service: NewServiceClient(cfg),
-		User:    NewUserClient(cfg),
+		ctx:        ctx,
+		config:     cfg,
+		Service:    NewServiceClient(cfg),
+		ServiceTag: NewServiceTagClient(cfg),
+		Tags:       NewTagsClient(cfg),
+		User:       NewUserClient(cfg),
 	}, nil
 }
 
@@ -152,10 +163,12 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:     ctx,
-		config:  cfg,
-		Service: NewServiceClient(cfg),
-		User:    NewUserClient(cfg),
+		ctx:        ctx,
+		config:     cfg,
+		Service:    NewServiceClient(cfg),
+		ServiceTag: NewServiceTagClient(cfg),
+		Tags:       NewTagsClient(cfg),
+		User:       NewUserClient(cfg),
 	}, nil
 }
 
@@ -185,6 +198,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.Service.Use(hooks...)
+	c.ServiceTag.Use(hooks...)
+	c.Tags.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
@@ -192,6 +207,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.Service.Intercept(interceptors...)
+	c.ServiceTag.Intercept(interceptors...)
+	c.Tags.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
 }
 
@@ -200,6 +217,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *ServiceMutation:
 		return c.Service.mutate(ctx, m)
+	case *ServiceTagMutation:
+		return c.ServiceTag.mutate(ctx, m)
+	case *TagsMutation:
+		return c.Tags.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	default:
@@ -268,7 +289,7 @@ func (c *ServiceClient) UpdateOne(s *Service) *ServiceUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ServiceClient) UpdateOneID(id int64) *ServiceUpdateOne {
+func (c *ServiceClient) UpdateOneID(id uuid.UUID) *ServiceUpdateOne {
 	mutation := newServiceMutation(c.config, OpUpdateOne, withServiceID(id))
 	return &ServiceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -285,7 +306,7 @@ func (c *ServiceClient) DeleteOne(s *Service) *ServiceDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ServiceClient) DeleteOneID(id int64) *ServiceDeleteOne {
+func (c *ServiceClient) DeleteOneID(id uuid.UUID) *ServiceDeleteOne {
 	builder := c.Delete().Where(service.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -302,12 +323,12 @@ func (c *ServiceClient) Query() *ServiceQuery {
 }
 
 // Get returns a Service entity by its id.
-func (c *ServiceClient) Get(ctx context.Context, id int64) (*Service, error) {
+func (c *ServiceClient) Get(ctx context.Context, id uuid.UUID) (*Service, error) {
 	return c.Query().Where(service.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ServiceClient) GetX(ctx context.Context, id int64) *Service {
+func (c *ServiceClient) GetX(ctx context.Context, id uuid.UUID) *Service {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -324,6 +345,22 @@ func (c *ServiceClient) QueryUser(s *Service) *UserQuery {
 			sqlgraph.From(service.Table, service.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, service.UserTable, service.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryServiceTags queries the service_tags edge of a Service.
+func (c *ServiceClient) QueryServiceTags(s *Service) *ServiceTagQuery {
+	query := (&ServiceTagClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(service.Table, service.FieldID, id),
+			sqlgraph.To(servicetag.Table, servicetag.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, service.ServiceTagsTable, service.ServiceTagsColumn),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil
@@ -353,6 +390,320 @@ func (c *ServiceClient) mutate(ctx context.Context, m *ServiceMutation) (Value, 
 		return (&ServiceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Service mutation op: %q", m.Op())
+	}
+}
+
+// ServiceTagClient is a client for the ServiceTag schema.
+type ServiceTagClient struct {
+	config
+}
+
+// NewServiceTagClient returns a client for the ServiceTag from the given config.
+func NewServiceTagClient(c config) *ServiceTagClient {
+	return &ServiceTagClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `servicetag.Hooks(f(g(h())))`.
+func (c *ServiceTagClient) Use(hooks ...Hook) {
+	c.hooks.ServiceTag = append(c.hooks.ServiceTag, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `servicetag.Intercept(f(g(h())))`.
+func (c *ServiceTagClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ServiceTag = append(c.inters.ServiceTag, interceptors...)
+}
+
+// Create returns a builder for creating a ServiceTag entity.
+func (c *ServiceTagClient) Create() *ServiceTagCreate {
+	mutation := newServiceTagMutation(c.config, OpCreate)
+	return &ServiceTagCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ServiceTag entities.
+func (c *ServiceTagClient) CreateBulk(builders ...*ServiceTagCreate) *ServiceTagCreateBulk {
+	return &ServiceTagCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ServiceTagClient) MapCreateBulk(slice any, setFunc func(*ServiceTagCreate, int)) *ServiceTagCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ServiceTagCreateBulk{err: fmt.Errorf("calling to ServiceTagClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ServiceTagCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ServiceTagCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ServiceTag.
+func (c *ServiceTagClient) Update() *ServiceTagUpdate {
+	mutation := newServiceTagMutation(c.config, OpUpdate)
+	return &ServiceTagUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ServiceTagClient) UpdateOne(st *ServiceTag) *ServiceTagUpdateOne {
+	mutation := newServiceTagMutation(c.config, OpUpdateOne, withServiceTag(st))
+	return &ServiceTagUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ServiceTagClient) UpdateOneID(id uuid.UUID) *ServiceTagUpdateOne {
+	mutation := newServiceTagMutation(c.config, OpUpdateOne, withServiceTagID(id))
+	return &ServiceTagUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ServiceTag.
+func (c *ServiceTagClient) Delete() *ServiceTagDelete {
+	mutation := newServiceTagMutation(c.config, OpDelete)
+	return &ServiceTagDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ServiceTagClient) DeleteOne(st *ServiceTag) *ServiceTagDeleteOne {
+	return c.DeleteOneID(st.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ServiceTagClient) DeleteOneID(id uuid.UUID) *ServiceTagDeleteOne {
+	builder := c.Delete().Where(servicetag.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ServiceTagDeleteOne{builder}
+}
+
+// Query returns a query builder for ServiceTag.
+func (c *ServiceTagClient) Query() *ServiceTagQuery {
+	return &ServiceTagQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeServiceTag},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ServiceTag entity by its id.
+func (c *ServiceTagClient) Get(ctx context.Context, id uuid.UUID) (*ServiceTag, error) {
+	return c.Query().Where(servicetag.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ServiceTagClient) GetX(ctx context.Context, id uuid.UUID) *ServiceTag {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryService queries the service edge of a ServiceTag.
+func (c *ServiceTagClient) QueryService(st *ServiceTag) *ServiceQuery {
+	query := (&ServiceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := st.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(servicetag.Table, servicetag.FieldID, id),
+			sqlgraph.To(service.Table, service.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, servicetag.ServiceTable, servicetag.ServiceColumn),
+		)
+		fromV = sqlgraph.Neighbors(st.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTag queries the tag edge of a ServiceTag.
+func (c *ServiceTagClient) QueryTag(st *ServiceTag) *TagsQuery {
+	query := (&TagsClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := st.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(servicetag.Table, servicetag.FieldID, id),
+			sqlgraph.To(tags.Table, tags.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, servicetag.TagTable, servicetag.TagColumn),
+		)
+		fromV = sqlgraph.Neighbors(st.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ServiceTagClient) Hooks() []Hook {
+	return c.hooks.ServiceTag
+}
+
+// Interceptors returns the client interceptors.
+func (c *ServiceTagClient) Interceptors() []Interceptor {
+	return c.inters.ServiceTag
+}
+
+func (c *ServiceTagClient) mutate(ctx context.Context, m *ServiceTagMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ServiceTagCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ServiceTagUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ServiceTagUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ServiceTagDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ServiceTag mutation op: %q", m.Op())
+	}
+}
+
+// TagsClient is a client for the Tags schema.
+type TagsClient struct {
+	config
+}
+
+// NewTagsClient returns a client for the Tags from the given config.
+func NewTagsClient(c config) *TagsClient {
+	return &TagsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `tags.Hooks(f(g(h())))`.
+func (c *TagsClient) Use(hooks ...Hook) {
+	c.hooks.Tags = append(c.hooks.Tags, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `tags.Intercept(f(g(h())))`.
+func (c *TagsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Tags = append(c.inters.Tags, interceptors...)
+}
+
+// Create returns a builder for creating a Tags entity.
+func (c *TagsClient) Create() *TagsCreate {
+	mutation := newTagsMutation(c.config, OpCreate)
+	return &TagsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Tags entities.
+func (c *TagsClient) CreateBulk(builders ...*TagsCreate) *TagsCreateBulk {
+	return &TagsCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TagsClient) MapCreateBulk(slice any, setFunc func(*TagsCreate, int)) *TagsCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TagsCreateBulk{err: fmt.Errorf("calling to TagsClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TagsCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &TagsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Tags.
+func (c *TagsClient) Update() *TagsUpdate {
+	mutation := newTagsMutation(c.config, OpUpdate)
+	return &TagsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TagsClient) UpdateOne(t *Tags) *TagsUpdateOne {
+	mutation := newTagsMutation(c.config, OpUpdateOne, withTags(t))
+	return &TagsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TagsClient) UpdateOneID(id uuid.UUID) *TagsUpdateOne {
+	mutation := newTagsMutation(c.config, OpUpdateOne, withTagsID(id))
+	return &TagsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Tags.
+func (c *TagsClient) Delete() *TagsDelete {
+	mutation := newTagsMutation(c.config, OpDelete)
+	return &TagsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TagsClient) DeleteOne(t *Tags) *TagsDeleteOne {
+	return c.DeleteOneID(t.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TagsClient) DeleteOneID(id uuid.UUID) *TagsDeleteOne {
+	builder := c.Delete().Where(tags.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TagsDeleteOne{builder}
+}
+
+// Query returns a query builder for Tags.
+func (c *TagsClient) Query() *TagsQuery {
+	return &TagsQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTags},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Tags entity by its id.
+func (c *TagsClient) Get(ctx context.Context, id uuid.UUID) (*Tags, error) {
+	return c.Query().Where(tags.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TagsClient) GetX(ctx context.Context, id uuid.UUID) *Tags {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryServiceTags queries the service_tags edge of a Tags.
+func (c *TagsClient) QueryServiceTags(t *Tags) *ServiceTagQuery {
+	query := (&ServiceTagClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(tags.Table, tags.FieldID, id),
+			sqlgraph.To(servicetag.Table, servicetag.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, tags.ServiceTagsTable, tags.ServiceTagsColumn),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *TagsClient) Hooks() []Hook {
+	return c.hooks.Tags
+}
+
+// Interceptors returns the client interceptors.
+func (c *TagsClient) Interceptors() []Interceptor {
+	return c.inters.Tags
+}
+
+func (c *TagsClient) mutate(ctx context.Context, m *TagsMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TagsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TagsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TagsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TagsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Tags mutation op: %q", m.Op())
 	}
 }
 
@@ -508,9 +859,9 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Service, User []ent.Hook
+		Service, ServiceTag, Tags, User []ent.Hook
 	}
 	inters struct {
-		Service, User []ent.Interceptor
+		Service, ServiceTag, Tags, User []ent.Interceptor
 	}
 )

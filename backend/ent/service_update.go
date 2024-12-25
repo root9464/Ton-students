@@ -9,10 +9,11 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/root9464/Ton-students/ent/predicate"
 	"github.com/root9464/Ton-students/ent/service"
+	"github.com/root9464/Ton-students/ent/servicetag"
 	"github.com/root9464/Ton-students/ent/user"
 )
 
@@ -63,18 +64,6 @@ func (su *ServiceUpdate) SetDescription(m map[string]interface{}) *ServiceUpdate
 	return su
 }
 
-// SetTags sets the "tags" field.
-func (su *ServiceUpdate) SetTags(s []string) *ServiceUpdate {
-	su.mutation.SetTags(s)
-	return su
-}
-
-// AppendTags appends s to the "tags" field.
-func (su *ServiceUpdate) AppendTags(s []string) *ServiceUpdate {
-	su.mutation.AppendTags(s)
-	return su
-}
-
 // SetPrice sets the "price" field.
 func (su *ServiceUpdate) SetPrice(i int16) *ServiceUpdate {
 	su.mutation.ResetPrice()
@@ -101,6 +90,21 @@ func (su *ServiceUpdate) SetUser(u *User) *ServiceUpdate {
 	return su.SetUserID(u.ID)
 }
 
+// AddServiceTagIDs adds the "service_tags" edge to the ServiceTag entity by IDs.
+func (su *ServiceUpdate) AddServiceTagIDs(ids ...uuid.UUID) *ServiceUpdate {
+	su.mutation.AddServiceTagIDs(ids...)
+	return su
+}
+
+// AddServiceTags adds the "service_tags" edges to the ServiceTag entity.
+func (su *ServiceUpdate) AddServiceTags(s ...*ServiceTag) *ServiceUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return su.AddServiceTagIDs(ids...)
+}
+
 // Mutation returns the ServiceMutation object of the builder.
 func (su *ServiceUpdate) Mutation() *ServiceMutation {
 	return su.mutation
@@ -110,6 +114,27 @@ func (su *ServiceUpdate) Mutation() *ServiceMutation {
 func (su *ServiceUpdate) ClearUser() *ServiceUpdate {
 	su.mutation.ClearUser()
 	return su
+}
+
+// ClearServiceTags clears all "service_tags" edges to the ServiceTag entity.
+func (su *ServiceUpdate) ClearServiceTags() *ServiceUpdate {
+	su.mutation.ClearServiceTags()
+	return su
+}
+
+// RemoveServiceTagIDs removes the "service_tags" edge to ServiceTag entities by IDs.
+func (su *ServiceUpdate) RemoveServiceTagIDs(ids ...uuid.UUID) *ServiceUpdate {
+	su.mutation.RemoveServiceTagIDs(ids...)
+	return su
+}
+
+// RemoveServiceTags removes "service_tags" edges to ServiceTag entities.
+func (su *ServiceUpdate) RemoveServiceTags(s ...*ServiceTag) *ServiceUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return su.RemoveServiceTagIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -156,7 +181,7 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if err := su.check(); err != nil {
 		return n, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(service.Table, service.Columns, sqlgraph.NewFieldSpec(service.FieldID, field.TypeInt64))
+	_spec := sqlgraph.NewUpdateSpec(service.Table, service.Columns, sqlgraph.NewFieldSpec(service.FieldID, field.TypeUUID))
 	if ps := su.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -169,14 +194,6 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := su.mutation.Description(); ok {
 		_spec.SetField(service.FieldDescription, field.TypeJSON, value)
-	}
-	if value, ok := su.mutation.Tags(); ok {
-		_spec.SetField(service.FieldTags, field.TypeJSON, value)
-	}
-	if value, ok := su.mutation.AppendedTags(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, service.FieldTags, value)
-		})
 	}
 	if value, ok := su.mutation.Price(); ok {
 		_spec.SetField(service.FieldPrice, field.TypeInt16, value)
@@ -206,6 +223,51 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if su.mutation.ServiceTagsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   service.ServiceTagsTable,
+			Columns: []string{service.ServiceTagsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(servicetag.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := su.mutation.RemovedServiceTagsIDs(); len(nodes) > 0 && !su.mutation.ServiceTagsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   service.ServiceTagsTable,
+			Columns: []string{service.ServiceTagsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(servicetag.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := su.mutation.ServiceTagsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   service.ServiceTagsTable,
+			Columns: []string{service.ServiceTagsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(servicetag.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -267,18 +329,6 @@ func (suo *ServiceUpdateOne) SetDescription(m map[string]interface{}) *ServiceUp
 	return suo
 }
 
-// SetTags sets the "tags" field.
-func (suo *ServiceUpdateOne) SetTags(s []string) *ServiceUpdateOne {
-	suo.mutation.SetTags(s)
-	return suo
-}
-
-// AppendTags appends s to the "tags" field.
-func (suo *ServiceUpdateOne) AppendTags(s []string) *ServiceUpdateOne {
-	suo.mutation.AppendTags(s)
-	return suo
-}
-
 // SetPrice sets the "price" field.
 func (suo *ServiceUpdateOne) SetPrice(i int16) *ServiceUpdateOne {
 	suo.mutation.ResetPrice()
@@ -305,6 +355,21 @@ func (suo *ServiceUpdateOne) SetUser(u *User) *ServiceUpdateOne {
 	return suo.SetUserID(u.ID)
 }
 
+// AddServiceTagIDs adds the "service_tags" edge to the ServiceTag entity by IDs.
+func (suo *ServiceUpdateOne) AddServiceTagIDs(ids ...uuid.UUID) *ServiceUpdateOne {
+	suo.mutation.AddServiceTagIDs(ids...)
+	return suo
+}
+
+// AddServiceTags adds the "service_tags" edges to the ServiceTag entity.
+func (suo *ServiceUpdateOne) AddServiceTags(s ...*ServiceTag) *ServiceUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return suo.AddServiceTagIDs(ids...)
+}
+
 // Mutation returns the ServiceMutation object of the builder.
 func (suo *ServiceUpdateOne) Mutation() *ServiceMutation {
 	return suo.mutation
@@ -314,6 +379,27 @@ func (suo *ServiceUpdateOne) Mutation() *ServiceMutation {
 func (suo *ServiceUpdateOne) ClearUser() *ServiceUpdateOne {
 	suo.mutation.ClearUser()
 	return suo
+}
+
+// ClearServiceTags clears all "service_tags" edges to the ServiceTag entity.
+func (suo *ServiceUpdateOne) ClearServiceTags() *ServiceUpdateOne {
+	suo.mutation.ClearServiceTags()
+	return suo
+}
+
+// RemoveServiceTagIDs removes the "service_tags" edge to ServiceTag entities by IDs.
+func (suo *ServiceUpdateOne) RemoveServiceTagIDs(ids ...uuid.UUID) *ServiceUpdateOne {
+	suo.mutation.RemoveServiceTagIDs(ids...)
+	return suo
+}
+
+// RemoveServiceTags removes "service_tags" edges to ServiceTag entities.
+func (suo *ServiceUpdateOne) RemoveServiceTags(s ...*ServiceTag) *ServiceUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return suo.RemoveServiceTagIDs(ids...)
 }
 
 // Where appends a list predicates to the ServiceUpdate builder.
@@ -373,7 +459,7 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 	if err := suo.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(service.Table, service.Columns, sqlgraph.NewFieldSpec(service.FieldID, field.TypeInt64))
+	_spec := sqlgraph.NewUpdateSpec(service.Table, service.Columns, sqlgraph.NewFieldSpec(service.FieldID, field.TypeUUID))
 	id, ok := suo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Service.id" for update`)}
@@ -404,14 +490,6 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 	if value, ok := suo.mutation.Description(); ok {
 		_spec.SetField(service.FieldDescription, field.TypeJSON, value)
 	}
-	if value, ok := suo.mutation.Tags(); ok {
-		_spec.SetField(service.FieldTags, field.TypeJSON, value)
-	}
-	if value, ok := suo.mutation.AppendedTags(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, service.FieldTags, value)
-		})
-	}
 	if value, ok := suo.mutation.Price(); ok {
 		_spec.SetField(service.FieldPrice, field.TypeInt16, value)
 	}
@@ -440,6 +518,51 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if suo.mutation.ServiceTagsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   service.ServiceTagsTable,
+			Columns: []string{service.ServiceTagsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(servicetag.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := suo.mutation.RemovedServiceTagsIDs(); len(nodes) > 0 && !suo.mutation.ServiceTagsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   service.ServiceTagsTable,
+			Columns: []string{service.ServiceTagsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(servicetag.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := suo.mutation.ServiceTagsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   service.ServiceTagsTable,
+			Columns: []string{service.ServiceTagsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(servicetag.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

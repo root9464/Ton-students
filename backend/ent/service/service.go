@@ -5,6 +5,7 @@ package service
 import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 )
 
 const (
@@ -18,12 +19,12 @@ const (
 	FieldTitle = "title"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
-	// FieldTags holds the string denoting the tags field in the database.
-	FieldTags = "tags"
 	// FieldPrice holds the string denoting the price field in the database.
 	FieldPrice = "price"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
+	// EdgeServiceTags holds the string denoting the service_tags edge name in mutations.
+	EdgeServiceTags = "service_tags"
 	// Table holds the table name of the service in the database.
 	Table = "services"
 	// UserTable is the table that holds the user relation/edge.
@@ -33,6 +34,13 @@ const (
 	UserInverseTable = "users"
 	// UserColumn is the table column denoting the user relation/edge.
 	UserColumn = "user_id"
+	// ServiceTagsTable is the table that holds the service_tags relation/edge.
+	ServiceTagsTable = "service_tags"
+	// ServiceTagsInverseTable is the table name for the ServiceTag entity.
+	// It exists in this package in order to avoid circular dependency with the "servicetag" package.
+	ServiceTagsInverseTable = "service_tags"
+	// ServiceTagsColumn is the table column denoting the service_tags relation/edge.
+	ServiceTagsColumn = "service_tag_service"
 )
 
 // Columns holds all SQL columns for service fields.
@@ -41,7 +49,6 @@ var Columns = []string{
 	FieldUserID,
 	FieldTitle,
 	FieldDescription,
-	FieldTags,
 	FieldPrice,
 }
 
@@ -60,6 +67,8 @@ var (
 	TitleValidator func(string) error
 	// DefaultDescription holds the default value on creation for the "description" field.
 	DefaultDescription map[string]interface{}
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
 )
 
 // OrderOption defines the ordering options for the Service queries.
@@ -91,10 +100,31 @@ func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newUserStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByServiceTagsCount orders the results by service_tags count.
+func ByServiceTagsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newServiceTagsStep(), opts...)
+	}
+}
+
+// ByServiceTags orders the results by service_tags terms.
+func ByServiceTags(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newServiceTagsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newUserStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(UserInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
+	)
+}
+func newServiceTagsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ServiceTagsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, ServiceTagsTable, ServiceTagsColumn),
 	)
 }

@@ -10,10 +10,9 @@ import (
 var (
 	// ServicesColumns holds the columns for the "services" table.
 	ServicesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "title", Type: field.TypeString, Size: 2147483647},
 		{Name: "description", Type: field.TypeJSON},
-		{Name: "tags", Type: field.TypeJSON},
 		{Name: "price", Type: field.TypeInt16},
 		{Name: "user_id", Type: field.TypeInt64},
 	}
@@ -25,11 +24,48 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "services_users_services",
-				Columns:    []*schema.Column{ServicesColumns[5]},
+				Columns:    []*schema.Column{ServicesColumns[4]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
+	}
+	// ServiceTagsColumns holds the columns for the "service_tags" table.
+	ServiceTagsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "service_tag_service", Type: field.TypeUUID},
+		{Name: "service_tag_tag", Type: field.TypeUUID},
+	}
+	// ServiceTagsTable holds the schema information for the "service_tags" table.
+	ServiceTagsTable = &schema.Table{
+		Name:       "service_tags",
+		Columns:    ServiceTagsColumns,
+		PrimaryKey: []*schema.Column{ServiceTagsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "service_tags_services_service",
+				Columns:    []*schema.Column{ServiceTagsColumns[1]},
+				RefColumns: []*schema.Column{ServicesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "service_tags_tags_tag",
+				Columns:    []*schema.Column{ServiceTagsColumns[2]},
+				RefColumns: []*schema.Column{TagsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// TagsColumns holds the columns for the "tags" table.
+	TagsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "tag_name", Type: field.TypeString},
+	}
+	// TagsTable holds the schema information for the "tags" table.
+	TagsTable = &schema.Table{
+		Name:       "tags",
+		Columns:    TagsColumns,
+		PrimaryKey: []*schema.Column{TagsColumns[0]},
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
@@ -53,10 +89,14 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ServicesTable,
+		ServiceTagsTable,
+		TagsTable,
 		UsersTable,
 	}
 )
 
 func init() {
 	ServicesTable.ForeignKeys[0].RefTable = UsersTable
+	ServiceTagsTable.ForeignKeys[0].RefTable = ServicesTable
+	ServiceTagsTable.ForeignKeys[1].RefTable = TagsTable
 }

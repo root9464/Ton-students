@@ -13,7 +13,6 @@ func (r *serviceRepository) Create(ctx context.Context, service *ent.Service) (*
 		SetUserID(service.UserID).
 		SetTitle(service.Title).
 		SetDescription(service.Description).
-		SetTags(service.Tags).
 		SetPrice(service.Price).
 		Save(ctx)
 

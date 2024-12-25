@@ -13,6 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/root9464/Ton-students/ent/service"
+	"github.com/root9464/Ton-students/ent/servicetag"
+	"github.com/root9464/Ton-students/ent/tags"
 	"github.com/root9464/Ton-students/ent/user"
 )
 
@@ -74,8 +76,10 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			service.Table: service.ValidColumn,
-			user.Table:    user.ValidColumn,
+			service.Table:    service.ValidColumn,
+			servicetag.Table: servicetag.ValidColumn,
+			tags.Table:       tags.ValidColumn,
+			user.Table:       user.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

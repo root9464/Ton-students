@@ -10,8 +10,11 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 	"github.com/root9464/Ton-students/ent/predicate"
 	"github.com/root9464/Ton-students/ent/service"
+	"github.com/root9464/Ton-students/ent/servicetag"
+	"github.com/root9464/Ton-students/ent/tags"
 	"github.com/root9464/Ton-students/ent/user"
 )
 
@@ -24,28 +27,31 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeService = "Service"
-	TypeUser    = "User"
+	TypeService    = "Service"
+	TypeServiceTag = "ServiceTag"
+	TypeTags       = "Tags"
+	TypeUser       = "User"
 )
 
 // ServiceMutation represents an operation that mutates the Service nodes in the graph.
 type ServiceMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int64
-	title         *string
-	description   *map[string]interface{}
-	tags          *[]string
-	appendtags    []string
-	price         *int16
-	addprice      *int16
-	clearedFields map[string]struct{}
-	user          *int64
-	cleareduser   bool
-	done          bool
-	oldValue      func(context.Context) (*Service, error)
-	predicates    []predicate.Service
+	op                  Op
+	typ                 string
+	id                  *uuid.UUID
+	title               *string
+	description         *map[string]interface{}
+	price               *int16
+	addprice            *int16
+	clearedFields       map[string]struct{}
+	user                *int64
+	cleareduser         bool
+	service_tags        map[uuid.UUID]struct{}
+	removedservice_tags map[uuid.UUID]struct{}
+	clearedservice_tags bool
+	done                bool
+	oldValue            func(context.Context) (*Service, error)
+	predicates          []predicate.Service
 }
 
 var _ ent.Mutation = (*ServiceMutation)(nil)
@@ -68,7 +74,7 @@ func newServiceMutation(c config, op Op, opts ...serviceOption) *ServiceMutation
 }
 
 // withServiceID sets the ID field of the mutation.
-func withServiceID(id int64) serviceOption {
+func withServiceID(id uuid.UUID) serviceOption {
 	return func(m *ServiceMutation) {
 		var (
 			err   error
@@ -120,13 +126,13 @@ func (m ServiceMutation) Tx() (*Tx, error) {
 
 // SetID sets the value of the id field. Note that this
 // operation is only accepted on creation of Service entities.
-func (m *ServiceMutation) SetID(id int64) {
+func (m *ServiceMutation) SetID(id uuid.UUID) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *ServiceMutation) ID() (id int64, exists bool) {
+func (m *ServiceMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -137,12 +143,12 @@ func (m *ServiceMutation) ID() (id int64, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *ServiceMutation) IDs(ctx context.Context) ([]int64, error) {
+func (m *ServiceMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []int64{id}, nil
+			return []uuid.UUID{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -260,57 +266,6 @@ func (m *ServiceMutation) ResetDescription() {
 	m.description = nil
 }
 
-// SetTags sets the "tags" field.
-func (m *ServiceMutation) SetTags(s []string) {
-	m.tags = &s
-	m.appendtags = nil
-}
-
-// Tags returns the value of the "tags" field in the mutation.
-func (m *ServiceMutation) Tags() (r []string, exists bool) {
-	v := m.tags
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTags returns the old "tags" field's value of the Service entity.
-// If the Service object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ServiceMutation) OldTags(ctx context.Context) (v []string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTags is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTags requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTags: %w", err)
-	}
-	return oldValue.Tags, nil
-}
-
-// AppendTags adds s to the "tags" field.
-func (m *ServiceMutation) AppendTags(s []string) {
-	m.appendtags = append(m.appendtags, s...)
-}
-
-// AppendedTags returns the list of values that were appended to the "tags" field in this mutation.
-func (m *ServiceMutation) AppendedTags() ([]string, bool) {
-	if len(m.appendtags) == 0 {
-		return nil, false
-	}
-	return m.appendtags, true
-}
-
-// ResetTags resets all changes to the "tags" field.
-func (m *ServiceMutation) ResetTags() {
-	m.tags = nil
-	m.appendtags = nil
-}
-
 // SetPrice sets the "price" field.
 func (m *ServiceMutation) SetPrice(i int16) {
 	m.price = &i
@@ -394,6 +349,60 @@ func (m *ServiceMutation) ResetUser() {
 	m.cleareduser = false
 }
 
+// AddServiceTagIDs adds the "service_tags" edge to the ServiceTag entity by ids.
+func (m *ServiceMutation) AddServiceTagIDs(ids ...uuid.UUID) {
+	if m.service_tags == nil {
+		m.service_tags = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.service_tags[ids[i]] = struct{}{}
+	}
+}
+
+// ClearServiceTags clears the "service_tags" edge to the ServiceTag entity.
+func (m *ServiceMutation) ClearServiceTags() {
+	m.clearedservice_tags = true
+}
+
+// ServiceTagsCleared reports if the "service_tags" edge to the ServiceTag entity was cleared.
+func (m *ServiceMutation) ServiceTagsCleared() bool {
+	return m.clearedservice_tags
+}
+
+// RemoveServiceTagIDs removes the "service_tags" edge to the ServiceTag entity by IDs.
+func (m *ServiceMutation) RemoveServiceTagIDs(ids ...uuid.UUID) {
+	if m.removedservice_tags == nil {
+		m.removedservice_tags = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.service_tags, ids[i])
+		m.removedservice_tags[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedServiceTags returns the removed IDs of the "service_tags" edge to the ServiceTag entity.
+func (m *ServiceMutation) RemovedServiceTagsIDs() (ids []uuid.UUID) {
+	for id := range m.removedservice_tags {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ServiceTagsIDs returns the "service_tags" edge IDs in the mutation.
+func (m *ServiceMutation) ServiceTagsIDs() (ids []uuid.UUID) {
+	for id := range m.service_tags {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetServiceTags resets all changes to the "service_tags" edge.
+func (m *ServiceMutation) ResetServiceTags() {
+	m.service_tags = nil
+	m.clearedservice_tags = false
+	m.removedservice_tags = nil
+}
+
 // Where appends a list predicates to the ServiceMutation builder.
 func (m *ServiceMutation) Where(ps ...predicate.Service) {
 	m.predicates = append(m.predicates, ps...)
@@ -428,7 +437,7 @@ func (m *ServiceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ServiceMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 4)
 	if m.user != nil {
 		fields = append(fields, service.FieldUserID)
 	}
@@ -437,9 +446,6 @@ func (m *ServiceMutation) Fields() []string {
 	}
 	if m.description != nil {
 		fields = append(fields, service.FieldDescription)
-	}
-	if m.tags != nil {
-		fields = append(fields, service.FieldTags)
 	}
 	if m.price != nil {
 		fields = append(fields, service.FieldPrice)
@@ -458,8 +464,6 @@ func (m *ServiceMutation) Field(name string) (ent.Value, bool) {
 		return m.Title()
 	case service.FieldDescription:
 		return m.Description()
-	case service.FieldTags:
-		return m.Tags()
 	case service.FieldPrice:
 		return m.Price()
 	}
@@ -477,8 +481,6 @@ func (m *ServiceMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldTitle(ctx)
 	case service.FieldDescription:
 		return m.OldDescription(ctx)
-	case service.FieldTags:
-		return m.OldTags(ctx)
 	case service.FieldPrice:
 		return m.OldPrice(ctx)
 	}
@@ -510,13 +512,6 @@ func (m *ServiceMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDescription(v)
-		return nil
-	case service.FieldTags:
-		v, ok := value.([]string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTags(v)
 		return nil
 	case service.FieldPrice:
 		v, ok := value.(int16)
@@ -598,9 +593,6 @@ func (m *ServiceMutation) ResetField(name string) error {
 	case service.FieldDescription:
 		m.ResetDescription()
 		return nil
-	case service.FieldTags:
-		m.ResetTags()
-		return nil
 	case service.FieldPrice:
 		m.ResetPrice()
 		return nil
@@ -610,9 +602,12 @@ func (m *ServiceMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ServiceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.user != nil {
 		edges = append(edges, service.EdgeUser)
+	}
+	if m.service_tags != nil {
+		edges = append(edges, service.EdgeServiceTags)
 	}
 	return edges
 }
@@ -625,27 +620,47 @@ func (m *ServiceMutation) AddedIDs(name string) []ent.Value {
 		if id := m.user; id != nil {
 			return []ent.Value{*id}
 		}
+	case service.EdgeServiceTags:
+		ids := make([]ent.Value, 0, len(m.service_tags))
+		for id := range m.service_tags {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ServiceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.removedservice_tags != nil {
+		edges = append(edges, service.EdgeServiceTags)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *ServiceMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case service.EdgeServiceTags:
+		ids := make([]ent.Value, 0, len(m.removedservice_tags))
+		for id := range m.removedservice_tags {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ServiceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.cleareduser {
 		edges = append(edges, service.EdgeUser)
+	}
+	if m.clearedservice_tags {
+		edges = append(edges, service.EdgeServiceTags)
 	}
 	return edges
 }
@@ -656,6 +671,8 @@ func (m *ServiceMutation) EdgeCleared(name string) bool {
 	switch name {
 	case service.EdgeUser:
 		return m.cleareduser
+	case service.EdgeServiceTags:
+		return m.clearedservice_tags
 	}
 	return false
 }
@@ -678,8 +695,832 @@ func (m *ServiceMutation) ResetEdge(name string) error {
 	case service.EdgeUser:
 		m.ResetUser()
 		return nil
+	case service.EdgeServiceTags:
+		m.ResetServiceTags()
+		return nil
 	}
 	return fmt.Errorf("unknown Service edge %s", name)
+}
+
+// ServiceTagMutation represents an operation that mutates the ServiceTag nodes in the graph.
+type ServiceTagMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *uuid.UUID
+	clearedFields  map[string]struct{}
+	service        *uuid.UUID
+	clearedservice bool
+	tag            *uuid.UUID
+	clearedtag     bool
+	done           bool
+	oldValue       func(context.Context) (*ServiceTag, error)
+	predicates     []predicate.ServiceTag
+}
+
+var _ ent.Mutation = (*ServiceTagMutation)(nil)
+
+// servicetagOption allows management of the mutation configuration using functional options.
+type servicetagOption func(*ServiceTagMutation)
+
+// newServiceTagMutation creates new mutation for the ServiceTag entity.
+func newServiceTagMutation(c config, op Op, opts ...servicetagOption) *ServiceTagMutation {
+	m := &ServiceTagMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeServiceTag,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withServiceTagID sets the ID field of the mutation.
+func withServiceTagID(id uuid.UUID) servicetagOption {
+	return func(m *ServiceTagMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *ServiceTag
+		)
+		m.oldValue = func(ctx context.Context) (*ServiceTag, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().ServiceTag.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withServiceTag sets the old ServiceTag of the mutation.
+func withServiceTag(node *ServiceTag) servicetagOption {
+	return func(m *ServiceTagMutation) {
+		m.oldValue = func(context.Context) (*ServiceTag, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ServiceTagMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ServiceTagMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of ServiceTag entities.
+func (m *ServiceTagMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ServiceTagMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ServiceTagMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().ServiceTag.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetServiceID sets the "service" edge to the Service entity by id.
+func (m *ServiceTagMutation) SetServiceID(id uuid.UUID) {
+	m.service = &id
+}
+
+// ClearService clears the "service" edge to the Service entity.
+func (m *ServiceTagMutation) ClearService() {
+	m.clearedservice = true
+}
+
+// ServiceCleared reports if the "service" edge to the Service entity was cleared.
+func (m *ServiceTagMutation) ServiceCleared() bool {
+	return m.clearedservice
+}
+
+// ServiceID returns the "service" edge ID in the mutation.
+func (m *ServiceTagMutation) ServiceID() (id uuid.UUID, exists bool) {
+	if m.service != nil {
+		return *m.service, true
+	}
+	return
+}
+
+// ServiceIDs returns the "service" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ServiceID instead. It exists only for internal usage by the builders.
+func (m *ServiceTagMutation) ServiceIDs() (ids []uuid.UUID) {
+	if id := m.service; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetService resets all changes to the "service" edge.
+func (m *ServiceTagMutation) ResetService() {
+	m.service = nil
+	m.clearedservice = false
+}
+
+// SetTagID sets the "tag" edge to the Tags entity by id.
+func (m *ServiceTagMutation) SetTagID(id uuid.UUID) {
+	m.tag = &id
+}
+
+// ClearTag clears the "tag" edge to the Tags entity.
+func (m *ServiceTagMutation) ClearTag() {
+	m.clearedtag = true
+}
+
+// TagCleared reports if the "tag" edge to the Tags entity was cleared.
+func (m *ServiceTagMutation) TagCleared() bool {
+	return m.clearedtag
+}
+
+// TagID returns the "tag" edge ID in the mutation.
+func (m *ServiceTagMutation) TagID() (id uuid.UUID, exists bool) {
+	if m.tag != nil {
+		return *m.tag, true
+	}
+	return
+}
+
+// TagIDs returns the "tag" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TagID instead. It exists only for internal usage by the builders.
+func (m *ServiceTagMutation) TagIDs() (ids []uuid.UUID) {
+	if id := m.tag; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTag resets all changes to the "tag" edge.
+func (m *ServiceTagMutation) ResetTag() {
+	m.tag = nil
+	m.clearedtag = false
+}
+
+// Where appends a list predicates to the ServiceTagMutation builder.
+func (m *ServiceTagMutation) Where(ps ...predicate.ServiceTag) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ServiceTagMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ServiceTagMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.ServiceTag, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ServiceTagMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ServiceTagMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (ServiceTag).
+func (m *ServiceTagMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ServiceTagMutation) Fields() []string {
+	fields := make([]string, 0, 0)
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ServiceTagMutation) Field(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ServiceTagMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	return nil, fmt.Errorf("unknown ServiceTag field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ServiceTagMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown ServiceTag field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ServiceTagMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ServiceTagMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ServiceTagMutation) AddField(name string, value ent.Value) error {
+	return fmt.Errorf("unknown ServiceTag numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ServiceTagMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ServiceTagMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ServiceTagMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown ServiceTag nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ServiceTagMutation) ResetField(name string) error {
+	return fmt.Errorf("unknown ServiceTag field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ServiceTagMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.service != nil {
+		edges = append(edges, servicetag.EdgeService)
+	}
+	if m.tag != nil {
+		edges = append(edges, servicetag.EdgeTag)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ServiceTagMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case servicetag.EdgeService:
+		if id := m.service; id != nil {
+			return []ent.Value{*id}
+		}
+	case servicetag.EdgeTag:
+		if id := m.tag; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ServiceTagMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ServiceTagMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ServiceTagMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedservice {
+		edges = append(edges, servicetag.EdgeService)
+	}
+	if m.clearedtag {
+		edges = append(edges, servicetag.EdgeTag)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ServiceTagMutation) EdgeCleared(name string) bool {
+	switch name {
+	case servicetag.EdgeService:
+		return m.clearedservice
+	case servicetag.EdgeTag:
+		return m.clearedtag
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ServiceTagMutation) ClearEdge(name string) error {
+	switch name {
+	case servicetag.EdgeService:
+		m.ClearService()
+		return nil
+	case servicetag.EdgeTag:
+		m.ClearTag()
+		return nil
+	}
+	return fmt.Errorf("unknown ServiceTag unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ServiceTagMutation) ResetEdge(name string) error {
+	switch name {
+	case servicetag.EdgeService:
+		m.ResetService()
+		return nil
+	case servicetag.EdgeTag:
+		m.ResetTag()
+		return nil
+	}
+	return fmt.Errorf("unknown ServiceTag edge %s", name)
+}
+
+// TagsMutation represents an operation that mutates the Tags nodes in the graph.
+type TagsMutation struct {
+	config
+	op                  Op
+	typ                 string
+	id                  *uuid.UUID
+	tagName             *string
+	clearedFields       map[string]struct{}
+	service_tags        map[uuid.UUID]struct{}
+	removedservice_tags map[uuid.UUID]struct{}
+	clearedservice_tags bool
+	done                bool
+	oldValue            func(context.Context) (*Tags, error)
+	predicates          []predicate.Tags
+}
+
+var _ ent.Mutation = (*TagsMutation)(nil)
+
+// tagsOption allows management of the mutation configuration using functional options.
+type tagsOption func(*TagsMutation)
+
+// newTagsMutation creates new mutation for the Tags entity.
+func newTagsMutation(c config, op Op, opts ...tagsOption) *TagsMutation {
+	m := &TagsMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeTags,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withTagsID sets the ID field of the mutation.
+func withTagsID(id uuid.UUID) tagsOption {
+	return func(m *TagsMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Tags
+		)
+		m.oldValue = func(ctx context.Context) (*Tags, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Tags.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withTags sets the old Tags of the mutation.
+func withTags(node *Tags) tagsOption {
+	return func(m *TagsMutation) {
+		m.oldValue = func(context.Context) (*Tags, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m TagsMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m TagsMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Tags entities.
+func (m *TagsMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *TagsMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *TagsMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Tags.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTagName sets the "tagName" field.
+func (m *TagsMutation) SetTagName(s string) {
+	m.tagName = &s
+}
+
+// TagName returns the value of the "tagName" field in the mutation.
+func (m *TagsMutation) TagName() (r string, exists bool) {
+	v := m.tagName
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTagName returns the old "tagName" field's value of the Tags entity.
+// If the Tags object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TagsMutation) OldTagName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTagName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTagName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTagName: %w", err)
+	}
+	return oldValue.TagName, nil
+}
+
+// ResetTagName resets all changes to the "tagName" field.
+func (m *TagsMutation) ResetTagName() {
+	m.tagName = nil
+}
+
+// AddServiceTagIDs adds the "service_tags" edge to the ServiceTag entity by ids.
+func (m *TagsMutation) AddServiceTagIDs(ids ...uuid.UUID) {
+	if m.service_tags == nil {
+		m.service_tags = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.service_tags[ids[i]] = struct{}{}
+	}
+}
+
+// ClearServiceTags clears the "service_tags" edge to the ServiceTag entity.
+func (m *TagsMutation) ClearServiceTags() {
+	m.clearedservice_tags = true
+}
+
+// ServiceTagsCleared reports if the "service_tags" edge to the ServiceTag entity was cleared.
+func (m *TagsMutation) ServiceTagsCleared() bool {
+	return m.clearedservice_tags
+}
+
+// RemoveServiceTagIDs removes the "service_tags" edge to the ServiceTag entity by IDs.
+func (m *TagsMutation) RemoveServiceTagIDs(ids ...uuid.UUID) {
+	if m.removedservice_tags == nil {
+		m.removedservice_tags = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.service_tags, ids[i])
+		m.removedservice_tags[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedServiceTags returns the removed IDs of the "service_tags" edge to the ServiceTag entity.
+func (m *TagsMutation) RemovedServiceTagsIDs() (ids []uuid.UUID) {
+	for id := range m.removedservice_tags {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ServiceTagsIDs returns the "service_tags" edge IDs in the mutation.
+func (m *TagsMutation) ServiceTagsIDs() (ids []uuid.UUID) {
+	for id := range m.service_tags {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetServiceTags resets all changes to the "service_tags" edge.
+func (m *TagsMutation) ResetServiceTags() {
+	m.service_tags = nil
+	m.clearedservice_tags = false
+	m.removedservice_tags = nil
+}
+
+// Where appends a list predicates to the TagsMutation builder.
+func (m *TagsMutation) Where(ps ...predicate.Tags) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the TagsMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *TagsMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Tags, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *TagsMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *TagsMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Tags).
+func (m *TagsMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *TagsMutation) Fields() []string {
+	fields := make([]string, 0, 1)
+	if m.tagName != nil {
+		fields = append(fields, tags.FieldTagName)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *TagsMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case tags.FieldTagName:
+		return m.TagName()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *TagsMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case tags.FieldTagName:
+		return m.OldTagName(ctx)
+	}
+	return nil, fmt.Errorf("unknown Tags field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TagsMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case tags.FieldTagName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTagName(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Tags field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *TagsMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *TagsMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TagsMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Tags numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *TagsMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *TagsMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *TagsMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Tags nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *TagsMutation) ResetField(name string) error {
+	switch name {
+	case tags.FieldTagName:
+		m.ResetTagName()
+		return nil
+	}
+	return fmt.Errorf("unknown Tags field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *TagsMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.service_tags != nil {
+		edges = append(edges, tags.EdgeServiceTags)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *TagsMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case tags.EdgeServiceTags:
+		ids := make([]ent.Value, 0, len(m.service_tags))
+		for id := range m.service_tags {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *TagsMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedservice_tags != nil {
+		edges = append(edges, tags.EdgeServiceTags)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *TagsMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case tags.EdgeServiceTags:
+		ids := make([]ent.Value, 0, len(m.removedservice_tags))
+		for id := range m.removedservice_tags {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *TagsMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedservice_tags {
+		edges = append(edges, tags.EdgeServiceTags)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *TagsMutation) EdgeCleared(name string) bool {
+	switch name {
+	case tags.EdgeServiceTags:
+		return m.clearedservice_tags
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *TagsMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Tags unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *TagsMutation) ResetEdge(name string) error {
+	switch name {
+	case tags.EdgeServiceTags:
+		m.ResetServiceTags()
+		return nil
+	}
+	return fmt.Errorf("unknown Tags edge %s", name)
 }
 
 // UserMutation represents an operation that mutates the User nodes in the graph.
@@ -698,8 +1539,8 @@ type UserMutation struct {
 	isPremium       *bool
 	hash            *string
 	clearedFields   map[string]struct{}
-	services        map[int64]struct{}
-	removedservices map[int64]struct{}
+	services        map[uuid.UUID]struct{}
+	removedservices map[uuid.UUID]struct{}
 	clearedservices bool
 	done            bool
 	oldValue        func(context.Context) (*User, error)
@@ -1135,9 +1976,9 @@ func (m *UserMutation) ResetHash() {
 }
 
 // AddServiceIDs adds the "services" edge to the Service entity by ids.
-func (m *UserMutation) AddServiceIDs(ids ...int64) {
+func (m *UserMutation) AddServiceIDs(ids ...uuid.UUID) {
 	if m.services == nil {
-		m.services = make(map[int64]struct{})
+		m.services = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.services[ids[i]] = struct{}{}
@@ -1155,9 +1996,9 @@ func (m *UserMutation) ServicesCleared() bool {
 }
 
 // RemoveServiceIDs removes the "services" edge to the Service entity by IDs.
-func (m *UserMutation) RemoveServiceIDs(ids ...int64) {
+func (m *UserMutation) RemoveServiceIDs(ids ...uuid.UUID) {
 	if m.removedservices == nil {
-		m.removedservices = make(map[int64]struct{})
+		m.removedservices = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		delete(m.services, ids[i])
@@ -1166,7 +2007,7 @@ func (m *UserMutation) RemoveServiceIDs(ids ...int64) {
 }
 
 // RemovedServices returns the removed IDs of the "services" edge to the Service entity.
-func (m *UserMutation) RemovedServicesIDs() (ids []int64) {
+func (m *UserMutation) RemovedServicesIDs() (ids []uuid.UUID) {
 	for id := range m.removedservices {
 		ids = append(ids, id)
 	}
@@ -1174,7 +2015,7 @@ func (m *UserMutation) RemovedServicesIDs() (ids []int64) {
 }
 
 // ServicesIDs returns the "services" edge IDs in the mutation.
-func (m *UserMutation) ServicesIDs() (ids []int64) {
+func (m *UserMutation) ServicesIDs() (ids []uuid.UUID) {
 	for id := range m.services {
 		ids = append(ids, id)
 	}

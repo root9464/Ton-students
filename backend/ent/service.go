@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 	"github.com/root9464/Ton-students/ent/service"
 	"github.com/root9464/Ton-students/ent/user"
 )
@@ -17,15 +18,13 @@ import (
 type Service struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int64 `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// UserID holds the value of the "user_id" field.
 	UserID int64 `json:"user_id,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
 	// Description holds the value of the "description" field.
 	Description map[string]interface{} `json:"description,omitempty"`
-	// Tags holds the value of the "tags" field.
-	Tags []string `json:"tags,omitempty"`
 	// Price holds the value of the "price" field.
 	Price int16 `json:"price,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -38,9 +37,11 @@ type Service struct {
 type ServiceEdges struct {
 	// User holds the value of the user edge.
 	User *User `json:"user,omitempty"`
+	// ServiceTags holds the value of the service_tags edge.
+	ServiceTags []*ServiceTag `json:"service_tags,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -54,17 +55,28 @@ func (e ServiceEdges) UserOrErr() (*User, error) {
 	return nil, &NotLoadedError{edge: "user"}
 }
 
+// ServiceTagsOrErr returns the ServiceTags value or an error if the edge
+// was not loaded in eager-loading.
+func (e ServiceEdges) ServiceTagsOrErr() ([]*ServiceTag, error) {
+	if e.loadedTypes[1] {
+		return e.ServiceTags, nil
+	}
+	return nil, &NotLoadedError{edge: "service_tags"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Service) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case service.FieldDescription, service.FieldTags:
+		case service.FieldDescription:
 			values[i] = new([]byte)
-		case service.FieldID, service.FieldUserID, service.FieldPrice:
+		case service.FieldUserID, service.FieldPrice:
 			values[i] = new(sql.NullInt64)
 		case service.FieldTitle:
 			values[i] = new(sql.NullString)
+		case service.FieldID:
+			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -81,11 +93,11 @@ func (s *Service) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case service.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				s.ID = *value
 			}
-			s.ID = int64(value.Int64)
 		case service.FieldUserID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field user_id", values[i])
@@ -104,14 +116,6 @@ func (s *Service) assignValues(columns []string, values []any) error {
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &s.Description); err != nil {
 					return fmt.Errorf("unmarshal field description: %w", err)
-				}
-			}
-		case service.FieldTags:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field tags", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &s.Tags); err != nil {
-					return fmt.Errorf("unmarshal field tags: %w", err)
 				}
 			}
 		case service.FieldPrice:
@@ -136,6 +140,11 @@ func (s *Service) Value(name string) (ent.Value, error) {
 // QueryUser queries the "user" edge of the Service entity.
 func (s *Service) QueryUser() *UserQuery {
 	return NewServiceClient(s.config).QueryUser(s)
+}
+
+// QueryServiceTags queries the "service_tags" edge of the Service entity.
+func (s *Service) QueryServiceTags() *ServiceTagQuery {
+	return NewServiceClient(s.config).QueryServiceTags(s)
 }
 
 // Update returns a builder for updating this Service.
@@ -169,9 +178,6 @@ func (s *Service) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(fmt.Sprintf("%v", s.Description))
-	builder.WriteString(", ")
-	builder.WriteString("tags=")
-	builder.WriteString(fmt.Sprintf("%v", s.Tags))
 	builder.WriteString(", ")
 	builder.WriteString("price=")
 	builder.WriteString(fmt.Sprintf("%v", s.Price))

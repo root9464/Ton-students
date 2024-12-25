@@ -9,7 +9,9 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/root9464/Ton-students/ent/service"
+	"github.com/root9464/Ton-students/ent/servicetag"
 	"github.com/root9464/Ton-students/ent/user"
 )
 
@@ -38,12 +40,6 @@ func (sc *ServiceCreate) SetDescription(m map[string]interface{}) *ServiceCreate
 	return sc
 }
 
-// SetTags sets the "tags" field.
-func (sc *ServiceCreate) SetTags(s []string) *ServiceCreate {
-	sc.mutation.SetTags(s)
-	return sc
-}
-
 // SetPrice sets the "price" field.
 func (sc *ServiceCreate) SetPrice(i int16) *ServiceCreate {
 	sc.mutation.SetPrice(i)
@@ -51,14 +47,37 @@ func (sc *ServiceCreate) SetPrice(i int16) *ServiceCreate {
 }
 
 // SetID sets the "id" field.
-func (sc *ServiceCreate) SetID(i int64) *ServiceCreate {
-	sc.mutation.SetID(i)
+func (sc *ServiceCreate) SetID(u uuid.UUID) *ServiceCreate {
+	sc.mutation.SetID(u)
+	return sc
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (sc *ServiceCreate) SetNillableID(u *uuid.UUID) *ServiceCreate {
+	if u != nil {
+		sc.SetID(*u)
+	}
 	return sc
 }
 
 // SetUser sets the "user" edge to the User entity.
 func (sc *ServiceCreate) SetUser(u *User) *ServiceCreate {
 	return sc.SetUserID(u.ID)
+}
+
+// AddServiceTagIDs adds the "service_tags" edge to the ServiceTag entity by IDs.
+func (sc *ServiceCreate) AddServiceTagIDs(ids ...uuid.UUID) *ServiceCreate {
+	sc.mutation.AddServiceTagIDs(ids...)
+	return sc
+}
+
+// AddServiceTags adds the "service_tags" edges to the ServiceTag entity.
+func (sc *ServiceCreate) AddServiceTags(s ...*ServiceTag) *ServiceCreate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return sc.AddServiceTagIDs(ids...)
 }
 
 // Mutation returns the ServiceMutation object of the builder.
@@ -100,6 +119,10 @@ func (sc *ServiceCreate) defaults() {
 		v := service.DefaultDescription
 		sc.mutation.SetDescription(v)
 	}
+	if _, ok := sc.mutation.ID(); !ok {
+		v := service.DefaultID()
+		sc.mutation.SetID(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -117,9 +140,6 @@ func (sc *ServiceCreate) check() error {
 	}
 	if _, ok := sc.mutation.Description(); !ok {
 		return &ValidationError{Name: "description", err: errors.New(`ent: missing required field "Service.description"`)}
-	}
-	if _, ok := sc.mutation.Tags(); !ok {
-		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "Service.tags"`)}
 	}
 	if _, ok := sc.mutation.Price(); !ok {
 		return &ValidationError{Name: "price", err: errors.New(`ent: missing required field "Service.price"`)}
@@ -141,9 +161,12 @@ func (sc *ServiceCreate) sqlSave(ctx context.Context) (*Service, error) {
 		}
 		return nil, err
 	}
-	if _spec.ID.Value != _node.ID {
-		id := _spec.ID.Value.(int64)
-		_node.ID = int64(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
 	}
 	sc.mutation.id = &_node.ID
 	sc.mutation.done = true
@@ -153,11 +176,11 @@ func (sc *ServiceCreate) sqlSave(ctx context.Context) (*Service, error) {
 func (sc *ServiceCreate) createSpec() (*Service, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Service{config: sc.config}
-		_spec = sqlgraph.NewCreateSpec(service.Table, sqlgraph.NewFieldSpec(service.FieldID, field.TypeInt64))
+		_spec = sqlgraph.NewCreateSpec(service.Table, sqlgraph.NewFieldSpec(service.FieldID, field.TypeUUID))
 	)
 	if id, ok := sc.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = id
+		_spec.ID.Value = &id
 	}
 	if value, ok := sc.mutation.Title(); ok {
 		_spec.SetField(service.FieldTitle, field.TypeString, value)
@@ -166,10 +189,6 @@ func (sc *ServiceCreate) createSpec() (*Service, *sqlgraph.CreateSpec) {
 	if value, ok := sc.mutation.Description(); ok {
 		_spec.SetField(service.FieldDescription, field.TypeJSON, value)
 		_node.Description = value
-	}
-	if value, ok := sc.mutation.Tags(); ok {
-		_spec.SetField(service.FieldTags, field.TypeJSON, value)
-		_node.Tags = value
 	}
 	if value, ok := sc.mutation.Price(); ok {
 		_spec.SetField(service.FieldPrice, field.TypeInt16, value)
@@ -190,6 +209,22 @@ func (sc *ServiceCreate) createSpec() (*Service, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.UserID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := sc.mutation.ServiceTagsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   service.ServiceTagsTable,
+			Columns: []string{service.ServiceTagsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(servicetag.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -240,10 +275,6 @@ func (scb *ServiceCreateBulk) Save(ctx context.Context) ([]*Service, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int64(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})

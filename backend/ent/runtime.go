@@ -3,8 +3,11 @@
 package ent
 
 import (
+	"github.com/google/uuid"
 	"github.com/root9464/Ton-students/ent/schema"
 	"github.com/root9464/Ton-students/ent/service"
+	"github.com/root9464/Ton-students/ent/servicetag"
+	"github.com/root9464/Ton-students/ent/tags"
 	"github.com/root9464/Ton-students/ent/user"
 )
 
@@ -22,6 +25,26 @@ func init() {
 	serviceDescDescription := serviceFields[3].Descriptor()
 	// service.DefaultDescription holds the default value on creation for the description field.
 	service.DefaultDescription = serviceDescDescription.Default.(map[string]interface{})
+	// serviceDescID is the schema descriptor for id field.
+	serviceDescID := serviceFields[0].Descriptor()
+	// service.DefaultID holds the default value on creation for the id field.
+	service.DefaultID = serviceDescID.Default.(func() uuid.UUID)
+	servicetagFields := schema.ServiceTag{}.Fields()
+	_ = servicetagFields
+	// servicetagDescID is the schema descriptor for id field.
+	servicetagDescID := servicetagFields[0].Descriptor()
+	// servicetag.DefaultID holds the default value on creation for the id field.
+	servicetag.DefaultID = servicetagDescID.Default.(func() uuid.UUID)
+	tagsFields := schema.Tags{}.Fields()
+	_ = tagsFields
+	// tagsDescTagName is the schema descriptor for tagName field.
+	tagsDescTagName := tagsFields[1].Descriptor()
+	// tags.TagNameValidator is a validator for the "tagName" field. It is called by the builders before save.
+	tags.TagNameValidator = tagsDescTagName.Validators[0].(func(string) error)
+	// tagsDescID is the schema descriptor for id field.
+	tagsDescID := tagsFields[0].Descriptor()
+	// tags.DefaultID holds the default value on creation for the id field.
+	tags.DefaultID = tagsDescID.Default.(func() uuid.UUID)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescUsername is the schema descriptor for username field.

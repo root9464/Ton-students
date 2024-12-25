@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/root9464/Ton-students/ent/predicate"
 	"github.com/root9464/Ton-students/ent/service"
 	"github.com/root9464/Ton-students/ent/user"
@@ -147,14 +148,14 @@ func (uu *UserUpdate) SetNillableHash(s *string) *UserUpdate {
 }
 
 // AddServiceIDs adds the "services" edge to the Service entity by IDs.
-func (uu *UserUpdate) AddServiceIDs(ids ...int64) *UserUpdate {
+func (uu *UserUpdate) AddServiceIDs(ids ...uuid.UUID) *UserUpdate {
 	uu.mutation.AddServiceIDs(ids...)
 	return uu
 }
 
 // AddServices adds the "services" edges to the Service entity.
 func (uu *UserUpdate) AddServices(s ...*Service) *UserUpdate {
-	ids := make([]int64, len(s))
+	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
@@ -173,14 +174,14 @@ func (uu *UserUpdate) ClearServices() *UserUpdate {
 }
 
 // RemoveServiceIDs removes the "services" edge to Service entities by IDs.
-func (uu *UserUpdate) RemoveServiceIDs(ids ...int64) *UserUpdate {
+func (uu *UserUpdate) RemoveServiceIDs(ids ...uuid.UUID) *UserUpdate {
 	uu.mutation.RemoveServiceIDs(ids...)
 	return uu
 }
 
 // RemoveServices removes "services" edges to Service entities.
 func (uu *UserUpdate) RemoveServices(s ...*Service) *UserUpdate {
-	ids := make([]int64, len(s))
+	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
@@ -286,7 +287,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{user.ServicesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeInt64),
+				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -299,7 +300,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{user.ServicesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeInt64),
+				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -315,7 +316,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{user.ServicesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeInt64),
+				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -462,14 +463,14 @@ func (uuo *UserUpdateOne) SetNillableHash(s *string) *UserUpdateOne {
 }
 
 // AddServiceIDs adds the "services" edge to the Service entity by IDs.
-func (uuo *UserUpdateOne) AddServiceIDs(ids ...int64) *UserUpdateOne {
+func (uuo *UserUpdateOne) AddServiceIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.AddServiceIDs(ids...)
 	return uuo
 }
 
 // AddServices adds the "services" edges to the Service entity.
 func (uuo *UserUpdateOne) AddServices(s ...*Service) *UserUpdateOne {
-	ids := make([]int64, len(s))
+	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
@@ -488,14 +489,14 @@ func (uuo *UserUpdateOne) ClearServices() *UserUpdateOne {
 }
 
 // RemoveServiceIDs removes the "services" edge to Service entities by IDs.
-func (uuo *UserUpdateOne) RemoveServiceIDs(ids ...int64) *UserUpdateOne {
+func (uuo *UserUpdateOne) RemoveServiceIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.RemoveServiceIDs(ids...)
 	return uuo
 }
 
 // RemoveServices removes "services" edges to Service entities.
 func (uuo *UserUpdateOne) RemoveServices(s ...*Service) *UserUpdateOne {
-	ids := make([]int64, len(s))
+	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
@@ -631,7 +632,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Columns: []string{user.ServicesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeInt64),
+				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -644,7 +645,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Columns: []string{user.ServicesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeInt64),
+				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -660,7 +661,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Columns: []string{user.ServicesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeInt64),
+				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
