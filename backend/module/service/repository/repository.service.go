@@ -7,8 +7,12 @@ import (
 	"github.com/root9464/Ton-students/shared/logger"
 )
 
+var _ IServiceRepository = (*serviceRepository)(nil)
+
 type IServiceRepository interface {
-	Create(ctx context.Context, dto *ent.Service) (*ent.Service, error)
+	Create(ctx context.Context, service *ent.Service) (*ent.Service, error)
+	CreateTags(ctx context.Context, tags []string) ([]*ent.Tags, error)
+	CreateTag(ctx context.Context, tagName string) (*ent.Tags, error)
 }
 
 type serviceRepository struct {

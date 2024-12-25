@@ -27,6 +27,13 @@ func (c *authController) Authorize(ctx *fiber.Ctx) error {
 	return ctx.Status(200).JSON(&fiber.Map{
 		"status":  "success",
 		"message": "Authorized",
-		"data":    user,
+		"data": &fiber.Map{
+			"id":        user.ID,
+			"username":  user.Username,
+			"firstname": user.Firstname,
+			"lastname":  user.Lastname,
+			"role":      user.Role,
+			"info":      user.Info,
+		},
 	})
 }
