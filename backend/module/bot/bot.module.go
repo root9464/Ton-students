@@ -4,13 +4,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/root9464/Ton-students/config"
-	"github.com/root9464/Ton-students/shared/logger" // Подключение вашего логгера
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters"
+	"github.com/root9464/Ton-students/config"
 	bot_controller "github.com/root9464/Ton-students/module/bot/controller"
+	"github.com/root9464/Ton-students/shared/logger" // Подключение вашего логгера
 )
 
 type BotModule struct {
@@ -56,12 +56,25 @@ func NewBotModule(config *config.Config, logger *logger.Logger) (*BotModule, err
 }
 
 func (m *BotModule) Start() error {
-	// Добавляем обработчики команд
+	//start
 	m.dispatcher.AddHandler(handlers.NewCommand("start", m.controller.Start))
+
+	//support
 	m.dispatcher.AddHandler(handlers.NewCommand("support", m.controller.SupportStart))
-	m.dispatcher.AddHandler(handlers.NewCallback(filters.CallbackQuery(func(query *gotgbot.CallbackQuery) bool {
-		return strings.HasPrefix(query.Data, "reply_")
-	}), m.controller.SupportReply))
+
+	//reply on button(admin)
+	m.dispatcher.AddHandler(handlers.NewCallback(
+		filters.CallbackQuery(func(query *gotgbot.CallbackQuery) bool {
+			return strings.HasPrefix(query.Data, "reply_")
+		}),
+		m.controller.SupportReply))
+
+	//response user from admin
+	m.dispatcher.AddHandler(handlers.NewMessage(
+		filters.Message(func(msg *gotgbot.Message) bool {
+			return msg.Chat.Id == m.config.AdminId
+		}),
+		m.controller.SendAdminResponse))
 
 	// Запуск обновлений
 	err := m.updater.StartPolling(m.bot, &ext.PollingOpts{
@@ -79,7 +92,8 @@ func (m *BotModule) Start() error {
 	}
 
 	// Логируем успешный запуск
-	m.logger.Info("bot started")
+	m.logger.Info("👾 Bot started successfully")
+
 	m.updater.Idle()
 	return nil
 }
