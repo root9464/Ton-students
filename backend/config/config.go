@@ -16,7 +16,7 @@ type Config struct {
 
 func LoadConfig(path string) (*Config, error) {
 	viper.AddConfigPath(path)
-	viper.SetConfigName(".env")
+	viper.SetConfigName("../.env")
 	viper.SetConfigType("env")
 
 	// Automatically map environment variables

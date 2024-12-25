@@ -69,13 +69,14 @@ func (a *App) initConfig() error {
 		a.config = config
 	}
 
-	err := config.Load(".env")
+	err := config.Load("../.env")
 	if err != nil {
 		return fmt.Errorf("✖ Failed to load config: %s", err.Error())
 	}
 
 	return nil
 }
+
 
 func (a *App) initDb() error {
 	if a.db == nil {
