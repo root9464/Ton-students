@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/root9464/Ton-students/ent"
+	user_model "github.com/root9464/Ton-students/module/user/model"
 )
 
-func (s *userService) GetByID(ctx context.Context, id int64) (*ent.User, error) {
+func (s *userService) GetByID(ctx context.Context, id int64) (*user_model.User, error) {
 	user, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err

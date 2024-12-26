@@ -15,8 +15,7 @@ func (c *authController) Authorize(ctx *fiber.Ctx) error {
 		})
 	}
 
-	user, err := c.authService.Authorize(ctx.Context(), data)
-	if err != nil {
+	if err := c.authService.Authorize(ctx.Context(), data); err != nil {
 		fiberErr := err.(*fiber.Error)
 		return ctx.Status(fiberErr.Code).JSON(&fiber.Map{
 			"status":  "failed",
@@ -27,6 +26,5 @@ func (c *authController) Authorize(ctx *fiber.Ctx) error {
 	return ctx.Status(200).JSON(&fiber.Map{
 		"status":  "success",
 		"message": "Authorized",
-		"data":    user,
 	})
 }

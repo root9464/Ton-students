@@ -1,7 +1,6 @@
 package app
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/go-playground/validator/v10"
@@ -9,8 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/root9464/Ton-students/config"
-	"github.com/root9464/Ton-students/ent"
-	"github.com/root9464/Ton-students/shared/custom_validator"
+	"github.com/root9464/Ton-students/shared/database"
 	"github.com/root9464/Ton-students/shared/logger"
 	"github.com/root9464/Ton-students/shared/middleware"
 )
@@ -19,7 +17,7 @@ type App struct {
 	app *fiber.App
 
 	logger         *logger.Logger
-	db             *ent.Client
+	db             *database.Database
 	validator      *validator.Validate
 	config         *config.Config
 	httpConfig     config.HTTPConfig
@@ -80,14 +78,14 @@ func (app *App) initConfig() error {
 
 func (app *App) initDb() error {
 	if app.db == nil {
-		db, err := ent.Open("postgres", app.config.DatabaseUrl)
+		db, err := database.ConnectDb(app.config.DatabaseUrl)
 		if err != nil {
 			return fmt.Errorf("✖ Failed to connect to database: %s", err.Error())
 		}
-		app.db = db
+		app.db = &db
 
-		if err := db.Schema.Create(context.Background()); err != nil {
-			return fmt.Errorf("✖ Failed to create schema resources: %s", err.Error())
+		if err := database.Migrate(db.Db); err != nil {
+			return fmt.Errorf("✖ Failed to migrate database: %s", err.Error())
 		}
 	}
 
@@ -104,7 +102,6 @@ func (app *App) initLogger() error {
 func (app *App) initValidator() error {
 	if app.validator == nil {
 		app.validator = validator.New()
-		app.validator.RegisterValidation("selected_name", custom_validator.IsValidSelectedName)
 	}
 	return nil
 }

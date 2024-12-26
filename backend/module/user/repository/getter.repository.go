@@ -3,17 +3,17 @@ package user_repository
 import (
 	"context"
 
-	"github.com/root9464/Ton-students/ent"
-	"github.com/root9464/Ton-students/ent/user"
+	user_model "github.com/root9464/Ton-students/module/user/model"
+	"gorm.io/gorm"
 )
 
-func (r *userRepository) GetByID(ctx context.Context, id int64) (*ent.User, error) {
+func (r *userRepository) GetByID(ctx context.Context, id int64) (*user_model.User, error) {
 	r.logger.Info("Getting user...")
-	user, err := r.db.User.
-		Query().
-		Where(user.ID(id)).
-		Only(ctx)
-	if err != nil {
+	user := new(user_model.User)
+	if err := r.db.Db.Where("id = ?", id).Find(&user).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
 		r.logger.Errorf("Error getting user: %v", err)
 		return nil, err
 	}
