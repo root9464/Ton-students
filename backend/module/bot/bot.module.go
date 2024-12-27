@@ -18,7 +18,7 @@ type BotModule struct {
 	dispatcher *ext.Dispatcher
 	updater    *ext.Updater
 	config     *config.Config
-	logger     *logger.Logger // Используем ваш логгер
+	logger     *logger.Logger 
 	controller *bot_controller.BotController
 }
 
