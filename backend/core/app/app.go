@@ -52,7 +52,7 @@ func (a *App) initDeps() {
 		a.initModuleProvider,
 		a.initRouter,
 	}
-	for _, init := range inits {
+	for _,  init := range inits {
 		err := init()
 		if err != nil {
 			log.Fatalf("✖ Failed to initialize dependencies: %s", err.Error())
@@ -132,6 +132,14 @@ func (a *App) runHttpServer() error {
 		return fmt.Errorf("✖ Failed to start http server: %s", err.Error())
 	}
 
+	log.Infof("🌐 Server is running on %s", a.httpConfig.ChatAddres())
+	log.Info("✅ Server started successfully")
+	if err := a.app.Listen(a.httpConfig.ChatAddres()); err != nil {
+		return fmt.Errorf("✖ Failed to start http server: %s", err.Error())
+	}
+
+
+
 	return nil
 }
 
@@ -140,5 +148,6 @@ func (a *App) initRouter() error {
 
 	a.moduleProvider.authModule.AuthRoutes(api)
 	a.moduleProvider.userModule.UserRoutes(api)
+	a.moduleProvider.chatModule.ChatRoutes(api)
 	return nil
 }

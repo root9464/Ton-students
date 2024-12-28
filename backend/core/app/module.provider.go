@@ -55,7 +55,7 @@ func (p *moduleProvider) AuthModule() error {
 }
 
 func (p *moduleProvider) ChatModule() error {
-	p.chatModule = chat_module.NewChatModule(p.app.logger)
+	p.chatModule = chat_module.NewChatModule()
 	return nil
 }
 

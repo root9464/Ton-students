@@ -5,49 +5,49 @@ import (
 )
 
 type Hub struct {
-	clients    map[*Client]bool
-	broadcast  chan []byte
-	register   chan *Client
-	unregister chan *Client
-	mu         sync.RWMutex
+	Clients    map[*Client]bool
+	Broadcast  chan []byte
+	Register   chan *Client
+	Unregister chan *Client
+	Mu         sync.RWMutex
 }
 
 func NewHub() *Hub {
 	return &Hub{
-		clients:    make(map[*Client]bool),
-		broadcast:  make(chan []byte),
-		register:   make(chan *Client),
-		unregister: make(chan *Client),
+		Clients:    make(map[*Client]bool),
+		Broadcast:  make(chan []byte),
+		Register:   make(chan *Client),
+		Unregister: make(chan *Client),
 		//mu:         sync.RWMutex{},
 	}
 }
 
 // обработка сообщений
-func (h *hub) Run() {
+func (h *Hub) Run() {
 	for {
 		select {
-		case client <- h.register:
+		case client := <-h.Register:
 			h.Mu.Lock()
-			h.clients[client] = true
-			h.mu.Unlock()
-		case client <- h.unregister:
+			h.Clients[client] = true
+			h.Mu.Unlock()
+		case client := <-h.Unregister:
 			h.Mu.Lock()
-			if _, ok := h.clients[client]; ok {
-				delete(h.clients, client)
-				close(client.send)
+			if _, ok := h.Clients[client]; ok {
+				delete(h.Clients, client)
+				close(client.Send)
 			}
-			h.mu.Unlock()
-		case message <- h.broadcast:
-			h.mu.Lock()
-			for client := range h.clients {
+			h.Mu.Unlock()
+		case message := <-h.Broadcast:
+			h.Mu.Lock()
+			for client := range h.Clients {
 				select {
-				case client.send <- message:
+				case client.Send <- message:
 				default:
-					close(client.send)
-					delete(h.clients, client)
+					close(client.Send)
+					delete(h.Clients, client)
 				}
 			}
-			h.mu.Unlock()
+			h.Mu.Unlock()
 		}
 	}
 }

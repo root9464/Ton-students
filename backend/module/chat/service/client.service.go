@@ -16,22 +16,22 @@ const (
 )
 
 type Client struct {
-	hub  *Hub
-	conn *websocket.Conn
-	send chan []byte
+	Hub  *Hub
+	Conn *websocket.Conn
+	Send chan []byte
 }
 
 // передает сообщения из вебсокета -> хаб
-func (c *Client) readPump() {
+func (c *Client) ReadPump() {
 	defer func() {
-		c.hub.unregister <- c
-		c.conn.Close()
+		c.Hub.Unregister <- c
+		c.Conn.Close()
 	}()
-	c.conn.SetReadLimit(maxMessageSize)                                                                        //размер сообщения
-	c.conn.SetReadDeadline(time.Now().Add(pongWait))                                                           // срок чтения
-	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil }) //обработка сообщений
+	c.Conn.SetReadLimit(maxMessageSize)                                                                        //размер сообщения
+	c.Conn.SetReadDeadline(time.Now().Add(pongWait))                                                           // срок чтения
+	c.Conn.SetPongHandler(func(string) error { c.Conn.SetReadDeadline(time.Now().Add(pongWait)); return nil }) //обработка сообщений
 	for {
-		_, message, err := c.conn.ReadMessage()
+		_, message, err := c.Conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("Error: %v", err)
@@ -39,41 +39,41 @@ func (c *Client) readPump() {
 			break
 		}
 		message = bytes.TrimSpace(message)
-		c.hub.broadcast <- message
+		c.Hub.Broadcast <- message
 	}
 
 }
 
 // передает сообщения из хаба -> вебсокет
-func (c *Client) writePump() {
+func (c *Client) WritePump() {
 	ticker := time.NewTicker(pingWait)
 	defer func() {
 		ticker.Stop()
-		c.conn.Close()
+		c.Conn.Close()
 	}()
 	for {
 		select {
-		case massage, ok := <-c.send:
-			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+		case massage, ok := <-c.Send:
+			c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
-				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
+				c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
-			w, err := c.conn.NextWriter(websocket.TextMessage)
+			w, err := c.Conn.NextWriter(websocket.TextMessage)
 			if err != nil {
 				return
 			}
 			w.Write(massage)
-			n := len(c.send)
+			n := len(c.Send)
 			for i := 0; i < n; i++ {
-				w.Write(<-c.send)
+				w.Write(<-c.Send)
 			}
 			if err := w.Close(); err != nil {
 				return
 			}
 		case <-ticker.C:
-			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
-			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+			c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
+			if err := c.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}
 		}
