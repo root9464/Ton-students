@@ -1,66 +1,40 @@
 package utils
 
 import (
-	"errors"
+	"fmt"
 	"reflect"
 )
 
-// func DtoToModel(src interface{}, dest interface{}) error {
-// 	srcVal := reflect.ValueOf(src).Elem()
-// 	destVal := reflect.ValueOf(dest).Elem()
+func ConvertDtoToEntity[T any](src interface{}, dest T) (*T, error) {
+	empty := new(T)
 
-// 	if srcVal.Kind() != reflect.Struct || destVal.Kind() != reflect.Struct {
-// 		return nil // или верните ошибку, если нужно
-// 	}
-
-// 	for i := 0; i < srcVal.NumField(); i++ {
-// 		srcField := srcVal.Type().Field(i)
-// 		destField := destVal.FieldByName(srcField.Name)
-
-// 		destFieldName := strings.ToLower(srcField.Name)
-// 		found := false
-
-// 		for j := 0; j < destVal.NumField(); j++ {
-// 			destStructField := destVal.Type().Field(j)
-// 			if strings.ToLower(destStructField.Name) == destFieldName {
-// 				destField = destVal.Field(j)
-// 				found = true
-// 				break
-// 			}
-// 		}
-
-// 		// Если поле найдено и можно установить значение
-// 		if found && destField.IsValid() && destField.CanSet() {
-// 			destField.Set(srcVal.Field(i))
-// 		}
-// 	}
-
-// 	return nil
-// }
-
-func ConvertDtoToEntity[T any](dto interface{}) (*T, error) {
-	result := new(T)
-
-	dtoVal := reflect.ValueOf(dto)
-	if dtoVal.Kind() != reflect.Ptr {
-		return nil, errors.New("dto must be a pointer to a struct")
+	srcVal := reflect.ValueOf(src)
+	if srcVal.Kind() == reflect.Ptr {
+		srcVal = srcVal.Elem()
 	}
 
-	dtoElem := dtoVal.Elem()
-	if dtoElem.Kind() != reflect.Struct {
-		return nil, errors.New("dto must be a struct")
+	if srcVal.Kind() != reflect.Struct {
+		return empty, fmt.Errorf("source must be a struct")
 	}
 
-	resultVal := reflect.ValueOf(result).Elem()
+	destVal := reflect.New(reflect.TypeOf(dest)).Elem()
 
-	for i := 0; i < dtoElem.NumField(); i++ {
-		dtoField := dtoElem.Field(i)
-		resultField := resultVal.Field(i)
+	for i := 0; i < srcVal.NumField(); i++ {
+		srcField := srcVal.Type().Field(i)
+		srcFieldValue := srcVal.Field(i)
+		destField := destVal.FieldByName(srcField.Name)
 
-		if dtoField.Type().AssignableTo(resultField.Type()) {
-			resultField.Set(dtoField)
+		if destField.IsValid() && destField.CanSet() {
+			if srcFieldValue.Type().AssignableTo(destField.Type()) {
+				destField.Set(srcFieldValue)
+			} else if srcFieldValue.Type().ConvertibleTo(destField.Type()) {
+				destField.Set(srcFieldValue.Convert(destField.Type()))
+			} else {
+				return empty, fmt.Errorf("cannot assign field %s: incompatible types", srcField.Name)
+			}
 		}
 	}
 
+	result := destVal.Addr().Interface().(*T)
 	return result, nil
 }

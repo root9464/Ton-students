@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/root9464/Ton-students/config"
-	"github.com/root9464/Ton-students/shared/database"
+	"github.com/root9464/Ton-students/database"
 	"github.com/root9464/Ton-students/shared/logger"
 	"github.com/root9464/Ton-students/shared/middleware"
 )
@@ -136,7 +136,6 @@ func (app *App) runHttpServer() error {
 func (app *App) initRouter() error {
 	api := app.app.Group("/api")
 
-	app.moduleProvider.authModule.AuthRoutes(api)
 	app.moduleProvider.userModule.UserRoutes(api)
 	return nil
 }

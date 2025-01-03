@@ -1,21 +1,21 @@
-package auth_controller
+package user_controller
 
 import (
 	"github.com/gofiber/fiber/v2"
-	auth_dto "github.com/root9464/Ton-students/module/auth/dto"
+	user_dto "github.com/root9464/Ton-students/module/user/dto"
 )
 
-func (c *authController) Authorize(ctx *fiber.Ctx) error {
-	data := new(auth_dto.AutorizeDto)
-
-	if err := ctx.BodyParser(data); err != nil {
+func (c *userController) CreateDemo(ctx *fiber.Ctx) error {
+	userData := new(user_dto.CreateUserDto)
+	if err := ctx.BodyParser(userData); err != nil {
 		return ctx.Status(400).JSON(&fiber.Map{
 			"status":  "failed",
 			"message": err.Error(),
 		})
 	}
 
-	if err := c.authService.Authorize(ctx.Context(), data); err != nil {
+	user, err := c.userService.Create(ctx.Context(), userData)
+	if err != nil {
 		fiberErr := err.(*fiber.Error)
 		return ctx.Status(fiberErr.Code).JSON(&fiber.Map{
 			"status":  "failed",
@@ -26,5 +26,6 @@ func (c *authController) Authorize(ctx *fiber.Ctx) error {
 	return ctx.Status(200).JSON(&fiber.Map{
 		"status":  "success",
 		"message": "Authorized",
+		"data":    &user,
 	})
 }

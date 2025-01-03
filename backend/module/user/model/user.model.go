@@ -22,10 +22,18 @@ type User struct {
 	Username     string       `gorm:"unique;not null" json:"username"`
 	Firstname    string       `json:"firstname"`
 	Lastname     string       `json:"lastname"`
-	Nickname     string       `json:"nickname"`
+	Nickname     *string      `json:"nickname"`
 	SelectedName SelectedName `gorm:"column:selected_name;type:selected_name" json:"selectedName"`
 	Role         Role         `gorm:"column:role;type:role;not null" json:"role"`
-	Info         string       `json:"info"`
+	Infos        *[]UserInfo  `gorm:"foreignKey:UserID" json:"infos"`
 	IsPremium    bool         `gorm:"default:false" json:"isPremium"`
 	Hash         string       `gorm:"not null" json:"hash"`
+}
+
+type UserInfo struct {
+	ID      int64  `gorm:"primaryKey" json:"id"`
+	UserID  int64  `gorm:"not null;index" json:"userId"`
+	Title   string `gorm:"not null" json:"title"`
+	Content string `gorm:"type:text" json:"content"`
+	User    User   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
 }

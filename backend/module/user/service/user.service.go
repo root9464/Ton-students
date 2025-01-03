@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/go-playground/validator/v10"
+	user_dto "github.com/root9464/Ton-students/module/user/dto"
 	user_model "github.com/root9464/Ton-students/module/user/model"
 	user_repository "github.com/root9464/Ton-students/module/user/repository"
 	"github.com/root9464/Ton-students/shared/logger"
@@ -12,8 +13,7 @@ import (
 var _ IUserService = (*userService)(nil)
 
 type IUserService interface {
-	Create(ctx context.Context, dto interface{}) error
-	GetByID(ctx context.Context, id int64) (*user_model.User, error)
+	Create(ctx context.Context, dto *user_dto.CreateUserDto) (*user_model.User, error)
 }
 
 type userService struct {

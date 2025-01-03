@@ -1,8 +1,8 @@
-package user_dto
+package auth_dto
 
 import user_model "github.com/root9464/Ton-students/module/user/model"
 
-type CreateUserDto struct {
+type AutorizeDto struct {
 	InitDataRaw string `json:"init-data-raw" validate:"required"`
 }
 

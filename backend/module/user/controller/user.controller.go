@@ -6,7 +6,7 @@ import (
 )
 
 type IUserController interface {
-	GetByID(ctx *fiber.Ctx) error
+	CreateDemo(ctx *fiber.Ctx) error
 }
 
 type userController struct {
