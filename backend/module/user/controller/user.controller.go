@@ -6,17 +6,13 @@ import (
 )
 
 type IUserController interface {
-	Ping(ctx *fiber.Ctx) error
+	AddUserInfo(ctx *fiber.Ctx) error
 }
 
 type userController struct {
 	userService user_service.IUserService
 }
 
-func NewUserController(
-	userService user_service.IUserService,
-) *userController {
-	return &userController{
-		userService: userService,
-	}
+func NewUserController(userService user_service.IUserService) *userController {
+	return &userController{userService: userService}
 }

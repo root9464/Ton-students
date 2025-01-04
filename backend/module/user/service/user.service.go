@@ -12,8 +12,20 @@ import (
 
 var _ IUserService = (*userService)(nil)
 
+type ResponseCreateUser struct {
+	ID           int64                   `json:"id"`
+	Visiblename  string                  `json:"visiblename"`
+	SelectedName user_model.SelectedName `json:"selectedName"`
+	Role         user_model.Role         `json:"role"`
+	Infos        []user_model.UserInfo   `json:"infos"`
+	IsPremium    bool                    `json:"isPremium"`
+	Hash         string                  `json:"hash"`
+}
+
 type IUserService interface {
-	Create(ctx context.Context, dto *user_dto.UserType) (*user_model.User, error)
+	Create(ctx context.Context, dto *user_dto.UserType) (*ResponseCreateUser, error)
+
+	AddUserInfo(ctx context.Context, dto *user_dto.UserInfoType) error
 }
 
 type userService struct {

@@ -6,11 +6,11 @@ import (
 	"github.com/gofiber/fiber/v2"
 	auth_dto "github.com/root9464/Ton-students/module/auth/dto"
 	user_dto "github.com/root9464/Ton-students/module/user/dto"
-	user_model "github.com/root9464/Ton-students/module/user/model"
+	user_service "github.com/root9464/Ton-students/module/user/service"
 	tma "github.com/telegram-mini-apps/init-data-golang"
 )
 
-func (s *authService) Authorize(ctx context.Context, dto *auth_dto.AutorizeDto) (*user_model.User, error) {
+func (s *authService) Authorize(ctx context.Context, dto *auth_dto.AutorizeDto) (*user_service.ResponseCreateUser, error) {
 	if err := s.validator.Struct(dto); err != nil {
 		s.logger.Warnf("validate error: %s", err.Error())
 		return nil, &fiber.Error{

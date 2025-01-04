@@ -48,7 +48,7 @@ func (m *UserModule) UserService() user_service.IUserService {
 
 func (m *UserModule) UserController() user_controller.IUserController {
 	if m.userController == nil {
-		m.userController = user_controller.NewUserController(m.UserService())
+		m.userController = user_controller.NewUserController(m.UserService(), m.logger)
 	}
 	return m.userController
 }
@@ -56,5 +56,5 @@ func (m *UserModule) UserController() user_controller.IUserController {
 func (m *UserModule) UserRoutes(router fiber.Router) {
 	user := router.Group("/user")
 
-	user.Post("/ping", m.UserController().Ping)
+	user.Post("/add-info", m.UserController().AddUserInfo)
 }

@@ -31,7 +31,7 @@ type User struct {
 }
 
 type UserInfo struct {
-	ID      int64  `gorm:"primaryKey" json:"id"`
+	ID      string `gorm:"primaryKey;type:uuid;default:uuid_generate_v4()" json:"id"`
 	UserID  int64  `gorm:"not null;index" json:"userId"`
 	Title   string `gorm:"not null" json:"title"`
 	Content string `gorm:"type:text" json:"content"`

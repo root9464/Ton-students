@@ -18,3 +18,9 @@ type UserType struct {
 	IsPremium    bool                    `json:"isPremium"`
 	Hash         string                  `json:"hash" validate:"required"`
 }
+
+type UserInfoType struct {
+	UserId  int64  `json:"userId" validate:"required"`
+	Title   string `json:"title" validate:"required"`
+	Content string `json:"content" validate:"required"`
+}

@@ -31,3 +31,13 @@ func (r *userRepository) Update(ctx context.Context, user *user_model.User) (*us
 	r.logger.Info("User update successfully")
 	return user, nil
 }
+
+func (r *userRepository) AddUserInfo(ctx context.Context, userInfo *user_model.UserInfo) error {
+	r.logger.Info("Adding user info...")
+	if err := r.db.Db.Create(&userInfo).Error; err != nil {
+		r.logger.Errorf("Error adding user info: %v", err)
+		return err
+	}
+	r.logger.Info("User info added successfully")
+	return nil
+}
