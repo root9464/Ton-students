@@ -25,7 +25,7 @@ type ResponseUserData struct {
 type ResponseCreateUser struct {
 	Status  string            `json:"status"`
 	Message string            `json:"message"`
-	Data    *ResponseUserData `json:"user"`
+	Data    *ResponseUserData `json:"data"`
 }
 
 type IUserService interface {

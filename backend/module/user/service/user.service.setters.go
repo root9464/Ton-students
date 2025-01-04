@@ -135,10 +135,13 @@ func (s *userService) AddUserInfo(ctx context.Context, dto *user_dto.UserInfoTyp
 
 	s.logger.Infof("adding user info: %+v", dto)
 
-	userInfo := &user_model.UserInfo{
-		UserID:  dto.UserId,
-		Title:   dto.Title,
-		Content: dto.Content,
+	userInfo, err := utils.ConvertDtoToEntity[user_model.UserInfo](dto)
+	if err != nil {
+		s.logger.Warnf("convert dto to entity error: %s", err.Error())
+		return &fiber.Error{
+			Code:    500,
+			Message: err.Error(),
+		}
 	}
 
 	s.logger.Infof("converted user info: %+v", userInfo)
