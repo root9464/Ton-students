@@ -68,9 +68,3 @@ type UserInfosType struct {
 	Title   string `json:"title" validate:"required"`
 	Content string `json:"content" validate:"required"`
 }
-
-type UpdateManyUserInfoType struct {
-	UserId int64                `json:"userId" validate:"required"`
-	Hash   string               `json:"hash" validate:"required"`
-	Infos  []UpdateUserInfoType `json:"infos" validate:"required,maxinfos"`
-}

@@ -22,7 +22,6 @@ type IUserRepository interface {
 	DeleteUserInfo(ctx context.Context, userInfoID string) error
 
 	AddManyUserInfo(ctx context.Context, userInfo []*user_model.UserInfo) error
-	// DeleteManyUserInfo(ctx context.Context, userInfoIDs []string) error
 }
 
 type userRepository struct {
