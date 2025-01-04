@@ -36,6 +36,8 @@ type IUserService interface {
 	AddUserInfo(ctx context.Context, dto *user_dto.UserInfoType) error
 	UpdateUserInfo(ctx context.Context, dto *user_dto.UpdateUserInfoType) error
 	DeleteUserInfo(ctx context.Context, dto *user_dto.DeleteUserInfoType) error
+
+	AddManyUserInfo(ctx context.Context, dto *user_dto.ManyUserInfoType) error
 }
 
 type userService struct {

@@ -57,8 +57,9 @@ func (m *UserModule) UserRoutes(router fiber.Router) {
 	user := router.Group("/user")
 
 	user.Post("/add-info", m.UserController().AddUserInfo)
-	user.Post("/select-name", m.UserController().SelectVisibleName)
-	user.Post("/set-nickname", m.UserController().SetUserNickname)
-	user.Post("/update-info", m.UserController().UpdateUserInfo)
+	user.Patch("/select-name", m.UserController().SelectVisibleName)
+	user.Patch("/set-nickname", m.UserController().SetUserNickname)
+	user.Put("/update-info", m.UserController().UpdateUserInfo)
 	user.Delete("/delete-info", m.UserController().DeleteUserInfo)
+	user.Post("/add-many-info", m.UserController().AddManyUserInfo)
 }

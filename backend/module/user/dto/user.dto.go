@@ -1,6 +1,9 @@
 package user_dto
 
-import user_model "github.com/root9464/Ton-students/module/user/model"
+import (
+	"github.com/go-playground/validator/v10"
+	user_model "github.com/root9464/Ton-students/module/user/model"
+)
 
 type CreateUserDto struct {
 	InitDataRaw string `json:"init-data-raw" validate:"required"`
@@ -47,4 +50,27 @@ type UpdateUserInfoType struct {
 type DeleteUserInfoType struct {
 	ID   string `json:"id" validate:"required"`
 	Hash string `json:"hash" validate:"required"`
+}
+
+func MaxInfos(fl validator.FieldLevel) bool {
+	if field, ok := fl.Field().Interface().([]UserInfosType); ok {
+		return len(field) <= 3
+	}
+	return false
+}
+
+type ManyUserInfoType struct {
+	UserId int64           `json:"userId" validate:"required"`
+	Infos  []UserInfosType `json:"infos" validate:"required,maxinfos"`
+}
+
+type UserInfosType struct {
+	Title   string `json:"title" validate:"required"`
+	Content string `json:"content" validate:"required"`
+}
+
+type UpdateManyUserInfoType struct {
+	UserId int64                `json:"userId" validate:"required"`
+	Hash   string               `json:"hash" validate:"required"`
+	Infos  []UpdateUserInfoType `json:"infos" validate:"required,maxinfos"`
 }

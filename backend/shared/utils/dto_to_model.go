@@ -3,6 +3,7 @@ package utils
 import (
 	"time"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/jinzhu/copier"
 	"github.com/mitchellh/mapstructure"
 )
@@ -32,4 +33,14 @@ func ConvertDtoToEntity[T, D any](dto D, opts ...copier.Option) (*T, error) {
 		return nil, err
 	}
 	return entity, nil
+}
+
+func HandlerError(err error) *fiber.Map {
+	if e, ok := err.(*fiber.Error); ok {
+		return &fiber.Map{
+			"status":  "error",
+			"message": e.Message,
+		}
+	}
+	return nil
 }

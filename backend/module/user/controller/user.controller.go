@@ -11,6 +11,7 @@ type IUserController interface {
 	SetUserNickname(ctx *fiber.Ctx) error
 	UpdateUserInfo(ctx *fiber.Ctx) error
 	DeleteUserInfo(ctx *fiber.Ctx) error
+	AddManyUserInfo(ctx *fiber.Ctx) error
 }
 
 type userController struct {

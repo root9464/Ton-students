@@ -39,5 +39,5 @@ type UserInfo struct {
 	UserID  int64  `gorm:"not null;index" json:"userId"`
 	Title   string `gorm:"not null" json:"title"`
 	Content string `gorm:"type:text" json:"content"`
-	User    User   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"` // удаление пользователя удаляет его информацию
+	User    User   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
 }
