@@ -6,7 +6,7 @@ import (
 )
 
 type IUserController interface {
-	CreateDemo(ctx *fiber.Ctx) error
+	Ping(ctx *fiber.Ctx) error
 }
 
 type userController struct {

@@ -56,5 +56,5 @@ func (m *UserModule) UserController() user_controller.IUserController {
 func (m *UserModule) UserRoutes(router fiber.Router) {
 	user := router.Group("/user")
 
-	user.Post("/create", m.UserController().CreateDemo)
+	user.Post("/ping", m.UserController().Ping)
 }

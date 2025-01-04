@@ -20,8 +20,8 @@ const (
 type User struct {
 	ID           int64        `gorm:"primaryKey" json:"id"`
 	Username     string       `gorm:"unique;not null" json:"username"`
-	Firstname    string       `json:"firstname"`
-	Lastname     string       `json:"lastname"`
+	Firstname    *string      `json:"firstname"`
+	Lastname     *string      `json:"lastname"`
 	Nickname     *string      `json:"nickname"`
 	SelectedName SelectedName `gorm:"column:selected_name;type:selected_name" json:"selectedName"`
 	Role         Role         `gorm:"column:role;type:role;not null" json:"role"`

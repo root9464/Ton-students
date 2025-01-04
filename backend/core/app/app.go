@@ -137,5 +137,7 @@ func (app *App) initRouter() error {
 	api := app.app.Group("/api")
 
 	app.moduleProvider.userModule.UserRoutes(api)
+	app.moduleProvider.authModule.AuthRoutes(api)
+
 	return nil
 }

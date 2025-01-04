@@ -10,7 +10,7 @@ import (
 func (r *userRepository) GetByID(ctx context.Context, id int64) (*user_model.User, error) {
 	r.logger.Info("Getting user...")
 	user := new(user_model.User)
-	if err := r.db.Db.Where("id = ?", id).Find(&user).Error; err != nil {
+	if err := r.db.Db.First(&user, "id = ?", id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}

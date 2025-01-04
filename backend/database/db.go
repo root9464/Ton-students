@@ -22,9 +22,13 @@ func ConnectDb(url string) (Database, error) {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
-	db, err := gorm.Open(postgres.Open(url), &gorm.Config{
+	db, err := gorm.Open(postgres.New(postgres.Config{
+		DSN:                  url,
+		PreferSimpleProtocol: true,
+	}), &gorm.Config{
 		Logger: gormLogger.Default.LogMode(gormLogger.Warn),
 	})
+
 	if err != nil {
 		return Database{}, err
 	}

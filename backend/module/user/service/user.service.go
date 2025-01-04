@@ -13,7 +13,7 @@ import (
 var _ IUserService = (*userService)(nil)
 
 type IUserService interface {
-	Create(ctx context.Context, dto *user_dto.CreateUserDto) (*user_model.User, error)
+	Create(ctx context.Context, dto *user_dto.UserType) (*user_model.User, error)
 }
 
 type userService struct {
