@@ -1,5 +1,7 @@
 package user_model
 
+import serv_model "github.com/root9464/Ton-students/module/service_module/model"
+
 type SelectedName string
 type Role string
 
@@ -25,9 +27,11 @@ type User struct {
 	Nickname     *string      `json:"nickname"`
 	SelectedName SelectedName `gorm:"column:selected_name;type:selected_name;not null;default:username" json:"selectedName"`
 	Role         Role         `gorm:"column:role;type:role;not null" json:"role"`
-	Infos        *[]UserInfo  `gorm:"foreignKey:UserID" json:"infos"`
 	IsPremium    bool         `gorm:"default:false" json:"isPremium"`
 	Hash         string       `gorm:"not null" json:"hash"`
+
+	Infos    *[]UserInfo          `gorm:"foreignKey:UserID" json:"infos"`
+	Services []serv_model.Service `gorm:"foreignKey:UserId" json:"services"`
 }
 
 type UserInfo struct {
@@ -35,5 +39,5 @@ type UserInfo struct {
 	UserID  int64  `gorm:"not null;index" json:"userId"`
 	Title   string `gorm:"not null" json:"title"`
 	Content string `gorm:"type:text" json:"content"`
-	User    User   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
+	User    User   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"` // удаление пользователя удаляет его информацию
 }

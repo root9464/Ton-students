@@ -2,6 +2,7 @@ package database
 
 import (
 	"github.com/gofiber/fiber/v2/log"
+	serv_model "github.com/root9464/Ton-students/module/service_module/model"
 	user_model "github.com/root9464/Ton-students/module/user/model"
 	"gorm.io/gorm"
 )
@@ -13,6 +14,7 @@ func Migrate(db *gorm.DB, trigger bool) error {
 		models := []interface{}{
 			&user_model.User{},
 			&user_model.UserInfo{},
+			&serv_model.Service{},
 		}
 
 		db.Exec("CREATE TYPE selected_name AS ENUM('firstname', 'lastname', 'nickname', 'username')")
