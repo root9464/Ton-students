@@ -30,3 +30,16 @@ type SelectVisibleNameType struct {
 	SelectedName user_model.SelectedName `json:"selectedName" validate:"required,oneof=firstname lastname nickname username"`
 	Hash         string                  `json:"hash" validate:"required"`
 }
+
+type SetUserNicknameType struct {
+	ID       int64  `json:"id" validate:"required"`
+	Nickname string `json:"nickname" validate:"required,min=3,max=50"`
+	Hash     string `json:"hash" validate:"required"`
+}
+
+type UpdateUserInfoType struct {
+	ID      string `json:"id" validate:"required"`
+	Title   string `json:"title" validate:"required"`
+	Content string `json:"content" validate:"required"`
+	Hash    string `json:"hash" validate:"required"`
+}

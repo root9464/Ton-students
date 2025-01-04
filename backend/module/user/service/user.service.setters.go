@@ -146,6 +146,29 @@ func (s *userService) AddUserInfo(ctx context.Context, dto *user_dto.UserInfoTyp
 
 	s.logger.Infof("converted user info: %+v", userInfo)
 
+	userInDb, err := s.repo.GetByID(ctx, userInfo.UserID)
+	if err != nil {
+		s.logger.Warnf("get user by id error: %s", err.Error())
+		return &fiber.Error{
+			Code:    500,
+			Message: err.Error(),
+		}
+	}
+
+	if userInDb == nil {
+		return &fiber.Error{
+			Code:    404,
+			Message: "User not found",
+		}
+	}
+
+	if len(*userInDb.Infos) >= 1 {
+		return &fiber.Error{
+			Code:    409,
+			Message: "Maximum number of user infos reached",
+		}
+	}
+
 	if err := s.repo.AddUserInfo(ctx, userInfo); err != nil {
 		s.logger.Warnf("add user info error: %s", err.Error())
 		return &fiber.Error{
@@ -188,6 +211,81 @@ func (s *userService) SelectVisibleName(ctx context.Context, dto *user_dto.Selec
 	_, err = s.repo.Update(ctx, userInDb)
 	if err != nil {
 		s.logger.Warnf("update user error: %s", err.Error())
+		return &fiber.Error{
+			Code:    500,
+			Message: err.Error(),
+		}
+	}
+
+	return nil
+}
+
+func (s *userService) SetUserNickname(ctx context.Context, dto *user_dto.SetUserNicknameType) error {
+	if err := s.validator.Struct(dto); err != nil {
+		s.logger.Warnf("validate error: %s", err.Error())
+		return &fiber.Error{
+			Code:    400,
+			Message: err.Error(),
+		}
+	}
+
+	userInDb, err := s.repo.GetByID(ctx, dto.ID)
+	if err != nil {
+		s.logger.Warnf("get user by id error: %s", err.Error())
+		return &fiber.Error{
+			Code:    500,
+			Message: err.Error(),
+		}
+	}
+
+	if userInDb == nil {
+		return &fiber.Error{
+			Code:    404,
+			Message: "User not found",
+		}
+	}
+
+	userUpdate, err := utils.ConvertDtoToEntity[user_model.User](dto)
+	if err != nil {
+		s.logger.Warnf("convert dto to entity error: %s", err.Error())
+		return &fiber.Error{
+			Code:    500,
+			Message: err.Error(),
+		}
+	}
+
+	_, err = s.repo.Update(ctx, userUpdate)
+	if err != nil {
+		s.logger.Warnf("update user error: %s", err.Error())
+		return &fiber.Error{
+			Code:    500,
+			Message: err.Error(),
+		}
+	}
+
+	return nil
+}
+
+func (s *userService) UpdateUserInfo(ctx context.Context, dto *user_dto.UpdateUserInfoType) error {
+	if err := s.validator.Struct(dto); err != nil {
+		s.logger.Warnf("validate error: %s", err.Error())
+		return &fiber.Error{
+			Code:    400,
+			Message: err.Error(),
+		}
+	}
+
+	userInfo, err := utils.ConvertDtoToEntity[user_model.UserInfo](dto)
+	if err != nil {
+		s.logger.Warnf("convert dto to entity error: %s", err.Error())
+		return &fiber.Error{
+			Code:    500,
+			Message: err.Error(),
+		}
+	}
+
+	if err := s.repo.UpdateUserInfo(ctx, userInfo); err != nil {
+		s.logger.Warnf("update user info error: %s", err.Error())
 		return &fiber.Error{
 			Code:    500,
 			Message: err.Error(),

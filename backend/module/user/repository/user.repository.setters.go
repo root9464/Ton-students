@@ -41,3 +41,13 @@ func (r *userRepository) AddUserInfo(ctx context.Context, userInfo *user_model.U
 	r.logger.Info("User info added successfully")
 	return nil
 }
+
+func (r *userRepository) UpdateUserInfo(ctx context.Context, userInfo *user_model.UserInfo) error {
+	r.logger.Info("Updating user info...")
+	if err := r.db.Db.Model(&user_model.UserInfo{}).Where("id = ?", userInfo.ID).Updates(userInfo).Error; err != nil {
+		r.logger.Errorf("Error updating user info: %v", err)
+		return err
+	}
+	r.logger.Info("User info updated successfully")
+	return nil
+}

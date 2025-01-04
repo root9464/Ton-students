@@ -2,7 +2,6 @@ package user_service
 
 import (
 	"context"
-	"sync"
 
 	"github.com/go-playground/validator/v10"
 	user_dto "github.com/root9464/Ton-students/module/user/dto"
@@ -32,14 +31,15 @@ type ResponseCreateUser struct {
 type IUserService interface {
 	UpsertUser(ctx context.Context, dto *user_dto.UserType) (*ResponseCreateUser, error)
 	SelectVisibleName(ctx context.Context, dto *user_dto.SelectVisibleNameType) error
+	SetUserNickname(ctx context.Context, dto *user_dto.SetUserNicknameType) error
 
+	UpdateUserInfo(ctx context.Context, dto *user_dto.UpdateUserInfoType) error
 	AddUserInfo(ctx context.Context, dto *user_dto.UserInfoType) error
 }
 
 type userService struct {
 	logger    *logger.Logger
 	validator *validator.Validate
-	wg        sync.WaitGroup
 
 	repo user_repository.IUserRepository
 }
