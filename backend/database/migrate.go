@@ -15,6 +15,8 @@ func Migrate(db *gorm.DB, trigger bool) error {
 			&user_model.User{},
 			&user_model.UserInfo{},
 			&serv_model.Service{},
+			&serv_model.ServiceInfo{},
+			&serv_model.Tags{},
 		}
 
 		db.Exec("CREATE TYPE selected_name AS ENUM('firstname', 'lastname', 'nickname', 'username')")
