@@ -84,7 +84,7 @@ func (app *App) initDb() error {
 		}
 		app.db = &db
 
-		if err := database.Migrate(db.Db); err != nil {
+		if err := database.Migrate(db.Db, false); err != nil {
 			return fmt.Errorf("✖ Failed to migrate database: %s", err.Error())
 		}
 	}

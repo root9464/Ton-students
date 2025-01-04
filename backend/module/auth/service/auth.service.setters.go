@@ -38,7 +38,7 @@ func (s *authService) Authorize(ctx context.Context, dto *auth_dto.AutorizeDto) 
 		Hash:      initData.Hash,
 	}
 
-	userInDb, err := s.userService.Create(ctx, &srcUser)
+	userInDb, err := s.userService.UpsertUser(ctx, &srcUser)
 	if err != nil {
 		s.logger.Warnf("create user error: %s", err.Error())
 		return nil, &fiber.Error{

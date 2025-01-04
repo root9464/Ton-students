@@ -6,18 +6,23 @@ import (
 	"gorm.io/gorm"
 )
 
-func Migrate(db *gorm.DB) error {
-	log.Info("📦 Migrating database...")
-	models := []interface{}{
-		&user_model.User{},
-		&user_model.UserInfo{},
+func Migrate(db *gorm.DB, trigger bool) error {
+
+	if trigger {
+		log.Info("📦 Migrating database...")
+		models := []interface{}{
+			&user_model.User{},
+			&user_model.UserInfo{},
+		}
+
+		db.Exec("CREATE TYPE selected_name AS ENUM('firstname', 'lastname', 'nickname', 'username')")
+		db.Exec("CREATE TYPE role AS ENUM('administarator', 'user', 'creator', 'moderator')")
+		db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"")
+		if err := db.AutoMigrate(models...); err != nil {
+			return err
+		}
 	}
 
-	db.Exec("CREATE TYPE selected_name AS ENUM('firstname', 'lastname', 'nickname', 'username')")
-	db.Exec("CREATE TYPE role AS ENUM('administarator', 'user', 'creator', 'moderator')")
-
-	if err := db.AutoMigrate(models...); err != nil {
-		return err
-	}
+	log.Info("✅ Database connection successfully")
 	return nil
 }

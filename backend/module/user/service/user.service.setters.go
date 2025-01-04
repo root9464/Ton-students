@@ -10,7 +10,7 @@ import (
 	"github.com/root9464/Ton-students/shared/utils"
 )
 
-func (s *userService) Create(ctx context.Context, dto *user_dto.UserType) (*ResponseCreateUser, error) {
+func (s *userService) UpsertUser(ctx context.Context, dto *user_dto.UserType) (*ResponseCreateUser, error) {
 	if err := s.validator.Struct(dto); err != nil {
 		s.logger.Warnf("validate error: %s", err.Error())
 		return nil, &fiber.Error{
