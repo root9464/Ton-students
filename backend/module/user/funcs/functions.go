@@ -11,6 +11,7 @@ func GetVisibleName(newUser *user_model.User) string {
 			user_model.Username: newUser.Username,
 		},
 		lo.OmitBy(map[user_model.SelectedName]string{
+			user_model.Username:  newUser.Username,
 			user_model.Firstname: lo.FromPtr(newUser.Firstname),
 			user_model.Lastname:  lo.FromPtr(newUser.Lastname),
 			user_model.Nickname:  lo.FromPtr(newUser.Nickname),

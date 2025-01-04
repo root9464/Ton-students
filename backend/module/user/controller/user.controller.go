@@ -7,6 +7,7 @@ import (
 
 type IUserController interface {
 	AddUserInfo(ctx *fiber.Ctx) error
+	SelectVisibleName(ctx *fiber.Ctx) error
 }
 
 type userController struct {

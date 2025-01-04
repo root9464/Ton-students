@@ -29,14 +29,13 @@ func (s *authService) Authorize(ctx context.Context, dto *auth_dto.AutorizeDto) 
 	}
 
 	srcUser := user_dto.UserType{
-		ID:           initData.User.ID,
-		Username:     initData.User.Username,
-		Firstname:    &initData.User.FirstName,
-		Lastname:     &initData.User.LastName,
-		SelectedName: "username",
-		Role:         "user",
-		IsPremium:    initData.User.IsPremium,
-		Hash:         initData.Hash,
+		ID:        initData.User.ID,
+		Username:  initData.User.Username,
+		Firstname: &initData.User.FirstName,
+		Lastname:  &initData.User.LastName,
+		Role:      "user",
+		IsPremium: initData.User.IsPremium,
+		Hash:      initData.Hash,
 	}
 
 	userInDb, err := s.userService.Create(ctx, &srcUser)

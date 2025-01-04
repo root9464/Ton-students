@@ -23,7 +23,7 @@ type User struct {
 	Firstname    *string      `json:"firstname"`
 	Lastname     *string      `json:"lastname"`
 	Nickname     *string      `json:"nickname"`
-	SelectedName SelectedName `gorm:"column:selected_name;type:selected_name" json:"selectedName"`
+	SelectedName SelectedName `gorm:"column:selected_name;type:selected_name;not null;default:username" json:"selectedName"`
 	Role         Role         `gorm:"column:role;type:role;not null" json:"role"`
 	Infos        *[]UserInfo  `gorm:"foreignKey:UserID" json:"infos"`
 	IsPremium    bool         `gorm:"default:false" json:"isPremium"`
