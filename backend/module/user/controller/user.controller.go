@@ -10,6 +10,7 @@ type IUserController interface {
 	SelectVisibleName(ctx *fiber.Ctx) error
 	SetUserNickname(ctx *fiber.Ctx) error
 	UpdateUserInfo(ctx *fiber.Ctx) error
+	DeleteUserInfo(ctx *fiber.Ctx) error
 }
 
 type userController struct {

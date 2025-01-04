@@ -43,3 +43,8 @@ type UpdateUserInfoType struct {
 	Content string `json:"content" validate:"required"`
 	Hash    string `json:"hash" validate:"required"`
 }
+
+type DeleteUserInfoType struct {
+	ID   string `json:"id" validate:"required"`
+	Hash string `json:"hash" validate:"required"`
+}

@@ -33,8 +33,9 @@ type IUserService interface {
 	SelectVisibleName(ctx context.Context, dto *user_dto.SelectVisibleNameType) error
 	SetUserNickname(ctx context.Context, dto *user_dto.SetUserNicknameType) error
 
-	UpdateUserInfo(ctx context.Context, dto *user_dto.UpdateUserInfoType) error
 	AddUserInfo(ctx context.Context, dto *user_dto.UserInfoType) error
+	UpdateUserInfo(ctx context.Context, dto *user_dto.UpdateUserInfoType) error
+	DeleteUserInfo(ctx context.Context, dto *user_dto.DeleteUserInfoType) error
 }
 
 type userService struct {

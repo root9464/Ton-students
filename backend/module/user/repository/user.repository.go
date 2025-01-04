@@ -17,8 +17,9 @@ type IUserRepository interface {
 	GetByID(ctx context.Context, id int64) (*user_model.User, error)
 	Update(ctx context.Context, user *user_model.User) (*user_model.User, error)
 
-	UpdateUserInfo(ctx context.Context, userInfo *user_model.UserInfo) error
 	AddUserInfo(ctx context.Context, userInfo *user_model.UserInfo) error
+	UpdateUserInfo(ctx context.Context, userInfo *user_model.UserInfo) error
+	DeleteUserInfo(ctx context.Context, userInfoID string) error
 }
 
 type userRepository struct {

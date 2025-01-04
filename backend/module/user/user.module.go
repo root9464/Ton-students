@@ -60,4 +60,5 @@ func (m *UserModule) UserRoutes(router fiber.Router) {
 	user.Post("/select-name", m.UserController().SelectVisibleName)
 	user.Post("/set-nickname", m.UserController().SetUserNickname)
 	user.Post("/update-info", m.UserController().UpdateUserInfo)
+	user.Delete("/delete-info", m.UserController().DeleteUserInfo)
 }

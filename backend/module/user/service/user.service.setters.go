@@ -162,7 +162,7 @@ func (s *userService) AddUserInfo(ctx context.Context, dto *user_dto.UserInfoTyp
 		}
 	}
 
-	if len(*userInDb.Infos) >= 1 {
+	if len(*userInDb.Infos) >= 3 {
 		return &fiber.Error{
 			Code:    409,
 			Message: "Maximum number of user infos reached",
@@ -286,6 +286,26 @@ func (s *userService) UpdateUserInfo(ctx context.Context, dto *user_dto.UpdateUs
 
 	if err := s.repo.UpdateUserInfo(ctx, userInfo); err != nil {
 		s.logger.Warnf("update user info error: %s", err.Error())
+		return &fiber.Error{
+			Code:    500,
+			Message: err.Error(),
+		}
+	}
+
+	return nil
+}
+
+func (s *userService) DeleteUserInfo(ctx context.Context, dto *user_dto.DeleteUserInfoType) error {
+	if err := s.validator.Struct(dto); err != nil {
+		s.logger.Warnf("validate error: %s", err.Error())
+		return &fiber.Error{
+			Code:    400,
+			Message: err.Error(),
+		}
+	}
+
+	if err := s.repo.DeleteUserInfo(ctx, dto.ID); err != nil {
+		s.logger.Warnf("delete user info error: %s", err.Error())
 		return &fiber.Error{
 			Code:    500,
 			Message: err.Error(),

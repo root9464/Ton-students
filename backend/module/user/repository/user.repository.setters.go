@@ -51,3 +51,13 @@ func (r *userRepository) UpdateUserInfo(ctx context.Context, userInfo *user_mode
 	r.logger.Info("User info updated successfully")
 	return nil
 }
+
+func (r *userRepository) DeleteUserInfo(ctx context.Context, userInfoID string) error {
+	r.logger.Info("Deleting user info...")
+	if err := r.db.Db.Where("id = ?", userInfoID).Delete(&user_model.UserInfo{}).Error; err != nil {
+		r.logger.Errorf("Error deleting user info: %v", err)
+		return err
+	}
+	r.logger.Info("User info deleted successfully")
+	return nil
+}
