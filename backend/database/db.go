@@ -4,14 +4,14 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	"google.golang.org/appengine/log"
+	"github.com/root9464/Ton-students/shared/logger"
 	"gorm.io/driver/postgres"
 
 	"gorm.io/gorm"
 	gormLogger "gorm.io/gorm/logger"
 )
 
-func ConnectDb(url string) (*gorm.DB, error) {
+func ConnectDb(url string, log *logger.Logger) (*gorm.DB, error) {
 	if err := godotenv.Load(); err != nil {
 		log.Errorf("Error loading .env file: %v", err)
 	}
@@ -27,6 +27,9 @@ func ConnectDb(url string) (*gorm.DB, error) {
 		return nil, err
 	}
 
+	log.Info("✅ Database connection successfully")
+
+	log.Info("📦 Setting database connection pool...")
 	sqlDB, err := db.DB()
 	if err != nil {
 		return nil, err

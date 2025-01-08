@@ -2,7 +2,7 @@ package user_repository
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
 	user_model "github.com/root9464/Ton-students/module/user/model"
 )
@@ -26,7 +26,7 @@ func (r *userRepository) Update(ctx context.Context, user *user_model.User) (*us
 	}
 
 	if result.RowsAffected == 0 {
-		return nil, errors.New("user not found")
+		return nil, fmt.Errorf("user not found")
 	}
 
 	r.logger.Info("User update successfully")
@@ -65,7 +65,7 @@ func (r *userRepository) DeleteUserInfo(ctx context.Context, userInfoID string) 
 
 func (r *userRepository) AddManyUserInfo(ctx context.Context, userInfo []*user_model.UserInfo) error {
 	if len(userInfo) == 0 {
-		return errors.New("no user info to add")
+		return fmt.Errorf("no user info to add")
 	}
 
 	r.logger.Info("Adding user info...")
@@ -73,7 +73,7 @@ func (r *userRepository) AddManyUserInfo(ctx context.Context, userInfo []*user_m
 	result := r.db.WithContext(ctx).CreateInBatches(userInfo, 100)
 	if result.Error != nil {
 		r.logger.Errorf("Error adding user info: %v", result.Error)
-		return errors.New("error adding user info")
+		return fmt.Errorf("error adding user info")
 	}
 
 	r.logger.Infof("Successfully added %d user info records", result.RowsAffected)

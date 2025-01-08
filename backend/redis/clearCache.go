@@ -2,14 +2,14 @@ package redis_connect
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"time"
 
-	"github.com/gofiber/fiber/v2/log"
 	"github.com/redis/go-redis/v9"
+	"github.com/root9464/Ton-students/shared/logger"
 )
 
-func FlushRedisCache(redisClient *redis.Client, trigger int) error {
+func FlushRedisCache(redisClient *redis.Client, trigger int, log *logger.Logger) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -61,6 +61,6 @@ func FlushRedisCache(redisClient *redis.Client, trigger int) error {
 
 	default:
 		log.Warn("❓ Invalid trigger value. No action taken.")
-		return errors.New("invalid trigger value")
+		return fmt.Errorf("invalid trigger value")
 	}
 }

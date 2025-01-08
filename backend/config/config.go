@@ -8,7 +8,6 @@ import (
 type Config struct {
 	TelegramBotToken string `mapstructure:"TELEGRAM_BOT_TOKEN"`
 	DatabaseUrl      string `mapstructure:"DATABASE_URL"`
-	KafkaBrokerUrl   string `mapstructure:"KAFKA_BROKER_URL"`
 	RedisUrl         string `mapstructure:"REDIS_URL"`
 }
 
@@ -33,5 +32,6 @@ func Load(path string) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }

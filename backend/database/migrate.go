@@ -1,13 +1,13 @@
 package database
 
 import (
-	"github.com/gofiber/fiber/v2/log"
 	serv_model "github.com/root9464/Ton-students/module/service_module/model"
 	user_model "github.com/root9464/Ton-students/module/user/model"
+	"github.com/root9464/Ton-students/shared/logger"
 	"gorm.io/gorm"
 )
 
-func Migrate(db *gorm.DB, trigger bool) error {
+func Migrate(db *gorm.DB, trigger bool, log *logger.Logger) error {
 
 	if trigger {
 		log.Info("📦 Migrating database...")
@@ -19,10 +19,13 @@ func Migrate(db *gorm.DB, trigger bool) error {
 			&serv_model.Tags{},
 		}
 
+		log.Info("📦 Creating types...")
 		db.Exec("CREATE TYPE selected_name AS ENUM('firstname', 'lastname', 'nickname', 'username')")
 		db.Exec("CREATE TYPE role AS ENUM('administarator', 'user', 'creator', 'moderator')")
 		db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"")
+
 		if err := db.AutoMigrate(models...); err != nil {
+			log.Errorf("✖ Failed to migrate database: %v", err)
 			return err
 		}
 	}
