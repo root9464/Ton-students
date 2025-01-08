@@ -9,7 +9,7 @@ import (
 
 func (r *userRepository) Create(ctx context.Context, user *user_model.User) (*user_model.User, error) {
 	r.logger.Info("Creating user...")
-	if err := r.db.Create(&user).Error; err != nil {
+	if err := r.db.WithContext(ctx).Create(&user).Error; err != nil {
 		r.logger.Errorf("Error creating user: %v", err)
 		return nil, err
 	}
@@ -19,7 +19,7 @@ func (r *userRepository) Create(ctx context.Context, user *user_model.User) (*us
 
 func (r *userRepository) Update(ctx context.Context, user *user_model.User) (*user_model.User, error) {
 	r.logger.Info("Updating user...")
-	result := r.db.Model(&user_model.User{}).Where("id = ?", user.ID).Updates(user)
+	result := r.db.WithContext(ctx).Model(&user_model.User{}).Where("id = ?", user.ID).Updates(user)
 	if err := result.Error; err != nil {
 		r.logger.Errorf("Error updating user: %v", err)
 		return nil, err
@@ -35,7 +35,7 @@ func (r *userRepository) Update(ctx context.Context, user *user_model.User) (*us
 
 func (r *userRepository) AddUserInfo(ctx context.Context, userInfo *user_model.UserInfo) error {
 	r.logger.Info("Adding user info...")
-	if err := r.db.Create(&userInfo).Error; err != nil {
+	if err := r.db.WithContext(ctx).Create(&userInfo).Error; err != nil {
 		r.logger.Errorf("Error adding user info: %v", err)
 		return err
 	}
@@ -45,10 +45,19 @@ func (r *userRepository) AddUserInfo(ctx context.Context, userInfo *user_model.U
 
 func (r *userRepository) UpdateUserInfo(ctx context.Context, userInfo *user_model.UserInfo) error {
 	r.logger.Info("Updating user info...")
-	if err := r.db.Model(&user_model.UserInfo{}).Where("id = ?", userInfo.ID).Updates(userInfo).Error; err != nil {
-		r.logger.Errorf("Error updating user info: %v", err)
+
+	result := r.db.WithContext(ctx).Model(&user_model.UserInfo{}).Where("id = ?", userInfo.ID).Updates(userInfo)
+	if result.Error != nil {
+		r.logger.Errorf("Error updating user info: %v", result.Error)
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		err := fmt.Errorf("user info with ID '%s' does not exist", userInfo.ID)
+		r.logger.Warnf("%v", err)
 		return err
 	}
+
 	r.logger.Info("User info updated successfully")
 	return nil
 }
@@ -56,15 +65,13 @@ func (r *userRepository) UpdateUserInfo(ctx context.Context, userInfo *user_mode
 func (r *userRepository) DeleteUserInfo(ctx context.Context, userInfoID string) error {
 	r.logger.Info("Deleting user info...")
 
-	result := r.db.Where("id = ?", userInfoID).Delete(&user_model.UserInfo{})
+	result := r.db.WithContext(ctx).Where("id = ?", userInfoID).Delete(&user_model.UserInfo{})
 
-	// Проверяем количество затронутых строк
 	if result.Error != nil {
 		r.logger.Errorf("Error deleting user info: %v", result.Error)
 		return result.Error
 	}
 
-	// Если ни одна строка не была удалена
 	if result.RowsAffected == 0 {
 		r.logger.Errorf("Error deleting user info: user info with ID %s not found", userInfoID)
 		return fmt.Errorf("user info with ID %s not found", userInfoID)

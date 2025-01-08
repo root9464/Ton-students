@@ -6,7 +6,7 @@ import (
 )
 
 type IServiceModuleRepository interface {
-	// CreateService(service *serv_model.Service) error
+	// CreateService(ctx context.Context, service *serv_model.Service) error
 }
 
 type serviceRepository struct {

@@ -23,12 +23,6 @@ func (s *userService) UpsertUser(ctx context.Context, dto *user_dto.UserType) (*
 
 	s.logger.Infof("validate success: %+v", dto)
 
-	if dto.SelectedName == nil {
-		s.logger.Warnf("selected name is nil")
-		selectedName := user_model.SelectedName("username")
-		dto.SelectedName = &selectedName
-	}
-
 	modelUser, err := utils.ConvertDtoToEntity[user_model.User](dto)
 	if err != nil {
 		s.logger.Warnf("convert dto to entity error: %s", err.Error())
