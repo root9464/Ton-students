@@ -17,6 +17,7 @@ func Migrate(db *gorm.DB, trigger bool, log *logger.Logger) error {
 			&serv_model.Service{},
 			&serv_model.ServiceInfo{},
 			&serv_model.Tags{},
+			&serv_model.ServiceSettings{},
 		}
 
 		log.Info("📦 Creating types...")
