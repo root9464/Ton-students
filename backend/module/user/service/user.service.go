@@ -47,14 +47,6 @@ type userService struct {
 	repo user_repository.IUserRepository
 }
 
-func NewUserService(
-	logger *logger.Logger,
-	validator *validator.Validate,
-	repo user_repository.IUserRepository,
-) *userService {
-	return &userService{
-		logger:    logger,
-		validator: validator,
-		repo:      repo,
-	}
+func NewUserService(logger *logger.Logger, validator *validator.Validate, repo user_repository.IUserRepository) *userService {
+	return &userService{logger: logger, validator: validator, repo: repo}
 }

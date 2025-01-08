@@ -3,7 +3,6 @@ package user_repository
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	user_model "github.com/root9464/Ton-students/module/user/model"
 )
@@ -27,7 +26,7 @@ func (r *userRepository) Update(ctx context.Context, user *user_model.User) (*us
 	}
 
 	if result.RowsAffected == 0 {
-		return nil, ErrUserNotFound
+		return nil, errors.New("user not found")
 	}
 
 	r.logger.Info("User update successfully")
@@ -74,7 +73,7 @@ func (r *userRepository) AddManyUserInfo(ctx context.Context, userInfo []*user_m
 	result := r.db.Db.WithContext(ctx).CreateInBatches(userInfo, 100)
 	if result.Error != nil {
 		r.logger.Errorf("Error adding user info: %v", result.Error)
-		return fmt.Errorf("failed to add user info: %w", result.Error)
+		return errors.New("error adding user info")
 	}
 
 	r.logger.Infof("Successfully added %d user info records", result.RowsAffected)

@@ -139,5 +139,8 @@ func (app *App) initRouter() error {
 	app.moduleProvider.userModule.UserRoutes(api)
 	app.moduleProvider.authModule.AuthRoutes(api)
 
+	creator := api.Group("/creator")
+	app.moduleProvider.serviceModule.ServiceRoutes(creator)
+
 	return nil
 }
