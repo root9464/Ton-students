@@ -1,25 +1,19 @@
 package database
 
 import (
-	"log"
 	"time"
 
 	"github.com/joho/godotenv"
+	"google.golang.org/appengine/log"
 	"gorm.io/driver/postgres"
 
 	"gorm.io/gorm"
 	gormLogger "gorm.io/gorm/logger"
 )
 
-type Database struct {
-	Db *gorm.DB
-}
-
-var DB Database
-
-func ConnectDb(url string) (Database, error) {
+func ConnectDb(url string) (*gorm.DB, error) {
 	if err := godotenv.Load(); err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+		log.Errorf("Error loading .env file: %v", err)
 	}
 
 	db, err := gorm.Open(postgres.New(postgres.Config{
@@ -30,19 +24,17 @@ func ConnectDb(url string) (Database, error) {
 	})
 
 	if err != nil {
-		return Database{}, err
+		return nil, err
 	}
 
-	DB = Database{Db: db}
-
-	sqlDB, err := DB.Db.DB()
+	sqlDB, err := db.DB()
 	if err != nil {
-		return Database{}, err
+		return nil, err
 	}
 
 	sqlDB.SetMaxIdleConns(20)
 	sqlDB.SetMaxOpenConns(200)
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
-	return DB, nil
+	return db, nil
 }

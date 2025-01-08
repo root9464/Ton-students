@@ -7,17 +7,21 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/redis/go-redis/v9"
 	"github.com/root9464/Ton-students/config"
 	"github.com/root9464/Ton-students/database"
+	redis_connect "github.com/root9464/Ton-students/redis"
 	"github.com/root9464/Ton-students/shared/logger"
 	"github.com/root9464/Ton-students/shared/middleware"
+	"gorm.io/gorm"
 )
 
 type App struct {
 	app *fiber.App
 
 	logger         *logger.Logger
-	db             *database.Database
+	db             *gorm.DB
+	redis          *redis.Client
 	validator      *validator.Validate
 	config         *config.Config
 	httpConfig     config.HTTPConfig
@@ -46,6 +50,7 @@ func (app *App) initDeps() {
 	inits := []func() error{
 		app.initConfig,
 		app.initDb,
+		app.initRedis,
 		app.initLogger,
 		app.initValidator,
 		app.initModuleProvider,
@@ -80,15 +85,35 @@ func (app *App) initDb() error {
 	if app.db == nil {
 		db, err := database.ConnectDb(app.config.DatabaseUrl)
 		if err != nil {
-			return fmt.Errorf("✖ Failed to connect to database: %s", err.Error())
+			app.logger.Errorf("✖ Failed to connect to database: %s", err.Error())
+			return err
 		}
-		app.db = &db
-
-		if err := database.Migrate(db.Db, false); err != nil {
+		app.db = db
+		// true - миграция
+		// false - не миграция
+		if err := database.Migrate(db, false); err != nil {
 			return fmt.Errorf("✖ Failed to migrate database: %s", err.Error())
 		}
 	}
 
+	return nil
+}
+
+func (app *App) initRedis() error {
+	if app.redis == nil {
+		redis, err := redis_connect.Connect(app.config.RedisUrl)
+		if err != nil {
+			return fmt.Errorf("✖ Failed to connect to redis: %s", err.Error())
+		}
+		app.redis = redis
+
+		// 0 - не трогать кэш
+		// 1 - выборочная очистка
+		// 2 - полная очистка
+		if err := redis_connect.FlushRedisCache(redis, 0); err != nil {
+			return fmt.Errorf("✖ Failed to flush redis cache: %s", err.Error())
+		}
+	}
 	return nil
 }
 

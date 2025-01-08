@@ -51,6 +51,6 @@ func (p *moduleProvider) AuthModule() error {
 }
 
 func (p *moduleProvider) ServiceModule() error {
-	p.serviceModule = service_module.NewServiceModule(p.app.logger, p.app.validator, p.app.db, p.userModule.UserRepo())
+	p.serviceModule = service_module.NewServiceModule(p.app.logger, p.app.validator, p.app.db, p.userModule.UserRepo(), p.app.redis)
 	return nil
 }

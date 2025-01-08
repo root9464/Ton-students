@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   psqldb:
     image: postgres:latest
@@ -15,8 +13,17 @@ services:
     ports:
       - 5432:5432
 
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+
 volumes:
   postgres_data:
+  redis_data:
 
 networks:
   app-network:

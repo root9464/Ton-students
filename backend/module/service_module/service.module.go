@@ -3,13 +3,14 @@ package service_module
 import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	"github.com/root9464/Ton-students/database"
+	"github.com/redis/go-redis/v9"
 	serv_controller "github.com/root9464/Ton-students/module/service_module/controller"
 	serv_repository "github.com/root9464/Ton-students/module/service_module/repository"
 	serv_service "github.com/root9464/Ton-students/module/service_module/service"
 	user_repository "github.com/root9464/Ton-students/module/user/repository"
 	"github.com/root9464/Ton-students/shared/logger"
 	"github.com/root9464/Ton-students/shared/middleware"
+	"gorm.io/gorm"
 )
 
 type ServiceModule struct {
@@ -19,14 +20,15 @@ type ServiceModule struct {
 
 	logger    *logger.Logger
 	validator *validator.Validate
-	db        *database.Database
+	db        *gorm.DB
+	redis     *redis.Client
 
 	userRepo   user_repository.IUserRepository
 	middleware middleware.RoleMiddleware
 }
 
-func NewServiceModule(logger *logger.Logger, validator *validator.Validate, db *database.Database, userRepo user_repository.IUserRepository) *ServiceModule {
-	return &ServiceModule{logger: logger, validator: validator, db: db, userRepo: userRepo}
+func NewServiceModule(logger *logger.Logger, validator *validator.Validate, db *gorm.DB, userRepo user_repository.IUserRepository, redis *redis.Client) *ServiceModule {
+	return &ServiceModule{logger: logger, validator: validator, db: db, userRepo: userRepo, redis: redis}
 }
 
 func (m *ServiceModule) ServiceRepo() serv_repository.IServiceModuleRepository {
@@ -51,7 +53,7 @@ func (m *ServiceModule) ServiceController() serv_controller.IServiceModuleContro
 }
 
 func (m *ServiceModule) ServiceRoutes(router fiber.Router) {
-	middleware := middleware.NewRoleMiddleware(m.logger, m.userRepo)
+	middleware := middleware.NewRoleMiddleware(m.logger, m.userRepo, m.redis)
 
 	service := router.Group("/service", middleware.CreatorOnly())
 

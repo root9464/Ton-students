@@ -12,7 +12,7 @@ func (r *userRepository) GetByID(ctx context.Context, id int64) (*user_model.Use
 
 	user := new(user_model.User)
 
-	if err := r.db.Db.Preload("Infos").First(&user, "id = ?", id).Error; err != nil {
+	if err := r.db.Preload("Infos").First(&user, "id = ?", id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
@@ -29,7 +29,7 @@ func (r *userRepository) GetByHash(ctx context.Context, hash string) (*user_mode
 
 	user := new(user_model.User)
 
-	if err := r.db.Db.Preload("Infos").First(&user, "hash = ?", hash).Error; err != nil {
+	if err := r.db.Preload("Infos").First(&user, "hash = ?", hash).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}

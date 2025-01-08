@@ -3,11 +3,11 @@ package user_module
 import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	"github.com/root9464/Ton-students/database"
 	user_controller "github.com/root9464/Ton-students/module/user/controller"
 	user_repository "github.com/root9464/Ton-students/module/user/repository"
 	user_service "github.com/root9464/Ton-students/module/user/service"
 	"github.com/root9464/Ton-students/shared/logger"
+	"gorm.io/gorm"
 )
 
 type UserModule struct {
@@ -17,13 +17,13 @@ type UserModule struct {
 
 	logger    *logger.Logger
 	validator *validator.Validate
-	db        *database.Database
+	db        *gorm.DB
 }
 
 func NewUserModule(
 	logger *logger.Logger,
 	validator *validator.Validate,
-	db *database.Database,
+	db *gorm.DB,
 ) *UserModule {
 	return &UserModule{
 		logger:    logger,

@@ -3,9 +3,9 @@ package user_repository
 import (
 	"context"
 
-	"github.com/root9464/Ton-students/database"
 	user_model "github.com/root9464/Ton-students/module/user/model"
 	"github.com/root9464/Ton-students/shared/logger"
+	"gorm.io/gorm"
 )
 
 var _ IUserRepository = (*userRepository)(nil)
@@ -24,12 +24,12 @@ type IUserRepository interface {
 }
 
 type userRepository struct {
-	db     *database.Database
+	db     *gorm.DB
 	logger *logger.Logger
 }
 
 func NewUserRepository(
-	db *database.Database,
+	db *gorm.DB,
 	logger *logger.Logger,
 ) *userRepository {
 	return &userRepository{
