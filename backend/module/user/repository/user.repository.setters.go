@@ -55,10 +55,21 @@ func (r *userRepository) UpdateUserInfo(ctx context.Context, userInfo *user_mode
 
 func (r *userRepository) DeleteUserInfo(ctx context.Context, userInfoID string) error {
 	r.logger.Info("Deleting user info...")
-	if err := r.db.Where("id = ?", userInfoID).Delete(&user_model.UserInfo{}).Error; err != nil {
-		r.logger.Errorf("Error deleting user info: %v", err)
-		return err
+
+	result := r.db.Where("id = ?", userInfoID).Delete(&user_model.UserInfo{})
+
+	// Проверяем количество затронутых строк
+	if result.Error != nil {
+		r.logger.Errorf("Error deleting user info: %v", result.Error)
+		return result.Error
 	}
+
+	// Если ни одна строка не была удалена
+	if result.RowsAffected == 0 {
+		r.logger.Errorf("Error deleting user info: user info with ID %s not found", userInfoID)
+		return fmt.Errorf("user info with ID %s not found", userInfoID)
+	}
+
 	r.logger.Info("User info deleted successfully")
 	return nil
 }

@@ -5,7 +5,9 @@ import (
 	"gorm.io/gorm"
 )
 
-type IServiceModuleRepository interface{}
+type IServiceModuleRepository interface {
+	// CreateService(service *serv_model.Service) error
+}
 
 type serviceRepository struct {
 	db     *gorm.DB

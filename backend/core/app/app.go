@@ -100,8 +100,10 @@ func (app *App) initDb() error {
 		}
 		app.db = db
 
+		// true - запустить миграцию
+		// false - не запускать
 		if err := database.Migrate(db, false, app.logger); err != nil {
-			return fmt.Errorf("✖ Failed to migrate database: " + err.Error())
+			return fmt.Errorf("%s", "✖ Failed to migrate database: "+err.Error())
 		}
 	}
 
@@ -112,7 +114,8 @@ func (app *App) initRedis() error {
 	if app.redis == nil {
 		redis, err := redis_connect.Connect(app.config.RedisUrl, app.logger)
 		if err != nil {
-			return fmt.Errorf("✖ Failed to connect to redis: %v", err)
+			app.logger.Errorf("Failed to connect to Redis: %v", err)
+			return nil
 		}
 		app.redis = redis
 
@@ -120,7 +123,9 @@ func (app *App) initRedis() error {
 		// 1 - выборочная очистка
 		// 2 - полная очистка
 		if err := redis_connect.FlushRedisCache(redis, 0, app.logger); err != nil {
-			return fmt.Errorf("✖ Failed to flush redis cache: %v", err)
+			err = fmt.Errorf("✖ Failed to flush redis cache: %v", err)
+			app.logger.Errorf("%s", err.Error())
+			return err
 		}
 	}
 	return nil
@@ -150,6 +155,7 @@ func (app *App) initModuleProvider() error {
 	err := error(nil)
 	app.moduleProvider, err = NewModuleProvider(app)
 	if err != nil {
+		app.logger.Errorf("%s", err.Error())
 		return err
 	}
 	return nil
@@ -159,6 +165,7 @@ func (app *App) runHttpServer() error {
 	if app.httpConfig == nil {
 		cfg, err := config.NewHTTPConfig()
 		if err != nil {
+			app.logger.Errorf("%s", "✖ Failed to load config: "+err.Error())
 			return fmt.Errorf("✖ Failed to load config: %v", err)
 		}
 		app.httpConfig = cfg
@@ -167,6 +174,7 @@ func (app *App) runHttpServer() error {
 	app.logger.Infof("🌐 Server is running on %s", app.httpConfig.Address())
 	app.logger.Info("✅ Server started successfully")
 	if err := app.app.Listen(app.httpConfig.Address()); err != nil {
+		app.logger.Errorf("%s", "✖ Failed to start server: "+err.Error())
 		return fmt.Errorf("✖ Failed to start server: %v", err)
 	}
 

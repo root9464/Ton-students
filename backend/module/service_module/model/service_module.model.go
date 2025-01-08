@@ -5,7 +5,7 @@ type Service struct {
 	UserId int64         `gorm:"not null;" json:"userId"`
 	Infos  []ServiceInfo `gorm:"foreignKey:ServiceId" json:"infos"`
 	Price  float64       `gorm:"not null" json:"price"`
-	Tags   []Tags        `gorm:"foreignKey:ServiceId" json:"tags"`
+	Tags   *[]Tags       `gorm:"foreignKey:ServiceId" json:"tags"`
 }
 
 type ServiceInfo struct {

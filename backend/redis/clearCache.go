@@ -21,6 +21,7 @@ func FlushRedisCache(redisClient *redis.Client, trigger int, log *logger.Logger)
 	case 1:
 		log.Info("🧹 Performing selective Redis cache cleanup...")
 
+		// То что мы будем удалять
 		patterns := []string{
 			"user:*",
 			"session:*",
