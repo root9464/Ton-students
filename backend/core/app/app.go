@@ -69,7 +69,7 @@ func (app *App) initDeps() error {
 	for _, init := range inits {
 		err := init()
 		if err != nil {
-			return fmt.Errorf("✖ Failed to initialize dependencies: " + err.Error())
+			return fmt.Errorf("%s", "✖ Failed to initialize dependencies: "+err.Error())
 		}
 	}
 	return nil
@@ -79,14 +79,14 @@ func (app *App) initConfig() error {
 	if app.config == nil {
 		config, err := config.LoadConfig(".")
 		if err != nil {
-			return fmt.Errorf("✖ Failed to load config: " + err.Error())
+			return fmt.Errorf("%s", "✖ Failed to load config: "+err.Error())
 		}
-		app.config = &config
+		app.config = config
 	}
 
 	err := config.Load(".env")
 	if err != nil {
-		return fmt.Errorf("✖ Failed to load config: " + err.Error())
+		return fmt.Errorf("%s", "✖ Failed to load config: "+err.Error())
 	}
 
 	return nil

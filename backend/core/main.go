@@ -9,6 +9,7 @@ func main() {
 	a := app.NewApp()
 	err := a.Run()
 	if err != nil {
-		panic(err.Error())
+		panic(err)
 	}
+
 }
