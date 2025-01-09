@@ -41,10 +41,18 @@ var rolePriority = map[user_model.Role]int{
 	user_model.AdminRole:   4,
 }
 
+var whitelist = map[string]bool{
+	"/api/creator/service/all-services": true,
+}
+
 func (rm *RoleMiddleware) CreatorOnly() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		ctxWithTimeout, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
+
+		if _, exists := whitelist[ctx.Path()]; exists {
+			return ctx.Next()
+		}
 
 		userHash := ctx.Get("user_hash")
 		rm.logger.Infof("Checking user role... user_hash: %s", userHash)

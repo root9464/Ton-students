@@ -23,8 +23,7 @@ type ServiceModule struct {
 	db        *gorm.DB
 	redis     *redis.Client
 
-	userRepo   user_repository.IUserRepository
-	middleware middleware.RoleMiddleware
+	userRepo user_repository.IUserRepository
 }
 
 func NewServiceModule(logger *logger.Logger, validator *validator.Validate, db *gorm.DB, userRepo user_repository.IUserRepository, redis *redis.Client) *ServiceModule {
@@ -33,7 +32,7 @@ func NewServiceModule(logger *logger.Logger, validator *validator.Validate, db *
 
 func (m *ServiceModule) ServiceRepo() serv_repository.IServiceModuleRepository {
 	if m.serviceRepo == nil {
-		m.serviceRepo = serv_repository.NewServiceModuleRepository(m.db, m.logger)
+		m.serviceRepo = serv_repository.NewServiceModuleRepository(m.db, m.logger, m.userRepo)
 	}
 	return m.serviceRepo
 }
@@ -47,7 +46,7 @@ func (m *ServiceModule) ServService() serv_service.IServiceModuleService {
 
 func (m *ServiceModule) ServiceController() serv_controller.IServiceModuleController {
 	if m.serviceController == nil {
-		m.serviceController = serv_controller.NewServiceModuleController(m.ServService())
+		m.serviceController = serv_controller.NewServiceModuleController(m.ServService(), m.ServiceRepo())
 	}
 	return m.serviceController
 }
@@ -58,4 +57,8 @@ func (m *ServiceModule) ServiceRoutes(router fiber.Router) {
 	service := router.Group("/service", middleware.CreatorOnly())
 
 	service.Get("/ping", m.ServiceController().Pong)
+
+	service.Post("/create", m.ServiceController().CreateService)
+
+	service.Get("/all-services", m.ServiceController().GetAllServices)
 }
