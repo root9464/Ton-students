@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"time"
 
 	"sync"
@@ -41,8 +42,9 @@ var rolePriority = map[user_model.Role]int{
 	user_model.AdminRole:   4,
 }
 
-var whitelist = map[string]bool{
-	"/api/creator/service/all-services": true,
+var whitelist = map[string]*regexp.Regexp{
+	"/api/creator/service/all-services": nil,                                                            // прямой доступ
+	"/api/creator/service/get/":         regexp.MustCompile(`^/api/creator/service/get/[0-9a-fA-F-]+$`), //выражение валидатор
 }
 
 func (rm *RoleMiddleware) CreatorOnly() fiber.Handler {
@@ -50,8 +52,15 @@ func (rm *RoleMiddleware) CreatorOnly() fiber.Handler {
 		ctxWithTimeout, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		if _, exists := whitelist[ctx.Path()]; exists {
-			return ctx.Next()
+		path := ctx.Path()
+
+		for route, re := range whitelist {
+			if path == route {
+				return ctx.Next()
+			}
+			if re != nil && re.MatchString(path) {
+				return ctx.Next()
+			}
 		}
 
 		userHash := ctx.Get("user_hash")

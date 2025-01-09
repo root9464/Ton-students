@@ -26,3 +26,12 @@ type SettingsType struct {
 	IsDisabled         bool `json:"isDisabled"`
 	IsAdditionalButton bool `json:"isAdditionalButton"`
 }
+
+type UpdateServiceType struct {
+	ID    string   `json:"id" validate:"required"`
+	Price *float64 `json:"price"`
+
+	Infos    []InfosType   `json:"infos"`
+	Tags     *[]TagsType   `json:"tags"`
+	Settings *SettingsType `json:"settings"`
+}

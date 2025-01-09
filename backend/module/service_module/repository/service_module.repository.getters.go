@@ -11,8 +11,10 @@ import (
 
 func (r *serviceRepository) GetServiceById(ctx context.Context, id string) (*serv_model.Service, error) {
 	r.logger.Info("Getting service by ID...")
+
 	service := new(serv_model.Service)
-	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&service).Error; err != nil {
+
+	if err := r.db.WithContext(ctx).Preload("Infos").Preload("Tags").Preload("Settings").Where("id = ?", id).First(&service).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			r.logger.Infof("Service with ID %s not found", id)
 			return nil, nil

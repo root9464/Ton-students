@@ -47,3 +47,42 @@ func (s *serviceModuleService) CreateService(ctx context.Context, dto *serv_dto.
 
 	return nil
 }
+
+func (s *serviceModuleService) UpdateService(ctx context.Context, dto *serv_dto.UpdateServiceType) error {
+	s.logger.Infof("dto received: %+v", dto)
+	if err := s.validator.Struct(dto); err != nil {
+		s.logger.Warnf("validate error: %s", err.Error())
+		return &fiber.Error{
+			Code:    400,
+			Message: err.Error(),
+		}
+	}
+
+	s.logger.Infof("Validating dto success : %+v", dto)
+	if dto.Settings.ButtonText == nil && dto.Settings.IsAdditionalButton {
+		return &fiber.Error{
+			Code:    422,
+			Message: "buttonText must be filled if isAdditionalButton is true",
+		}
+	}
+
+	s.logger.Infof("converting dto to entity: %+v", dto)
+	newServicem, err := utils.ConvertDtoToEntity[serv_model.Service](dto)
+	if err != nil {
+		s.logger.Warnf("convert dto to entity error: %s", err.Error())
+		return &fiber.Error{
+			Code:    500,
+			Message: err.Error(),
+		}
+	}
+
+	if err := s.repo.UpdateService(ctx, newServicem); err != nil {
+		s.logger.Warnf("update service error: %s", err.Error())
+		return &fiber.Error{
+			Code:    500,
+			Message: err.Error(),
+		}
+	}
+
+	return nil
+}

@@ -25,6 +25,7 @@ type IServiceModuleRepository interface {
 	CreateService(ctx context.Context, service *serv_model.Service) error
 	GetServiceById(ctx context.Context, id string) (*serv_model.Service, error)
 	GetAllServices(ctx context.Context) (*[]ServiceWithUser, error)
+	UpdateService(ctx context.Context, service *serv_model.Service) error
 }
 
 type serviceRepository struct {
