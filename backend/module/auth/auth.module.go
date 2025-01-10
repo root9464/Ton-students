@@ -21,13 +21,13 @@ type AuthModule struct {
 
 	userService user_service.IUserService
 
-	jwtModule *jwt_module.JwtModule
+	jwtModule jwt_module.JwtModule
 }
 
-func NewAuthModule(logger *logger.Logger, validator *validator.Validate, config *config.Config, userService user_service.IUserService, jwtModule *jwt_module.JwtModule) *AuthModule {
-	if jwtModule == nil {
-		panic("JwtModule must not be nil")
-	}
+func NewAuthModule(
+	logger *logger.Logger, validator *validator.Validate, config *config.Config,
+	userService user_service.IUserService, jwtModule jwt_module.JwtModule,
+) *AuthModule {
 	return &AuthModule{
 		logger:      logger,
 		validator:   validator,

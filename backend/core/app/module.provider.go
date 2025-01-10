@@ -55,7 +55,7 @@ func (p *moduleProvider) JwtModule() error {
 }
 
 func (p *moduleProvider) AuthModule() error {
-	p.authModule = auth_module.NewAuthModule(p.app.logger, p.app.validator, p.app.config, p.userModule.UserService(), p.jwtModule)
+	p.authModule = auth_module.NewAuthModule(p.app.logger, p.app.validator, p.app.config, p.userModule.UserService(), *p.jwtModule)
 	return nil
 }
 
