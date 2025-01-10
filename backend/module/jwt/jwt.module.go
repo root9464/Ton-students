@@ -35,7 +35,7 @@ func (m *JwtModule) JwtFuncs() jwt_funcs.IJwtFuncs {
 	}
 
 	if m.jwtFuncs == nil {
-		m.jwtFuncs = jwt_funcs.NewJwtFuncs(m.logger, m.validator, privateKey, publicKey, m.jwtHelpers)
+		m.jwtFuncs = jwt_funcs.NewJwtFuncs(m.logger, m.validator, privateKey, publicKey, m.JwtHelpers())
 	}
 	return m.jwtFuncs
 }

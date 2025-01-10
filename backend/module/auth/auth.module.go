@@ -46,7 +46,7 @@ func (m *AuthModule) AuthService() auth_service.IAuthService {
 
 func (m *AuthModule) AuthController() auth_controller.IAuthController {
 	if m.authController == nil {
-		m.authController = auth_controller.NewAuthController(m.AuthService(), m.jwtModule)
+		m.authController = auth_controller.NewAuthController(m.AuthService(), m.jwtModule, m.config.JwtPublicKey)
 	}
 	return m.authController
 }

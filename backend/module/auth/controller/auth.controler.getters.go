@@ -35,6 +35,22 @@ func (c *authController) Authorize(ctx *fiber.Ctx) error {
 		})
 	}
 
+	ctx.Cookie(&fiber.Cookie{
+		Name:     "access_token",
+		Value:    *accessToken,
+		HTTPOnly: true,
+		Secure:   true,
+		SameSite: fiber.CookieSameSiteStrictMode,
+	})
+
+	ctx.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    *refreshToken,
+		HTTPOnly: true,
+		Secure:   true,
+		SameSite: fiber.CookieSameSiteStrictMode,
+	})
+
 	return ctx.Status(200).JSON(&fiber.Map{
 		"status":  "success",
 		"message": "User authorized",

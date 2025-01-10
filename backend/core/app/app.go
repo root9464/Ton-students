@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"sync"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -17,8 +16,7 @@ import (
 )
 
 type App struct {
-	app  *fiber.App
-	once sync.Once
+	app *fiber.App
 
 	config     *config.Config
 	logger     *logger.Logger
@@ -132,16 +130,10 @@ func (app *App) initRedis() error {
 }
 
 func (app *App) initLogger() error {
-	err := error(nil)
-
-	app.once.Do(func() {
-		app.logger = logger.GetLogger()
-	})
-
 	if app.logger == nil {
-		err = fmt.Errorf("logger is nil and cannot be initialized")
+		app.logger = logger.GetLogger()
 	}
-	return err
+	return nil
 }
 
 func (app *App) initValidator() error {

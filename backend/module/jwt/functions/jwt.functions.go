@@ -58,6 +58,19 @@ func (f *JwtFuncs) GenerateKeyPair(userData jwt_dto.UserData) (*string, *string,
 
 	f.logger.Infof("refresh claims: %+v", refreshClaims)
 
+	if f.privateKey == nil {
+		return nil, nil, &fiber.Error{
+			Code:    500,
+			Message: "privateKey is not initialized",
+		}
+	}
+	if f.helpers == nil {
+		return nil, nil, &fiber.Error{
+			Code:    500,
+			Message: "helpers is not initialized",
+		}
+	}
+
 	accessToken, err := f.helpers.CreateJwt(accessClaims, f.privateKey)
 
 	if err != nil {

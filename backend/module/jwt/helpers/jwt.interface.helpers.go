@@ -13,6 +13,7 @@ var _ IJwtHelper = (*jwtHelper)(nil)
 type IJwtHelper interface {
 	CreateJwt(claims jwt.Claims, key ed25519.PrivateKey) (*string, error)
 	VerifyJwt(tokenString string, key ed25519.PublicKey) (*jwt.Token, error)
+	CheckTokenExpiration(token string, publicKey ed25519.PublicKey) (bool, error)
 }
 
 type jwtHelper struct {
