@@ -7,7 +7,6 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	user_dto "github.com/root9464/Ton-students/module/user/dto"
-	user_funcs "github.com/root9464/Ton-students/module/user/funcs"
 	user_model "github.com/root9464/Ton-students/module/user/model"
 	"github.com/root9464/Ton-students/shared/utils"
 )
@@ -55,20 +54,10 @@ func (s *userService) UpsertUser(ctx context.Context, dto *user_dto.UserType) (*
 
 		s.logger.Infof("created user: %+v", newUser)
 
-		userVisibleName := user_funcs.GetVisibleName(newUser)
-
 		return &ResponseCreateUser{
 			Status:  "success",
 			Message: "User created successfully",
-			Data: &ResponseUserData{
-				ID:           newUser.ID,
-				Visiblename:  userVisibleName,
-				SelectedName: newUser.SelectedName,
-				Role:         newUser.Role,
-				Infos:        newUser.Infos,
-				IsPremium:    newUser.IsPremium,
-				Hash:         newUser.Hash,
-			},
+			Data:    *newUser,
 		}, nil
 	}
 
@@ -84,39 +73,19 @@ func (s *userService) UpsertUser(ctx context.Context, dto *user_dto.UserType) (*
 			}
 		}
 
-		userVisibleName := user_funcs.GetVisibleName(updateUser)
-
 		s.logger.Infof("updated user: %+v", updateUser)
 
 		return &ResponseCreateUser{
 			Status:  "success",
 			Message: "User updated successfully",
-			Data: &ResponseUserData{
-				ID:           updateUser.ID,
-				Visiblename:  userVisibleName,
-				SelectedName: user_model.SelectedName(userVisibleName),
-				Role:         updateUser.Role,
-				Infos:        updateUser.Infos,
-				IsPremium:    updateUser.IsPremium,
-				Hash:         updateUser.Hash,
-			},
+			Data:    *updateUser,
 		}, nil
 	}
-
-	userVisibleName := user_funcs.GetVisibleName(userInDb)
 
 	return &ResponseCreateUser{
 		Status:  "success",
 		Message: "User get successfully",
-		Data: &ResponseUserData{
-			ID:           userInDb.ID,
-			Visiblename:  userVisibleName,
-			SelectedName: userInDb.SelectedName,
-			Role:         userInDb.Role,
-			Infos:        userInDb.Infos,
-			IsPremium:    userInDb.IsPremium,
-			Hash:         userInDb.Hash,
-		},
+		Data:    *userInDb,
 	}, nil
 }
 

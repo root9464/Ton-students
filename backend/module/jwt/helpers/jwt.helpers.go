@@ -7,14 +7,14 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func (h *jwtHelper) CreateJwt(claims jwt.Claims, key ed25519.PrivateKey) (string, error) {
+func (h *jwtHelper) CreateJwt(claims jwt.Claims, key ed25519.PrivateKey) (*string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)
 	signedToken, err := token.SignedString(key)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return signedToken, nil
+	return &signedToken, nil
 }
 
 func (h *jwtHelper) VerifyJwt(tokenString string, key ed25519.PublicKey) (*jwt.Token, error) {

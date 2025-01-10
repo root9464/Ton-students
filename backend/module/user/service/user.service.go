@@ -12,20 +12,10 @@ import (
 
 var _ IUserService = (*userService)(nil)
 
-type ResponseUserData struct {
-	ID           int64                   `json:"id"`
-	Visiblename  string                  `json:"visiblename"`
-	SelectedName user_model.SelectedName `json:"selectedName"`
-	Role         user_model.Role         `json:"role"`
-	Infos        *[]user_model.UserInfo  `json:"infos"`
-	IsPremium    bool                    `json:"isPremium"`
-	Hash         string                  `json:"hash"`
-}
-
 type ResponseCreateUser struct {
-	Status  string            `json:"status"`
-	Message string            `json:"message"`
-	Data    *ResponseUserData `json:"data"`
+	Status  string          `json:"status"`
+	Message string          `json:"message"`
+	Data    user_model.User `json:"data"`
 }
 
 type IUserService interface {

@@ -13,6 +13,7 @@ var _ IJwtFuncs = (*JwtFuncs)(nil)
 
 type IJwtFuncs interface {
 	GenerateKeyPair(userData jwt_dto.UserData) (*string, *string, error)
+	RefreshAccessToken(refreshToken string, publicKey ed25519.PublicKey, privateKey ed25519.PrivateKey) (*string, error)
 	Ping() string
 }
 

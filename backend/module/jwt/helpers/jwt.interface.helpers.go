@@ -11,7 +11,7 @@ import (
 var _ IJwtHelper = (*jwtHelper)(nil)
 
 type IJwtHelper interface {
-	CreateJwt(claims jwt.Claims, key ed25519.PrivateKey) (string, error)
+	CreateJwt(claims jwt.Claims, key ed25519.PrivateKey) (*string, error)
 	VerifyJwt(tokenString string, key ed25519.PublicKey) (*jwt.Token, error)
 }
 

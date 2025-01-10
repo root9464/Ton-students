@@ -39,7 +39,7 @@ func NewAuthModule(
 
 func (m *AuthModule) AuthService() auth_service.IAuthService {
 	if m.authService == nil {
-		m.authService = auth_service.NewAuthService(m.logger, m.validator, m.config, m.userService)
+		m.authService = auth_service.NewAuthService(m.logger, m.validator, m.config, m.userService, m.jwtModule.JwtFuncs())
 	}
 	return m.authService
 }

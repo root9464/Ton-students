@@ -4,7 +4,6 @@ import (
 	"crypto/ed25519"
 	"encoding/hex"
 	"fmt"
-	"log"
 
 	"github.com/go-playground/validator/v10"
 	jwt_dto "github.com/root9464/Ton-students/module/jwt/dto"
@@ -33,6 +32,7 @@ import (
 // 	if err != nil {
 // 		log.Fatal(err)
 // 	}
+
 // }
 
 // func createJWT(claims jwt.Claims, key ed25519.PrivateKey) (string, error) {
@@ -188,20 +188,11 @@ func main() {
 		LastName:  nil,
 	})
 
-	verifiedAccessToken, err := helpers.VerifyJwt(*accessToken, pubK)
+	newAccessToken, err := jwt.RefreshAccessToken(*refreshToken, pubK, privK)
 	if err != nil {
-		log.Fatal("Error verifying access token:", err)
+		panic(err)
 	}
-	fmt.Println("Access token is valid:", verifiedAccessToken.Valid)
 
-	// Проверка refresh токена
-	verifiedRefreshToken, err := helpers.VerifyJwt(*refreshToken, pubK)
-	if err != nil {
-		log.Fatal("Error verifying refresh token:", err)
-	}
-	fmt.Println("Refresh token is valid:", verifiedRefreshToken.Valid)
-
-	fmt.Println("Access Token:", *accessToken)
-	fmt.Println("Refresh Token:", *refreshToken)
+	fmt.Printf("%s\n%s", "Access token: "+*accessToken, "New access token: "+*newAccessToken)
 
 }

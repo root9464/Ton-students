@@ -16,7 +16,6 @@ type UserType struct {
 	Lastname     *string                  `json:"lastname" `
 	Nickname     *string                  `json:"nickname" `
 	SelectedName *user_model.SelectedName `json:"selectedName"`
-	Role         user_model.Role          `json:"role" validate:"required,oneof=administarator user creator moderator"`
 	Info         []user_model.UserInfo    `json:"info"`
 	IsPremium    bool                     `json:"isPremium"`
 	Hash         string                   `json:"hash" validate:"required"`
