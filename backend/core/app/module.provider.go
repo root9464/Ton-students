@@ -2,6 +2,7 @@ package app
 
 import (
 	auth_module "github.com/root9464/Ton-students/module/auth"
+	jwt_module "github.com/root9464/Ton-students/module/jwt"
 	service_module "github.com/root9464/Ton-students/module/service_module"
 	user_module "github.com/root9464/Ton-students/module/user"
 )
@@ -10,7 +11,9 @@ type moduleProvider struct {
 	userModule    *user_module.UserModule
 	authModule    *auth_module.AuthModule
 	serviceModule *service_module.ServiceModule
-	app           *App
+
+	jwtModule *jwt_module.JwtModule
+	app       *App
 }
 
 func NewModuleProvider(app *App) (*moduleProvider, error) {
@@ -28,6 +31,7 @@ func NewModuleProvider(app *App) (*moduleProvider, error) {
 func (p *moduleProvider) initDeps() error {
 	inits := []func() error{
 		p.UserModule,
+		p.JwtModule,
 		p.AuthModule,
 		p.ServiceModule,
 	}
@@ -45,8 +49,13 @@ func (p *moduleProvider) UserModule() error {
 	return nil
 }
 
+func (p *moduleProvider) JwtModule() error {
+	p.jwtModule = jwt_module.NewJwtModule(p.app.logger, p.app.validator, p.app.db, p.app.config.JwtPrivateKey, p.app.config.JwtPublicKey)
+	return nil
+}
+
 func (p *moduleProvider) AuthModule() error {
-	p.authModule = auth_module.NewAuthModule(p.app.logger, p.app.validator, p.app.config, p.userModule.UserService())
+	p.authModule = auth_module.NewAuthModule(p.app.logger, p.app.validator, p.app.config, p.userModule.UserService(), p.jwtModule)
 	return nil
 }
 

@@ -24,3 +24,10 @@ func (c *authController) Authorize(ctx *fiber.Ctx) error {
 
 	return ctx.Status(200).JSON(user)
 }
+
+func (c *authController) JwtPing(ctx *fiber.Ctx) error {
+	return ctx.Status(200).JSON(&fiber.Map{
+		"status":  "success",
+		"message": c.jwtModule.JwtFuncs().Ping(),
+	})
+}

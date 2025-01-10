@@ -6,6 +6,7 @@ import (
 	"github.com/root9464/Ton-students/config"
 	auth_controller "github.com/root9464/Ton-students/module/auth/controller"
 	auth_service "github.com/root9464/Ton-students/module/auth/service"
+	jwt_module "github.com/root9464/Ton-students/module/jwt"
 	user_service "github.com/root9464/Ton-students/module/user/service"
 	"github.com/root9464/Ton-students/shared/logger"
 )
@@ -19,19 +20,20 @@ type AuthModule struct {
 	config    *config.Config
 
 	userService user_service.IUserService
+
+	jwtModule *jwt_module.JwtModule
 }
 
-func NewAuthModule(
-	logger *logger.Logger,
-	validator *validator.Validate,
-	config *config.Config,
-	userService user_service.IUserService,
-) *AuthModule {
+func NewAuthModule(logger *logger.Logger, validator *validator.Validate, config *config.Config, userService user_service.IUserService, jwtModule *jwt_module.JwtModule) *AuthModule {
+	if jwtModule == nil {
+		panic("JwtModule must not be nil")
+	}
 	return &AuthModule{
 		logger:      logger,
 		validator:   validator,
 		config:      config,
 		userService: userService,
+		jwtModule:   jwtModule,
 	}
 }
 
@@ -44,7 +46,7 @@ func (m *AuthModule) AuthService() auth_service.IAuthService {
 
 func (m *AuthModule) AuthController() auth_controller.IAuthController {
 	if m.authController == nil {
-		m.authController = auth_controller.NewAuthController(m.AuthService())
+		m.authController = auth_controller.NewAuthController(m.AuthService(), m.jwtModule)
 	}
 	return m.authController
 }
@@ -52,4 +54,5 @@ func (m *AuthModule) AuthController() auth_controller.IAuthController {
 func (m *AuthModule) AuthRoutes(router fiber.Router) {
 	auth := router.Group("/auth")
 	auth.Post("/authorize", m.AuthController().Authorize)
+	auth.Get("/jwt-ping", m.AuthController().JwtPing)
 }

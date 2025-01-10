@@ -1,6 +1,9 @@
 package utils
 
 import (
+	"crypto/ed25519"
+	"encoding/hex"
+	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -43,4 +46,26 @@ func HandlerError(err error) *fiber.Map {
 		}
 	}
 	return nil
+}
+
+func HexToKeys(privateKeyHex, publicKeyHex string) (ed25519.PrivateKey, ed25519.PublicKey, error) {
+	privKeyBytes, err := hex.DecodeString(privateKeyHex)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error decoding private key: %w", err)
+	}
+
+	pubKeyBytes, err := hex.DecodeString(publicKeyHex)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error decoding public key: %w", err)
+	}
+
+	if len(privKeyBytes) != ed25519.PrivateKeySize {
+		return nil, nil, fmt.Errorf("incorrect size of private key")
+	}
+
+	if len(pubKeyBytes) != ed25519.PublicKeySize {
+		return nil, nil, fmt.Errorf("incorrect size of public key")
+	}
+
+	return ed25519.PrivateKey(privKeyBytes), ed25519.PublicKey(pubKeyBytes), nil
 }

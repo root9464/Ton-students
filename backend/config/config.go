@@ -12,6 +12,9 @@ type Config struct {
 	TelegramBotToken string `mapstructure:"TELEGRAM_BOT_TOKEN"`
 	DatabaseUrl      string `mapstructure:"DATABASE_URL"`
 	RedisUrl         string `mapstructure:"REDIS_URL"`
+
+	JwtPrivateKey string `mapstructure:"JWT_PRIVATE_KEY"`
+	JwtPublicKey  string `mapstructure:"JWT_PUBLIC_KEY"`
 }
 
 func validateConfig(config *Config) error {
@@ -19,6 +22,8 @@ func validateConfig(config *Config) error {
 		"TELEGRAM_BOT_TOKEN": config.TelegramBotToken,
 		"DATABASE_URL":       config.DatabaseUrl,
 		"REDIS_URL":          config.RedisUrl,
+		"JWT_PRIVATE_KEY":    config.JwtPrivateKey,
+		"JWT_PUBLIC_KEY":     config.JwtPublicKey,
 	}
 
 	for key, value := range configMap {

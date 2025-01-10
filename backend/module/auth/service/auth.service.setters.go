@@ -28,6 +28,8 @@ func (s *authService) Authorize(ctx context.Context, dto *auth_dto.AutorizeDto) 
 		}
 	}
 
+	s.logger.Infof("init data: %+v", initData)
+
 	srcUser := user_dto.UserType{
 		ID:        initData.User.ID,
 		Username:  initData.User.Username,
