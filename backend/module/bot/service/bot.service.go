@@ -8,6 +8,7 @@ import (
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
+	"github.com/google/uuid"
 	"github.com/root9464/Ton-students/config"
 	"github.com/root9464/Ton-students/shared/logger"
 	"github.com/sirupsen/logrus"
@@ -194,3 +195,19 @@ func SendAdminResponse(b *gotgbot.Bot, ctx *ext.Context, log *logrus.Logger) err
 		&gotgbot.SendMessageOpts{ParseMode: "HTML"})
 	return err
 }
+
+func GeneratePayment(b *gotgbot.Bot, ctx *ext.Context, log *logrus.Logger) (string, error) {
+	payload := uuid.NewString()
+	paymentLink, err := b.CreateInvoiceLink("title", "desription", payload, "XTR", []gotgbot.LabeledPrice{{
+		Label:  "Some product",
+		Amount: 1,//1 stars
+	}}, nil)
+
+	if err != nil {
+		log.Error("Failed to execute GeneratePayment command: " + err.Error())
+		return "", err
+	}
+
+	return paymentLink, nil
+}
+
