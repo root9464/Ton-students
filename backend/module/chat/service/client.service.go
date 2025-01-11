@@ -39,6 +39,7 @@ func (c *Client) ReadPump() {
 			break
 		}
 		message = bytes.TrimSpace(message)
+		//c.Hub.Broadcast <- []byte("hello")
 		c.Hub.Broadcast <- message
 	}
 

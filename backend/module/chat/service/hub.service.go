@@ -1,6 +1,7 @@
 package chat_service
 
 import (
+	"log"
 	"sync"
 )
 
@@ -24,6 +25,7 @@ func NewHub() *Hub {
 
 // обработка сообщений
 func (h *Hub) Run() {
+	log.Println("Запуск обработки сообщений...")
 	for {
 		select {
 		case client := <-h.Register:

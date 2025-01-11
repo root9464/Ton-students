@@ -46,7 +46,7 @@ func (a *App) Run() error {
 func (a *App) initDeps() {
 	inits := []func() error{
 		a.initConfig,
-		a.initDb,
+		//a.initDb,
 		a.initLogger,
 		a.initValidator,
 		a.initModuleProvider,

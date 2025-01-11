@@ -48,6 +48,7 @@ func (c *ChatController) HandleWebSocket(ctx *fiber.Ctx) error {
 
 		// Регистрация клиента
 		c.Hub.Register <- client
+		log.Printf("Клиент подключился: %s", conn.RemoteAddr().String())
 
 		// Запуск потоков для обработки клиента
 		go client.WritePump()
