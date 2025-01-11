@@ -9,6 +9,7 @@ import (
 	jwt_module "github.com/root9464/Ton-students/module/jwt"
 	user_service "github.com/root9464/Ton-students/module/user/service"
 	"github.com/root9464/Ton-students/shared/logger"
+	"github.com/root9464/Ton-students/shared/utils"
 )
 
 type AuthModule struct {
@@ -45,8 +46,12 @@ func (m *AuthModule) AuthService() auth_service.IAuthService {
 }
 
 func (m *AuthModule) AuthController() auth_controller.IAuthController {
+	privateKey, publicKey, err := utils.HexToKeys(m.config.JwtPrivateKey, m.config.JwtPublicKey)
+	if err != nil {
+		panic(err)
+	}
 	if m.authController == nil {
-		m.authController = auth_controller.NewAuthController(m.AuthService(), m.jwtModule, m.config.JwtPublicKey)
+		m.authController = auth_controller.NewAuthController(m.AuthService(), m.jwtModule, publicKey, privateKey)
 	}
 	return m.authController
 }
@@ -54,5 +59,6 @@ func (m *AuthModule) AuthController() auth_controller.IAuthController {
 func (m *AuthModule) AuthRoutes(router fiber.Router) {
 	auth := router.Group("/auth")
 	auth.Post("/authorize", m.AuthController().Authorize)
+	auth.Post("/refresh", m.AuthController().RefreshAccessToken)
 	auth.Get("/jwt-ping", m.AuthController().JwtPing)
 }

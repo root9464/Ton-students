@@ -62,6 +62,58 @@ func (c *authController) Authorize(ctx *fiber.Ctx) error {
 	})
 }
 
+func (c *authController) RefreshAccessToken(ctx *fiber.Ctx) error {
+	refreshToken := ctx.Cookies("refresh_token")
+	if refreshToken == "" {
+		return ctx.Status(400).JSON(&fiber.Map{
+			"status":  "failed",
+			"message": "Refresh token is missing",
+		})
+	}
+
+	accessToken := ctx.Cookies("access_token")
+	if accessToken != "" {
+		isValid, err := c.jwtHelpers.CheckTokenExpiration(accessToken, c.publicKey)
+		if err != nil {
+			return ctx.Status(401).JSON(&fiber.Map{
+				"status":  "failed",
+				"message": "Failed to validate access token",
+			})
+		}
+
+		if isValid {
+			return ctx.Status(200).JSON(&fiber.Map{
+				"status":  "failed",
+				"message": "Access token is still valid",
+			})
+		}
+	}
+
+	newAccessToken, err := c.jwtModule.RefreshAccessToken(refreshToken, c.publicKey, c.privateKey)
+	if err != nil {
+		return ctx.Status(401).JSON(&fiber.Map{
+			"status":  "failed",
+			"message": "Invalid or expired refresh token",
+		})
+	}
+
+	ctx.Cookie(&fiber.Cookie{
+		Name:     "access_token",
+		Value:    *newAccessToken,
+		HTTPOnly: true,
+		Secure:   true,
+		SameSite: fiber.CookieSameSiteStrictMode,
+	})
+
+	return ctx.Status(200).JSON(&fiber.Map{
+		"status":  "success",
+		"message": "Access token refreshed successfully",
+		"token": fiber.Map{
+			"accessToken": newAccessToken,
+		},
+	})
+}
+
 func (c *authController) JwtPing(ctx *fiber.Ctx) error {
 	return ctx.Status(200).JSON(&fiber.Map{
 		"status":  "success",
