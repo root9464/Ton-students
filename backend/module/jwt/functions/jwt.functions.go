@@ -43,6 +43,7 @@ func (f *JwtFuncs) GenerateKeyPair(userData jwt_dto.UserData) (*string, *string,
 		"sub":       userData.ID,
 		"iat":       time.Now().Unix(),
 		"exp":       time.Now().Add(15 * time.Minute).Unix(),
+		"role":      string(userData.Role),
 		"user_hash": refinedHash,
 	}
 
@@ -139,6 +140,7 @@ func (f *JwtFuncs) RefreshAccessToken(refreshToken string, publicKey ed25519.Pub
 		"sub":       int64(userID),
 		"iat":       time.Now().Unix(),
 		"exp":       time.Now().Add(15 * time.Minute).Unix(),
+		"role":      "admin",
 		"user_hash": userHash,
 	}
 

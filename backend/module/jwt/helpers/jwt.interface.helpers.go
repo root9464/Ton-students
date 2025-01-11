@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v5"
+	jwt_dto "github.com/root9464/Ton-students/module/jwt/dto"
 	"github.com/root9464/Ton-students/shared/logger"
 )
 
@@ -14,6 +15,7 @@ type IJwtHelper interface {
 	CreateJwt(claims jwt.Claims, key ed25519.PrivateKey) (*string, error)
 	VerifyJwt(tokenString string, key ed25519.PublicKey) (*jwt.Token, error)
 	CheckTokenExpiration(token string, publicKey ed25519.PublicKey) (bool, error)
+	ParseJwt(tokenString string, key ed25519.PublicKey) (*jwt_dto.UserJwtPayload, error)
 }
 
 type jwtHelper struct {

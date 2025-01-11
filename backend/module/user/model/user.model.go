@@ -1,6 +1,10 @@
 package user_model
 
-import serv_model "github.com/root9464/Ton-students/module/service_module/model"
+import (
+	"fmt"
+
+	serv_model "github.com/root9464/Ton-students/module/service_module/model"
+)
 
 type SelectedName string
 type Role string
@@ -40,4 +44,19 @@ type UserInfo struct {
 	Title   string `gorm:"not null" json:"title"`
 	Content string `gorm:"type:text" json:"content"`
 	User    User   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
+}
+
+func ParseRole(roleStr string) (*Role, error) {
+	roles := map[string]Role{
+		"user":    UserRole,
+		"moder":   ModerRole,
+		"creator": CreatorRole,
+		"admin":   AdminRole,
+	}
+
+	if role, exists := roles[roleStr]; exists {
+		return &role, nil
+	}
+
+	return nil, fmt.Errorf("invalid role: %s", roleStr)
 }

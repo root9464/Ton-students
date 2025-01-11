@@ -3,7 +3,7 @@ package service_module
 import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	"github.com/redis/go-redis/v9"
+	jwt_module "github.com/root9464/Ton-students/module/jwt"
 	serv_controller "github.com/root9464/Ton-students/module/service_module/controller"
 	serv_repository "github.com/root9464/Ton-students/module/service_module/repository"
 	serv_service "github.com/root9464/Ton-students/module/service_module/service"
@@ -21,13 +21,16 @@ type ServiceModule struct {
 	logger    *logger.Logger
 	validator *validator.Validate
 	db        *gorm.DB
-	redis     *redis.Client
-
-	userRepo user_repository.IUserRepository
+	jwtModule jwt_module.JwtModule
+	publicKey string
+	userRepo  user_repository.IUserRepository
 }
 
-func NewServiceModule(logger *logger.Logger, validator *validator.Validate, db *gorm.DB, userRepo user_repository.IUserRepository, redis *redis.Client) *ServiceModule {
-	return &ServiceModule{logger: logger, validator: validator, db: db, userRepo: userRepo, redis: redis}
+func NewServiceModule(
+	logger *logger.Logger, validator *validator.Validate, db *gorm.DB,
+	userRepo user_repository.IUserRepository, jwtModule jwt_module.JwtModule, publicKey string,
+) *ServiceModule {
+	return &ServiceModule{logger: logger, validator: validator, db: db, userRepo: userRepo, jwtModule: jwtModule, publicKey: publicKey}
 }
 
 func (m *ServiceModule) ServiceRepo() serv_repository.IServiceModuleRepository {
@@ -52,7 +55,7 @@ func (m *ServiceModule) ServiceController() serv_controller.IServiceModuleContro
 }
 
 func (m *ServiceModule) ServiceRoutes(router fiber.Router) {
-	middleware := middleware.NewRoleMiddleware(m.logger, m.userRepo, m.redis)
+	middleware := middleware.NewRoleMiddleware(m.logger, m.userRepo, m.jwtModule.JwtHelpers(), m.publicKey)
 
 	service := router.Group("/service", middleware.CreatorOnly())
 
