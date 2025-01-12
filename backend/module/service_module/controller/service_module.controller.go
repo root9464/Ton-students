@@ -10,8 +10,9 @@ var _ IServiceModuleController = (*serviceModuleController)(nil)
 
 type IServiceModuleController interface {
 	Pong(ctx *fiber.Ctx) error
+
 	CreateService(ctx *fiber.Ctx) error
-	UpdateService(ctx *fiber.Ctx) error
+	UpdateInformation(ctx *fiber.Ctx) error
 
 	ServiceFeed(ctx *fiber.Ctx) error
 	GetServiceById(ctx *fiber.Ctx) error

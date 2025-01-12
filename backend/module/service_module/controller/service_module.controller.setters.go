@@ -28,7 +28,7 @@ func (c *serviceModuleController) CreateService(ctx *fiber.Ctx) error {
 	})
 }
 
-func (c *serviceModuleController) UpdateService(ctx *fiber.Ctx) error {
+func (c *serviceModuleController) UpdateInformation(ctx *fiber.Ctx) error {
 	dto := new(serv_dto.UpdateServiceType)
 
 	if err := ctx.BodyParser(dto); err != nil {
@@ -38,7 +38,7 @@ func (c *serviceModuleController) UpdateService(ctx *fiber.Ctx) error {
 		}
 	}
 
-	if err := c.service.UpdateService(ctx.Context(), dto); err != nil {
+	if err := c.service.UpdateInformation(ctx.Context(), dto); err != nil {
 		if errorResponse := utils.HandlerError(err); errorResponse != nil {
 			return ctx.Status(400).JSON(errorResponse)
 		}

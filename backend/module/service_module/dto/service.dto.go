@@ -27,15 +27,6 @@ type SettingsType struct {
 	IsAdditionalButton bool `json:"isAdditionalButton"`
 }
 
-type UpdateServiceType struct {
-	ID    string   `json:"id" validate:"required"`
-	Price *float64 `json:"price"`
-
-	Infos    []InfosType   `json:"infos"`
-	Tags     *[]TagsType   `json:"tags"`
-	Settings *SettingsType `json:"settings"`
-}
-
 type ShortServiceType struct {
 	ID    string  `json:"id" validate:"required"`
 	Price float64 `json:"price" validate:"required"`
@@ -44,4 +35,21 @@ type ShortServiceType struct {
 	Tags  *[]TagsType `json:"tags,omitempty"`
 
 	ButtonText *string `json:"buttonText,omitempty"`
+}
+
+type UpdateServiceType struct {
+	ID    string           `json:"id" validate:"required"`
+	Price *float64         `json:"price"`
+	Infos []UpdateInfoType `json:"infos"`
+	Tags  []UpdateTagsType `json:"tags"`
+}
+
+type UpdateTagsType struct {
+	ID   string     `json:"id" validate:"required"`
+	Tags []TagsType `json:"tags" validate:"required,min=1"`
+}
+
+type UpdateInfoType struct {
+	ID string `json:"id" validate:"required"`
+	InfosType
 }

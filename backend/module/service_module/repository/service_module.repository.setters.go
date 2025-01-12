@@ -17,16 +17,44 @@ func (r *serviceRepository) CreateService(ctx context.Context, service *serv_mod
 	return nil
 }
 
-func (r *serviceRepository) UpdateService(ctx context.Context, service *serv_model.Service) error {
-	r.logger.Info("Updating service...")
-	result := r.db.WithContext(ctx).Model(&serv_model.Service{}).Where("id = ?", service.ID).Updates(service)
+func (r *serviceRepository) UpdateServiceTag(ctx context.Context, service *serv_model.Tags) error {
+	r.logger.Info("Updating service tags...")
+	result := r.db.WithContext(ctx).Model(&serv_model.Tags{}).Where("id = ?", service.ID).Updates(service)
 	if result.Error != nil {
-		r.logger.Errorf("Error updating service: %v", result.Error)
+		r.logger.Errorf("Error updating service tags: %v", result.Error)
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
 		return fmt.Errorf("service with ID '%s' does not exist", service.ID)
 	}
-	r.logger.Info("Service updated successfully")
+	r.logger.Info("Service tags updated successfully")
+	return nil
+}
+
+func (r *serviceRepository) UpdateServiceInfo(ctx context.Context, service *serv_model.ServiceInfo) error {
+	r.logger.Info("Updating service info...")
+	result := r.db.WithContext(ctx).Model(&serv_model.ServiceInfo{}).Where("id = ?", service.ID).Updates(service)
+	if result.Error != nil {
+		r.logger.Errorf("Error updating service info: %v", result.Error)
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("service with ID '%s' does not exist", service.ID)
+	}
+	r.logger.Info("Service info updated successfully")
+	return nil
+}
+
+func (r *serviceRepository) UpdateServicePrice(ctx context.Context, id string, price float64) error {
+	r.logger.Info("Updating service price...")
+	result := r.db.WithContext(ctx).Model(&serv_model.Service{}).Where("id = ?", id).Update("price", price)
+	if result.Error != nil {
+		r.logger.Errorf("Error updating service price: %v", result.Error)
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("service with ID '%s' does not exist", id)
+	}
+	r.logger.Info("Service price updated successfully")
 	return nil
 }

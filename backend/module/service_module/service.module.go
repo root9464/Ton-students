@@ -42,7 +42,7 @@ func (m *ServiceModule) ServiceRepo() serv_repository.IServiceModuleRepository {
 
 func (m *ServiceModule) ServService() serv_service.IServiceModuleService {
 	if m.service == nil {
-		m.service = serv_service.NewServiceModuleService(m.logger, m.validator, m.ServiceRepo())
+		m.service = serv_service.NewServiceModuleService(m.logger, m.validator, m.ServiceRepo(), m.db)
 	}
 	return m.service
 }
@@ -61,8 +61,9 @@ func (m *ServiceModule) ServiceRoutes(router fiber.Router) {
 
 	service.Get("/ping", m.ServiceController().Pong)
 	service.Post("/create", m.ServiceController().CreateService)
-	service.Patch("/update", m.ServiceController().UpdateService)
 	service.Get("/get-service", m.ServiceController().GetServiceById)
 
 	service.Get("/feed", m.ServiceController().ServiceFeed)
+
+	service.Patch("/update", m.ServiceController().UpdateInformation)
 }

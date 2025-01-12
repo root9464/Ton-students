@@ -25,7 +25,10 @@ var _ IServiceModuleRepository = (*serviceRepository)(nil)
 
 type IServiceModuleRepository interface {
 	CreateService(ctx context.Context, service *serv_model.Service) error
-	UpdateService(ctx context.Context, service *serv_model.Service) error
+	UpdateServiceTag(ctx context.Context, service *serv_model.Tags) error
+
+	UpdateServiceInfo(ctx context.Context, service *serv_model.ServiceInfo) error
+	UpdateServicePrice(ctx context.Context, id string, price float64) error
 
 	GetServiceById(ctx context.Context, id string) (*serv_model.Service, error)
 	GetShortServices(ctx context.Context) (*[]serv_model.Service, error)
