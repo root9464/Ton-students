@@ -38,14 +38,14 @@ func ConvertDtoToEntity[T, D any](dto D, opts ...copier.Option) (*T, error) {
 	return entity, nil
 }
 
-func HandlerError(err error) *fiber.Map {
+func HandlerError(err error) (*fiber.Map, int) {
 	if e, ok := err.(*fiber.Error); ok {
 		return &fiber.Map{
 			"status":  "error",
 			"message": e.Message,
-		}
+		}, e.Code
 	}
-	return nil
+	return nil, 0
 }
 
 func HexToKeys(privateKeyHex, publicKeyHex string) (ed25519.PrivateKey, ed25519.PublicKey, error) {

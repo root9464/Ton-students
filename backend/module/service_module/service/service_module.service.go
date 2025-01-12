@@ -28,6 +28,14 @@ type serviceModuleService struct {
 	repo serv_repository.IServiceModuleRepository
 }
 
-func NewServiceModuleService(logger *logger.Logger, validator *validator.Validate, repo serv_repository.IServiceModuleRepository, db *gorm.DB) *serviceModuleService {
-	return &serviceModuleService{logger: logger, validator: validator, repo: repo, db: db}
+func NewServiceModuleService(
+	logger *logger.Logger, validator *validator.Validate,
+	repo serv_repository.IServiceModuleRepository, db *gorm.DB,
+) *serviceModuleService {
+	return &serviceModuleService{
+		logger:    logger,
+		validator: validator,
+		repo:      repo,
+		db:        db,
+	}
 }

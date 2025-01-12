@@ -18,8 +18,8 @@ func (c *authController) Authorize(ctx *fiber.Ctx) error {
 
 	user, err := c.authService.Authorize(ctx.Context(), data)
 	if err != nil {
-		if errorResponse := utils.HandlerError(err); errorResponse != nil {
-			return ctx.Status(400).JSON(errorResponse)
+		if errorResponse, code := utils.HandlerError(err); errorResponse != nil {
+			return ctx.Status(code).JSON(errorResponse)
 		}
 	}
 

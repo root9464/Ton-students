@@ -2,11 +2,17 @@ package serv_service
 
 import (
 	"context"
+	"sync"
 
 	"github.com/gofiber/fiber/v2"
 	serv_dto "github.com/root9464/Ton-students/module/service_module/dto"
 	serv_model "github.com/root9464/Ton-students/module/service_module/model"
 	"github.com/root9464/Ton-students/shared/utils"
+)
+
+var (
+	wg sync.WaitGroup
+	mu sync.Mutex
 )
 
 func (s *serviceModuleService) CreateService(ctx context.Context, dto *serv_dto.ServiceType) error {
@@ -50,15 +56,16 @@ func (s *serviceModuleService) CreateService(ctx context.Context, dto *serv_dto.
 }
 
 func (s *serviceModuleService) UpdateInformation(ctx context.Context, dto *serv_dto.UpdateServiceType) error {
-	s.logger.Infof("dto received: %+v", dto)
+	s.logger.Infof("DTO received: %+v", dto)
+
 	if err := s.validator.Struct(dto); err != nil {
-		s.logger.Warnf("validate error: %s", err.Error())
+		s.logger.Warnf("Validation error: %s", err.Error())
 		return &fiber.Error{
 			Code:    400,
 			Message: err.Error(),
 		}
 	}
-	s.logger.Infof("Validating dto success : %+v", dto)
+	s.logger.Infof("DTO validation successful: %+v", dto)
 
 	if dto.Price == nil && len(dto.Infos) == 0 && len(dto.Tags) == 0 {
 		return &fiber.Error{
@@ -67,33 +74,79 @@ func (s *serviceModuleService) UpdateInformation(ctx context.Context, dto *serv_
 		}
 	}
 
-	if dto.Price != nil {
-		err := s.repo.UpdateServicePrice(ctx, dto.ID, *dto.Price)
-		if err != nil {
-			return err
-		}
+	var (
+		updatedFields []string
+		errors        []error
+	)
+
+	processError := func(err error) {
+		mu.Lock()
+		errors = append(errors, err)
+		mu.Unlock()
 	}
 
+	s.logger.Infof("Updating service price: %f", *dto.Price)
+	if dto.Price != nil {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			taskCtx, cancel := context.WithCancel(ctx)
+			defer cancel()
+
+			if err := s.repo.UpdateServicePrice(taskCtx, dto.ID, *dto.Price); err != nil {
+				s.logger.Errorf("Failed to update service price for service ID: %s. Error: %s", dto.ID, err.Error())
+				processError(err)
+				return
+			}
+
+			s.logger.Infof("Price updated successfully for service ID: %s", dto.ID)
+			updatedFields = append(updatedFields, "price")
+		}()
+	}
+
+	s.logger.Infof("Updating service information: %+v", dto.Infos)
 	if len(dto.Infos) > 0 {
 		for _, info := range dto.Infos {
-			s.logger.Infof("converting dto to entity: %+v", info)
-			serviceInfo, err := utils.ConvertDtoToEntity[serv_model.ServiceInfo](info)
-			if err != nil {
-				return &fiber.Error{
-					Code:    500,
-					Message: err.Error(),
-				}
-			}
-			s.logger.Infof("converting dto to entity success: %+v", serviceInfo)
+			wg.Add(1)
+			go func(info serv_dto.UpdateInfoType) {
+				defer wg.Done()
+				taskCtx, cancel := context.WithCancel(ctx)
+				defer cancel()
 
-			s.logger.Infof("update service info: %+v", serviceInfo)
-			err = s.repo.UpdateServiceInfo(ctx, serviceInfo)
-			if err != nil {
-				return err
-			}
+				serviceInfo, err := utils.ConvertDtoToEntity[serv_model.ServiceInfo](info)
+				if err != nil {
+					s.logger.Errorf("Failed to convert DTO to entity for service ID: %s. Error: %s", dto.ID, err.Error())
+					processError(err)
+					return
+				}
+
+				if err := s.repo.UpdateServiceInfo(taskCtx, serviceInfo); err != nil {
+					s.logger.Errorf("Failed to update service info for service ID: %s. Error: %s", dto.ID, err.Error())
+					processError(err)
+					return
+				}
+
+				s.logger.Infof("Service info updated successfully for service ID: %s", dto.ID)
+				updatedFields = append(updatedFields, "infos")
+			}(info)
 		}
 	}
 
-	s.logger.Infof("Service updated successfully")
+	wg.Wait()
+
+	if len(updatedFields) > 0 {
+		s.logger.Infof("Successfully updated fields: %v for service ID: %s", updatedFields, dto.ID)
+	}
+	s.logger.Warnf("No updates succeeded for service ID: %s", dto.ID)
+
+	if len(errors) > 0 {
+		s.logger.Errorf("Errors occurred during update: %v", errors)
+		return &fiber.Error{
+			Code:    207,
+			Message: "Some updates failed. Please try again or contact support.",
+		}
+	}
+
+	s.logger.Infof("All updates completed successfully for service ID: %s", dto.ID)
 	return nil
 }

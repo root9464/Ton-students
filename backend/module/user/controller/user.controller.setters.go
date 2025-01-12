@@ -16,8 +16,8 @@ func (c *userController) AddUserInfo(ctx *fiber.Ctx) error {
 	}
 
 	if err := c.userService.AddUserInfo(ctx.Context(), userInfo); err != nil {
-		if errorResponse := utils.HandlerError(err); errorResponse != nil {
-			return ctx.Status(400).JSON(errorResponse)
+		if errorResponse, code := utils.HandlerError(err); errorResponse != nil {
+			return ctx.Status(code).JSON(errorResponse)
 		}
 	}
 
@@ -37,8 +37,8 @@ func (c *userController) SelectVisibleName(ctx *fiber.Ctx) error {
 	}
 
 	if err := c.userService.SelectVisibleName(ctx.Context(), visibleName); err != nil {
-		if errorResponse := utils.HandlerError(err); errorResponse != nil {
-			return ctx.Status(400).JSON(errorResponse)
+		if errorResponse, code := utils.HandlerError(err); errorResponse != nil {
+			return ctx.Status(code).JSON(errorResponse)
 		}
 	}
 
@@ -58,8 +58,8 @@ func (c *userController) SetUserNickname(ctx *fiber.Ctx) error {
 	}
 
 	if err := c.userService.SetUserNickname(ctx.Context(), nickname); err != nil {
-		if errorResponse := utils.HandlerError(err); errorResponse != nil {
-			return ctx.Status(400).JSON(errorResponse)
+		if errorResponse, code := utils.HandlerError(err); errorResponse != nil {
+			return ctx.Status(code).JSON(errorResponse)
 		}
 	}
 
@@ -79,8 +79,8 @@ func (c *userController) UpdateUserInfo(ctx *fiber.Ctx) error {
 	}
 
 	if err := c.userService.UpdateUserInfo(ctx.Context(), userInfo); err != nil {
-		if errorResponse := utils.HandlerError(err); errorResponse != nil {
-			return ctx.Status(400).JSON(errorResponse)
+		if errorResponse, code := utils.HandlerError(err); errorResponse != nil {
+			return ctx.Status(code).JSON(errorResponse)
 		}
 	}
 
@@ -100,8 +100,8 @@ func (c *userController) DeleteUserInfo(ctx *fiber.Ctx) error {
 	}
 
 	if err := c.userService.DeleteUserInfo(ctx.Context(), userInfo); err != nil {
-		if errorResponse := utils.HandlerError(err); errorResponse != nil {
-			return ctx.Status(400).JSON(errorResponse)
+		if errorResponse, code := utils.HandlerError(err); errorResponse != nil {
+			return ctx.Status(code).JSON(errorResponse)
 		}
 	}
 
@@ -121,8 +121,8 @@ func (c *userController) AddManyUserInfo(ctx *fiber.Ctx) error {
 	}
 
 	if err := c.userService.AddManyUserInfo(ctx.Context(), userInfos); err != nil {
-		if errorResponse := utils.HandlerError(err); errorResponse != nil {
-			return ctx.Status(400).JSON(errorResponse)
+		if errorResponse, code := utils.HandlerError(err); errorResponse != nil {
+			return ctx.Status(code).JSON(errorResponse)
 		}
 	}
 
