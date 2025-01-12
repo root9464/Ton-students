@@ -60,10 +60,10 @@ func (m *ServiceModule) ServiceRoutes(router fiber.Router) {
 	service := router.Group("/service", middleware.CreatorOnly())
 
 	service.Get("/ping", m.ServiceController().Pong)
-	service.Post("/create", m.ServiceController().CreateService)
-	service.Get("/get-service", m.ServiceController().GetServiceById)
 
 	service.Get("/feed", m.ServiceController().ServiceFeed)
+	service.Get("/get-service", m.ServiceController().GetServiceById)
 
-	service.Patch("/update", m.ServiceController().UpdateInformation)
+	service.Post("/create", m.ServiceController().CreateService)
+	service.Patch("/update", m.ServiceController().UpdateService)
 }

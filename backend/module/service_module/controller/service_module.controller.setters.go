@@ -28,7 +28,7 @@ func (c *serviceModuleController) CreateService(ctx *fiber.Ctx) error {
 	})
 }
 
-func (c *serviceModuleController) UpdateInformation(ctx *fiber.Ctx) error {
+func (c *serviceModuleController) UpdateService(ctx *fiber.Ctx) error {
 	dto := new(serv_dto.UpdateServiceType)
 
 	if err := ctx.BodyParser(dto); err != nil {

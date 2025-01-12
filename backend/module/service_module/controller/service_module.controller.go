@@ -12,10 +12,12 @@ type IServiceModuleController interface {
 	Pong(ctx *fiber.Ctx) error
 
 	CreateService(ctx *fiber.Ctx) error
-	UpdateInformation(ctx *fiber.Ctx) error
+	UpdateService(ctx *fiber.Ctx) error
 
 	ServiceFeed(ctx *fiber.Ctx) error
-	GetServiceById(ctx *fiber.Ctx) error
+	GetServiceById(ctx *fiber.Ctx) error // изменить нужна более полная информация
+
+	//DeleteService(ctx *fiber.Ctx) error
 }
 
 type serviceModuleController struct {

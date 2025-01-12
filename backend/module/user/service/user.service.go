@@ -13,13 +13,12 @@ var _ IUserService = (*userService)(nil)
 
 type IUserService interface {
 	UpsertUser(ctx context.Context, dto *user_dto.UserType) (*user_dto.ShortUserType, error)
+
 	SelectVisibleName(ctx context.Context, dto *user_dto.SelectVisibleNameType) error
 	SetUserNickname(ctx context.Context, dto *user_dto.SetUserNicknameType) error
-
 	AddUserInfo(ctx context.Context, dto *user_dto.UserInfoType) error
 	UpdateUserInfo(ctx context.Context, dto *user_dto.UpdateUserInfoType) error
 	DeleteUserInfo(ctx context.Context, dto *user_dto.DeleteUserInfoType) error
-
 	AddManyUserInfo(ctx context.Context, dto *user_dto.ManyUserInfoType) error
 }
 
