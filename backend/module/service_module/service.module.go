@@ -42,7 +42,7 @@ func (m *ServiceModule) ServiceRepo() serv_repository.IServiceModuleRepository {
 
 func (m *ServiceModule) ServService() serv_service.IServiceModuleService {
 	if m.service == nil {
-		m.service = serv_service.NewServiceModuleService(m.logger, m.validator, m.ServiceRepo(), m.db)
+		m.service = serv_service.NewServiceModuleService(m.logger, m.validator, m.ServiceRepo(), m.userRepo, m.db)
 	}
 	return m.service
 }

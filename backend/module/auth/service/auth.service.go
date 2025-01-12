@@ -7,6 +7,7 @@ import (
 	"github.com/root9464/Ton-students/config"
 	auth_dto "github.com/root9464/Ton-students/module/auth/dto"
 	jwt_funcs "github.com/root9464/Ton-students/module/jwt/functions"
+	user_dto "github.com/root9464/Ton-students/module/user/dto"
 	user_service "github.com/root9464/Ton-students/module/user/service"
 	"github.com/root9464/Ton-students/shared/logger"
 )
@@ -14,7 +15,7 @@ import (
 var _ IAuthService = (*authService)(nil)
 
 type IAuthService interface {
-	Authorize(ctx context.Context, dto *auth_dto.AutorizeDto) (*user_service.ResponseCreateUser, error)
+	Authorize(ctx context.Context, dto *auth_dto.AutorizeDto) (*user_dto.ShortUserType, error)
 }
 
 type authService struct {

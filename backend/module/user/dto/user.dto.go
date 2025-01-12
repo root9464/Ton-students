@@ -2,23 +2,30 @@ package user_dto
 
 import (
 	"github.com/go-playground/validator/v10"
-	user_model "github.com/root9464/Ton-students/module/user/model"
 )
 
 type CreateUserDto struct {
 	InitDataRaw string `json:"init-data-raw" validate:"required"`
 }
 
+type ShortUserType struct {
+	ID          int64          `json:"id" validate:"required"`
+	VisibleName string         `json:"username" validate:"required"`
+	Role        string         `json:"role" validate:"required"`
+	Hash        string         `json:"hash" validate:"required"`
+	Infos       []UserInfoType `json:"infos" validate:"required"`
+}
+
 type UserType struct {
-	ID           int64                    `json:"id" validate:"required"`
-	Username     string                   `json:"username" validate:"required,min=3,max=50"`
-	Firstname    *string                  `json:"firstname" `
-	Lastname     *string                  `json:"lastname" `
-	Nickname     *string                  `json:"nickname" `
-	SelectedName *user_model.SelectedName `json:"selectedName"`
-	Info         []user_model.UserInfo    `json:"info"`
-	IsPremium    bool                     `json:"isPremium"`
-	Hash         string                   `json:"hash" validate:"required"`
+	ID           int64          `json:"id" validate:"required"`
+	Username     string         `json:"username" validate:"required,min=3,max=50"`
+	Firstname    *string        `json:"firstname" `
+	Lastname     *string        `json:"lastname" `
+	Nickname     *string        `json:"nickname" `
+	SelectedName *string        `json:"selectedName"`
+	Info         []UserInfoType `json:"info"`
+	IsPremium    bool           `json:"isPremium"`
+	Hash         string         `json:"hash" validate:"required"`
 }
 
 type UserInfoType struct {
@@ -28,9 +35,9 @@ type UserInfoType struct {
 }
 
 type SelectVisibleNameType struct {
-	ID           int64                   `json:"id" validate:"required"`
-	SelectedName user_model.SelectedName `json:"selectedName" validate:"required,oneof=firstname lastname nickname username"`
-	Hash         string                  `json:"hash" validate:"required"`
+	ID           int64  `json:"id" validate:"required"`
+	SelectedName string `json:"selectedName" validate:"required,oneof=firstname lastname nickname username"`
+	Hash         string `json:"hash" validate:"required"`
 }
 
 type SetUserNicknameType struct {

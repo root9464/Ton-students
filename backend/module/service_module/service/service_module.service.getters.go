@@ -5,7 +5,9 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	serv_dto "github.com/root9464/Ton-students/module/service_module/dto"
+	serv_model "github.com/root9464/Ton-students/module/service_module/model"
 	"github.com/root9464/Ton-students/shared/utils"
+	"github.com/samber/lo"
 )
 
 func (s *serviceModuleService) GetServiceById(ctx context.Context, id string) (*serv_dto.ServiceType, error) {
@@ -33,32 +35,64 @@ func (s *serviceModuleService) GetServiceById(ctx context.Context, id string) (*
 }
 
 func (s *serviceModuleService) GetShortServices(ctx context.Context) (*[]serv_dto.ShortServiceType, error) {
+	s.logger.Info("Getting creator services...")
 
-	servicesInDB, err := s.repo.GetShortServices(ctx)
+	user, err := s.userRepo.UserServices(ctx)
 	if err != nil {
 		return nil, &fiber.Error{
 			Code:    500,
-			Message: err.Error()}
+			Message: err.Error(),
+		}
 	}
 
-	services := make([]serv_dto.ShortServiceType, 0)
-	for _, serviceInDB := range *servicesInDB {
+	s.logger.Infof("Got creator services: %+v", user)
 
-		serviceInDB.Infos = utils.LimitSlice(serviceInDB.Infos, 1)
-		service, err := utils.ConvertDtoToEntity[serv_dto.ShortServiceType](serviceInDB)
-		if err != nil {
-			return nil, &fiber.Error{
-				Code:    500,
-				Message: err.Error()}
-		}
-		service.ButtonText = serviceInDB.Settings.ButtonText
-
-		if len(*service.Tags) == 0 {
-			service.Tags = nil
-		}
-
-		services = append(services, *service)
+	// Проверяем, что Services не nil и не пустой
+	if user == nil || user.Services == nil || len(user.Services) == 0 {
+		s.logger.Info("No services found for user")
+		return nil, nil
 	}
 
-	return &services, nil
+	shortServices := lo.Map(user.Services, func(service serv_model.Service, _ int) serv_dto.ShortServiceType {
+		infos := lo.Map(service.Infos, func(info serv_model.ServiceInfo, _ int) serv_dto.InfosType {
+			return serv_dto.InfosType{
+				Title:   info.Title,
+				Content: info.Content,
+			}
+		})
+
+		tags := new([]serv_dto.TagsType)
+		if service.Tags != nil && len(*service.Tags) > 0 {
+			mappedTags := lo.Map(*service.Tags, func(tag serv_model.Tags, _ int) serv_dto.TagsType {
+				return serv_dto.TagsType{
+					ServiceId: tag.ServiceId,
+					Name:      tag.Name,
+				}
+			})
+			tags = &mappedTags
+		}
+
+		settings, _ := utils.ConvertDtoToEntity[serv_dto.SettingsType](service.Settings)
+
+		visibleName := utils.GetVisibleName(user)
+
+		result := serv_dto.ShortServiceType{
+			ID:       service.ID,
+			UserID:   service.UserId,
+			Username: &visibleName,
+			Price:    service.Price,
+			Infos:    infos,
+			Settings: settings,
+		}
+
+		if tags != nil && len(*tags) > 0 {
+			result.Tags = tags
+		}
+
+		return result
+	})
+
+	s.logger.Infof("Short creator services retrieved: count = %d", len(shortServices))
+
+	return &shortServices, nil
 }

@@ -5,21 +5,14 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	user_dto "github.com/root9464/Ton-students/module/user/dto"
-	user_model "github.com/root9464/Ton-students/module/user/model"
 	user_repository "github.com/root9464/Ton-students/module/user/repository"
 	"github.com/root9464/Ton-students/shared/logger"
 )
 
 var _ IUserService = (*userService)(nil)
 
-type ResponseCreateUser struct {
-	Status  string          `json:"status"`
-	Message string          `json:"message"`
-	Data    user_model.User `json:"data"`
-}
-
 type IUserService interface {
-	UpsertUser(ctx context.Context, dto *user_dto.UserType) (*ResponseCreateUser, error)
+	UpsertUser(ctx context.Context, dto *user_dto.UserType) (*user_dto.ShortUserType, error)
 	SelectVisibleName(ctx context.Context, dto *user_dto.SelectVisibleNameType) error
 	SetUserNickname(ctx context.Context, dto *user_dto.SetUserNicknameType) error
 

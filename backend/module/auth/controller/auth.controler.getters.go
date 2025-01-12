@@ -24,9 +24,9 @@ func (c *authController) Authorize(ctx *fiber.Ctx) error {
 	}
 
 	accessToken, refreshToken, err := c.jwtModule.GenerateKeyPair(jwt_dto.UserData{
-		ID:       user.Data.ID,
-		Username: user.Data.Username,
-		Role:     string(user.Data.Role),
+		ID:       user.ID,
+		Username: user.VisibleName,
+		Role:     string(user.Role),
 	})
 
 	if err != nil {
@@ -53,9 +53,9 @@ func (c *authController) Authorize(ctx *fiber.Ctx) error {
 	})
 
 	return ctx.Status(200).JSON(&fiber.Map{
-		"status":  user.Status,
-		"message": user.Message,
-		"data":    user.Data,
+		"status":  "success",
+		"message": "Authorized successfully",
+		"data":    user,
 		"token": fiber.Map{
 			"accessToken":  accessToken,
 			"refreshToken": refreshToken,

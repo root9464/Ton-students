@@ -11,7 +11,7 @@ import (
 	"github.com/root9464/Ton-students/shared/utils"
 )
 
-func (s *userService) UpsertUser(ctx context.Context, dto *user_dto.UserType) (*ResponseCreateUser, error) {
+func (s *userService) UpsertUser(ctx context.Context, dto *user_dto.UserType) (*user_dto.ShortUserType, error) {
 	if err := s.validator.Struct(dto); err != nil {
 		s.logger.Warnf("validate error: %s", err.Error())
 		return nil, &fiber.Error{
@@ -42,6 +42,16 @@ func (s *userService) UpsertUser(ctx context.Context, dto *user_dto.UserType) (*
 		}
 	}
 
+	convert, err := utils.ConvertDtoToEntity[user_dto.ShortUserType](userInDb)
+	if err != nil {
+		s.logger.Warnf("convert dto to entity error: %s", err.Error())
+		return nil, &fiber.Error{
+			Code:    500,
+			Message: err.Error(),
+		}
+	}
+	convert.VisibleName = utils.GetVisibleName(userInDb)
+
 	if userInDb == nil {
 		newUser, err := s.repo.Create(ctx, modelUser)
 		if err != nil {
@@ -53,12 +63,18 @@ func (s *userService) UpsertUser(ctx context.Context, dto *user_dto.UserType) (*
 		}
 
 		s.logger.Infof("created user: %+v", newUser)
+		returnedUser, err := utils.ConvertDtoToEntity[user_dto.ShortUserType](newUser)
+		returnedUser.VisibleName = utils.GetVisibleName(newUser)
 
-		return &ResponseCreateUser{
-			Status:  "success",
-			Message: "User created successfully",
-			Data:    *newUser,
-		}, nil
+		if err != nil {
+			s.logger.Warnf("convert dto to entity error: %s", err.Error())
+			return nil, &fiber.Error{
+				Code:    500,
+				Message: err.Error(),
+			}
+		}
+
+		return returnedUser, nil
 	}
 
 	if userInDb.Hash != modelUser.Hash {
@@ -75,18 +91,20 @@ func (s *userService) UpsertUser(ctx context.Context, dto *user_dto.UserType) (*
 
 		s.logger.Infof("updated user: %+v", updateUser)
 
-		return &ResponseCreateUser{
-			Status:  "success",
-			Message: "User updated successfully",
-			Data:    *updateUser,
-		}, nil
+		returnedUser, err := utils.ConvertDtoToEntity[user_dto.ShortUserType](updateUser)
+		returnedUser.VisibleName = utils.GetVisibleName(updateUser)
+
+		if err != nil {
+			s.logger.Warnf("convert dto to entity error: %s", err.Error())
+			return nil, &fiber.Error{
+				Code:    500,
+				Message: err.Error(),
+			}
+		}
+		return returnedUser, nil
 	}
 
-	return &ResponseCreateUser{
-		Status:  "success",
-		Message: "User get successfully",
-		Data:    *userInDb,
-	}, nil
+	return convert, nil
 }
 
 func (s *userService) AddUserInfo(ctx context.Context, dto *user_dto.UserInfoType) error {
@@ -170,7 +188,7 @@ func (s *userService) SelectVisibleName(ctx context.Context, dto *user_dto.Selec
 		}
 	}
 
-	userInDb.SelectedName = dto.SelectedName
+	userInDb.SelectedName = user_model.SelectedName(dto.SelectedName)
 	userInDb.Hash = dto.Hash
 
 	_, err = s.repo.Update(ctx, userInDb)

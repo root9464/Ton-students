@@ -9,18 +9,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type ServiceWithUser struct {
-	UserID   int64  `json:"userId"`
-	Username string `json:"username"`
-	Hash     string `json:"hash"`
-
-	ServiceID string                     `json:"serviceId"`
-	Price     float64                    `json:"price"`
-	Infos     []serv_model.ServiceInfo   `json:"infos"`
-	Tags      *[]serv_model.Tags         `json:"tags"`
-	Settings  serv_model.ServiceSettings `json:"settings"`
-}
-
 var _ IServiceModuleRepository = (*serviceRepository)(nil)
 
 type IServiceModuleRepository interface {
@@ -29,9 +17,7 @@ type IServiceModuleRepository interface {
 
 	UpdateServiceInfo(ctx context.Context, service *serv_model.ServiceInfo) error
 	UpdateServicePrice(ctx context.Context, id string, price float64) error
-
 	GetServiceById(ctx context.Context, id string) (*serv_model.Service, error)
-	GetShortServices(ctx context.Context) (*[]serv_model.Service, error)
 }
 
 type serviceRepository struct {

@@ -28,13 +28,14 @@ type SettingsType struct {
 }
 
 type ShortServiceType struct {
-	ID    string  `json:"id" validate:"required"`
-	Price float64 `json:"price" validate:"required"`
+	ID       string  `json:"id" validate:"required"`
+	UserID   int64   `json:"userId" validate:"required"`
+	Username *string `json:"username" validate:"required"`
+	Price    float64 `json:"price" validate:"required"`
 
-	Infos []InfosType `json:"infos"`
-	Tags  *[]TagsType `json:"tags,omitempty"`
-
-	ButtonText *string `json:"buttonText,omitempty"`
+	Infos    []InfosType   `json:"infos"`
+	Tags     *[]TagsType   `json:"tags,omitempty"`
+	Settings *SettingsType `json:"settings"`
 }
 
 type UpdateServiceType struct {

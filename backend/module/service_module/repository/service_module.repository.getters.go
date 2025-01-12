@@ -24,21 +24,3 @@ func (r *serviceRepository) GetServiceById(ctx context.Context, id string) (*ser
 	r.logger.Infof("Service with ID %s retrieved successfully", id)
 	return service, nil
 }
-
-func (r *serviceRepository) GetShortServices(ctx context.Context) (*[]serv_model.Service, error) {
-	r.logger.Info("Getting short services...")
-
-	services := new([]serv_model.Service)
-
-	if err := r.db.WithContext(ctx).Preload("Infos").Preload("Tags").Preload("Settings").Find(&services).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			r.logger.Info("No services found")
-			return nil, nil
-		}
-		r.logger.Errorf("Error getting short services: %v", err)
-		return nil, err
-	}
-
-	r.logger.Info("Short services retrieved successfully")
-	return services, nil
-}
