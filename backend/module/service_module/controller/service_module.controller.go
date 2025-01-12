@@ -12,9 +12,9 @@ type IServiceModuleController interface {
 	Pong(ctx *fiber.Ctx) error
 	CreateService(ctx *fiber.Ctx) error
 	UpdateService(ctx *fiber.Ctx) error
-	GetServiceById(ctx *fiber.Ctx) error
 
 	ServiceFeed(ctx *fiber.Ctx) error
+	GetServiceById(ctx *fiber.Ctx) error
 }
 
 type serviceModuleController struct {

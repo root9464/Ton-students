@@ -25,6 +25,10 @@ func (s *serviceModuleService) GetServiceById(ctx context.Context, id string) (*
 			Message: err.Error()}
 	}
 
+	if len(*service.Tags) == 0 {
+		service.Tags = nil
+	}
+
 	return service, nil
 }
 

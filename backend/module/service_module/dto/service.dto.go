@@ -4,7 +4,7 @@ type ServiceType struct {
 	UserId   int64         `json:"userId" validate:"required"`
 	Price    float64       `json:"price" validate:"required"`
 	Infos    []InfosType   `json:"infos"`
-	Tags     *[]TagsType   `json:"tags"`
+	Tags     *[]TagsType   `json:"tags,omitempty"`
 	Settings *SettingsType `json:"settings"`
 }
 

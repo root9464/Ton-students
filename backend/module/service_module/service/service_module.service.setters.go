@@ -45,6 +45,7 @@ func (s *serviceModuleService) CreateService(ctx context.Context, dto *serv_dto.
 		}
 	}
 
+	s.logger.Infof("create service success: %+v", newServicem)
 	return nil
 }
 
