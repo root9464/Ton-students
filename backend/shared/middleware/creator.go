@@ -90,6 +90,7 @@ func (rm *RoleMiddleware) CreatorOnly() fiber.Handler {
 			rm.logger.Errorf("Failed to parse JWT: %v", err)
 			return ctx.Status(401).JSON(fiber.Map{
 				"error": "Invalid or expired token",
+				"msg":   err.Error(),
 				"token": tokenString,
 			})
 		}

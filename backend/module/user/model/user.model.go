@@ -48,10 +48,10 @@ type UserInfo struct {
 
 func ParseRole(roleStr string) (*Role, error) {
 	roles := map[string]Role{
-		"user":    UserRole,
-		"moder":   ModerRole,
-		"creator": CreatorRole,
-		"admin":   AdminRole,
+		"user":           UserRole,
+		"moderator":      ModerRole,
+		"creator":        CreatorRole,
+		"administarator": AdminRole,
 	}
 
 	if role, exists := roles[roleStr]; exists {
