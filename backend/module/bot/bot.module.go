@@ -11,6 +11,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/message"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/precheckoutquery"
+	"github.com/gofiber/fiber/v2"
 	"github.com/root9464/Ton-students/config"
 	bot_controller "github.com/root9464/Ton-students/module/bot/controller"
 	"github.com/root9464/Ton-students/shared/logger"
@@ -79,7 +80,7 @@ func (m *BotModule) Start() error {
 		m.controller.SendAdminResponse))
 
 	//////////////payment
-	m.dispatcher.AddHandler(handlers.NewCommand("generate-payment", m.controller.Payment))
+	m.dispatcher.AddHandler(handlers.NewCommand("payment", m.controller.Payment))
 	// PreCheckout to handle the step right before payment. Must be handled within 10s, or the checkout will be abandoned by telegram.
 	m.dispatcher.AddHandler(handlers.NewPreCheckoutQuery(precheckoutquery.All, preCheckout))
 	// Payment received; send/provide product to customer.
@@ -107,9 +108,11 @@ func (m *BotModule) Start() error {
 	return nil
 }
 
-// func (m *BotModule) SetupRoutes(router fiber.Router) {
-// 	router.Get("/generate-payment", m.controller.GeneratePaymentHandler)
-// }
+func (m *BotModule) BotRoutes(router fiber.Router) {
+    router.Get("/generate-payment", func(ctx *fiber.Ctx) error {
+        return m.controller.GeneratePaymentHandler(m.bot, ctx)
+    })
+}
 
 func preCheckout(b *gotgbot.Bot, ctx *ext.Context) error {
 	// Do any required preCheckout validation here. If anything failed, we should answer the query with "ok: False",
@@ -126,7 +129,6 @@ func preCheckout(b *gotgbot.Bot, ctx *ext.Context) error {
 }
 
 func paymentComplete(b *gotgbot.Bot, ctx *ext.Context) error {
-	// Payment has been received; a real bot would now provide the user with the product.
 	_, err := ctx.EffectiveMessage.Reply(b, "Payment complete - in a real bot, this is where you would provision the product that has been paid for.", nil)
 	if err != nil {
 		return fmt.Errorf("failed to send payment complete message: %w", err)

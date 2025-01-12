@@ -60,7 +60,7 @@ func (c *BotController) SendAdminResponse(b *gotgbot.Bot, ctx *ext.Context) erro
 }
 
 func (c *BotController) Payment(b *gotgbot.Bot, ctx *ext.Context) error {
-	str, err := service.GeneratePayment(b, ctx, c.logger.Logger)
+	str, err := service.GeneratePayment(b, c.logger.Logger)
 	if err != nil {
 		c.logger.Error("Failed to execute SendUserResponse command: " + err.Error())
 		return err

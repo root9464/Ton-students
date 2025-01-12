@@ -196,7 +196,7 @@ func SendAdminResponse(b *gotgbot.Bot, ctx *ext.Context, log *logrus.Logger) err
 	return err
 }
 
-func GeneratePayment(b *gotgbot.Bot, ctx *ext.Context, log *logrus.Logger) (string, error) {
+func GeneratePayment(b *gotgbot.Bot, log *logrus.Logger) (string, error) {
 	payload := uuid.NewString()
 	paymentLink, err := b.CreateInvoiceLink("title", "desription", payload, "XTR", []gotgbot.LabeledPrice{{
 		Label:  "Some product",

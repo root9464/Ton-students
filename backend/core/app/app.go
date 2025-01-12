@@ -146,5 +146,6 @@ func (a *App) initRouter() error {
 	a.moduleProvider.authModule.AuthRoutes(api)
 	a.moduleProvider.userModule.UserRoutes(api)
 	a.moduleProvider.chatModule.ChatRoutes(api)
+	a.moduleProvider.botModule.BotRoutes(api)
 	return nil
 }
