@@ -2,6 +2,8 @@ package bot_module
 
 import (
 	"fmt"
+	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -80,7 +82,7 @@ func (m *BotModule) Start() error {
 		m.controller.SendAdminResponse))
 
 	//////////////payment
-	m.dispatcher.AddHandler(handlers.NewCommand("payment", m.controller.Payment))
+	//m.dispatcher.AddHandler(handlers.NewCommand("payment", m.controller.Payment))
 	// PreCheckout to handle the step right before payment. Must be handled within 10s, or the checkout will be abandoned by telegram.
 	m.dispatcher.AddHandler(handlers.NewPreCheckoutQuery(precheckoutquery.All, preCheckout))
 	// Payment received; send/provide product to customer.
@@ -109,22 +111,34 @@ func (m *BotModule) Start() error {
 }
 
 func (m *BotModule) BotRoutes(router fiber.Router) {
-    router.Get("/generate-payment", func(ctx *fiber.Ctx) error {
-        return m.controller.GeneratePaymentHandler(m.bot, ctx)
-    })
+	router.Get("/generate-payment", func(ctx *fiber.Ctx) error {
+		return m.controller.GeneratePaymentHandler(m.bot, ctx)
+	})
 }
 
 func preCheckout(b *gotgbot.Bot, ctx *ext.Context) error {
-	// Do any required preCheckout validation here. If anything failed, we should answer the query with "ok: False",
-	// and populate the ErrorMessage field in the opts.
-	// For example, you may want to ensure that the user who requested the invoice is the same person as the person who
-	// is checking out; but this would require storage, so isn't shown here.
+
+	userId := strconv.FormatInt(ctx.PreCheckoutQuery.From.Id, 10)
+	log.Println("Пользователь, отправивший запрос", userId)
+
+	payload := ctx.PreCheckoutQuery.InvoicePayload
+	log.Println("payload", payload)
+
+	if payload != userId {
+		// Answer false to cancel the checkout.
+		_, err := ctx.PreCheckoutQuery.Answer(b, false, nil)
+		if err != nil {
+			return fmt.Errorf("failed to answer precheckout query: %w", err)
+		}
+		return nil
+	}
 
 	// Answer true once checks have passed.
 	_, err := ctx.PreCheckoutQuery.Answer(b, true, nil)
 	if err != nil {
 		return fmt.Errorf("failed to answer precheckout query: %w", err)
 	}
+	//log.Println(ctx.PreCheckoutQuery.Id)
 	return nil
 }
 

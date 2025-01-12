@@ -1,8 +1,6 @@
 package bot_controller
 
 import (
-	"fmt"
-
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/root9464/Ton-students/shared/logger" // Подключаем ваш логгер
@@ -59,12 +57,12 @@ func (c *BotController) SendAdminResponse(b *gotgbot.Bot, ctx *ext.Context) erro
 	return nil
 }
 
-func (c *BotController) Payment(b *gotgbot.Bot, ctx *ext.Context) error {
-	str, err := service.GeneratePayment(b, c.logger.Logger)
-	if err != nil {
-		c.logger.Error("Failed to execute SendUserResponse command: " + err.Error())
-		return err
-	}
-	fmt.Println(str)
-	return nil
-}
+// func (c *BotController) Payment(b *gotgbot.Bot, ctx *ext.Context) error {
+// 	str, err := service.GeneratePayment(b, id  c.logger.Logger)
+// 	if err != nil {
+// 		c.logger.Error("Failed to execute SendUserResponse command: " + err.Error())
+// 		return err
+// 	}
+// 	fmt.Println(str)
+// 	return nil
+// }

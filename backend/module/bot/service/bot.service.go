@@ -8,7 +8,6 @@ import (
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"github.com/google/uuid"
 	"github.com/root9464/Ton-students/config"
 	"github.com/root9464/Ton-students/shared/logger"
 	"github.com/sirupsen/logrus"
@@ -36,7 +35,7 @@ func NewBotService(config *config.Config, logger *logger.Logger) *BotService {
 // Start - Логика обработки команды /start
 func Start(b *gotgbot.Bot, ctx *ext.Context, channelid int64, log *logrus.Logger) error {
 	userID := ctx.EffectiveUser.Id
-
+	
 	log.WithFields(logrus.Fields{
 		"userID": userID,
 	}).Info("Start command received")
@@ -196,11 +195,12 @@ func SendAdminResponse(b *gotgbot.Bot, ctx *ext.Context, log *logrus.Logger) err
 	return err
 }
 
-func GeneratePayment(b *gotgbot.Bot, log *logrus.Logger) (string, error) {
-	payload := uuid.NewString()
-	paymentLink, err := b.CreateInvoiceLink("title", "desription", payload, "XTR", []gotgbot.LabeledPrice{{
+func GeneratePayment(b *gotgbot.Bot, id string, log *logrus.Logger) (string, error) {
+	//payload := strconv.FormatInt(b.User.Id , 10)
+	//log.Println(payload)
+	paymentLink, err := b.CreateInvoiceLink("title", "desription", id, "XTR", []gotgbot.LabeledPrice{{
 		Label:  "Some product",
-		Amount: 1,//1 stars
+		Amount: 1, //1 stars
 	}}, nil)
 
 	if err != nil {
@@ -210,4 +210,3 @@ func GeneratePayment(b *gotgbot.Bot, log *logrus.Logger) (string, error) {
 
 	return paymentLink, nil
 }
-
