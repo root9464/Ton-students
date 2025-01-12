@@ -61,7 +61,8 @@ func (m *ServiceModule) ServiceRoutes(router fiber.Router) {
 
 	service.Get("/ping", m.ServiceController().Pong)
 	service.Post("/create", m.ServiceController().CreateService)
-	service.Get("/all-services", m.ServiceController().GetAllServices)
 	service.Patch("/update", m.ServiceController().UpdateService)
-	service.Get("/get/:id", m.ServiceController().GetServiceById)
+	service.Get("/get-service", m.ServiceController().GetServiceById)
+
+	service.Get("/feed", m.ServiceController().ServiceFeed)
 }

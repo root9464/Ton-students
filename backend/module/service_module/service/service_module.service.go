@@ -13,6 +13,7 @@ type IServiceModuleService interface {
 	CreateService(ctx context.Context, dto *serv_dto.ServiceType) error
 	UpdateService(ctx context.Context, dto *serv_dto.UpdateServiceType) error
 	GetServiceById(ctx context.Context, id string) (*serv_dto.ServiceType, error)
+	GetShortServices(ctx context.Context) (*[]serv_dto.ShortServiceType, error)
 }
 
 type serviceModuleService struct {

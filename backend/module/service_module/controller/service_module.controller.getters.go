@@ -8,24 +8,8 @@ func (c *serviceModuleController) Pong(ctx *fiber.Ctx) error {
 	return ctx.Status(200).JSON(&fiber.Map{"msg": "pong "})
 }
 
-func (c *serviceModuleController) GetAllServices(ctx *fiber.Ctx) error {
-	services, err := c.repo.GetAllServices(ctx.Context())
-	if err != nil {
-		return ctx.Status(500).JSON(&fiber.Error{
-			Code:    500,
-			Message: err.Error(),
-		})
-	}
-
-	return ctx.Status(200).JSON(fiber.Map{
-		"status":   "success",
-		"message":  "Services fetched successfully",
-		"services": services,
-	})
-}
-
 func (c *serviceModuleController) GetServiceById(ctx *fiber.Ctx) error {
-	id := ctx.Params("id")
+	id := ctx.Query("id")
 
 	if id == "" {
 		return ctx.Status(400).JSON(&fiber.Error{
@@ -45,6 +29,22 @@ func (c *serviceModuleController) GetServiceById(ctx *fiber.Ctx) error {
 	return ctx.Status(200).JSON(fiber.Map{
 		"status":  "success",
 		"message": "Service fetched successfully",
-		"service": service,
+		"data":    service,
+	})
+}
+
+func (c *serviceModuleController) ServiceFeed(ctx *fiber.Ctx) error {
+	services, err := c.service.GetShortServices(ctx.Context())
+	if err != nil {
+		return ctx.Status(500).JSON(&fiber.Error{
+			Code:    500,
+			Message: err.Error(),
+		})
+	}
+
+	return ctx.Status(200).JSON(fiber.Map{
+		"status":  "success",
+		"message": "Services fetched successfully",
+		"data":    services,
 	})
 }

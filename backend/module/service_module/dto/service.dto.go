@@ -35,3 +35,13 @@ type UpdateServiceType struct {
 	Tags     *[]TagsType   `json:"tags"`
 	Settings *SettingsType `json:"settings"`
 }
+
+type ShortServiceType struct {
+	ID    string  `json:"id" validate:"required"`
+	Price float64 `json:"price" validate:"required"`
+
+	Infos []InfosType `json:"infos"`
+	Tags  *[]TagsType `json:"tags,omitempty"`
+
+	ButtonText *string `json:"buttonText,omitempty"`
+}

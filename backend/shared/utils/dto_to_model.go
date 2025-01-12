@@ -69,3 +69,10 @@ func HexToKeys(privateKeyHex, publicKeyHex string) (ed25519.PrivateKey, ed25519.
 
 	return ed25519.PrivateKey(privKeyBytes), ed25519.PublicKey(pubKeyBytes), nil
 }
+
+func LimitSlice[T any](slice []T, maxLen int) []T {
+	if len(slice) > maxLen {
+		return slice[:maxLen]
+	}
+	return slice
+}
