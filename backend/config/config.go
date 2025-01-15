@@ -12,6 +12,7 @@ type Config struct {
 	BotToken         string `mapstructure:"BOT_APITOKEN"`
 	AdminId          int64  `mapstructure:"ADMIN_ID"`
 	ChannelId        int64  `mapstructure:"REQUIRED_CHANNEL"`
+	ChatBotId        int64  `mapstructure:"CHAT_BOT_ID"`
 }
 
 func LoadConfig(path string) (*Config, error) {

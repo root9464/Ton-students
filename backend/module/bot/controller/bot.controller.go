@@ -14,10 +14,10 @@ func (c *BotController) GeneratePaymentHandler(bot *gotgbot.Bot, ctx *fiber.Ctx)
 	body := new(dto.Payment)
 
 	if err := ctx.BodyParser(body); err != nil {
-        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-            "error": "Failed to parse request body",
-        })
-    }
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Failed to parse request body",
+		})
+	}
 	log.Printf("user id: %s\n", body.UserId)
 
 	paymentLink, err := service.GeneratePayment(bot, body.UserId, c.logger.Logger)
@@ -32,3 +32,19 @@ func (c *BotController) GeneratePaymentHandler(bot *gotgbot.Bot, ctx *fiber.Ctx)
 		"payment_link": paymentLink,
 	})
 }
+
+func (c *BotController) InvateLinkHandler(bot *gotgbot.Bot, ctx *fiber.Ctx) error {
+	invateLink, err := service.InvateLink(bot, c.config.ChatBotId, c.logger.Logger)
+	if err != nil {
+		c.logger.Error("Failed to generate invate link: " + err.Error())
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to generate invate link",
+		})
+	}
+
+	return ctx.JSON(fiber.Map{
+		"invate_link": invateLink,
+	})
+}
+
+

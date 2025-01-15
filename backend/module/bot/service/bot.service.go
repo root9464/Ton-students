@@ -2,6 +2,7 @@ package bot_service
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"sync"
@@ -34,8 +35,15 @@ func NewBotService(config *config.Config, logger *logger.Logger) *BotService {
 
 // Start - Логика обработки команды /start
 func Start(b *gotgbot.Bot, ctx *ext.Context, channelid int64, log *logrus.Logger) error {
+	//считывает аргументы команды start
+	referalCode := searchArgs(ctx)
+	log.Info(referalCode)
+	//обрабатываем id чела который дал рефералку -> если он есть в бд то добавляем в бд рефералку
+	//											 -> если нету такого чела в бд ссылка не действует
+
+
 	userID := ctx.EffectiveUser.Id
-	
+
 	log.WithFields(logrus.Fields{
 		"userID": userID,
 	}).Info("Start command received")
@@ -209,4 +217,64 @@ func GeneratePayment(b *gotgbot.Bot, id string, log *logrus.Logger) (string, err
 	}
 
 	return paymentLink, nil
+}
+
+func InvateLink(b *gotgbot.Bot, chatId int64, log *logrus.Logger) (string, error) {
+	invateLink, err := b.ExportChatInviteLink(chatId, nil)
+
+	if err != nil {
+		log.Error("Failed to execute InvateLink command: " + err.Error())
+		return "", err
+	}
+
+	return invateLink, nil
+}
+
+func HandleInlineQuery(bot *gotgbot.Bot, query *gotgbot.InlineQuery) error {
+	// ID группы, для которой нужно создать invite-ссылку
+	groupChatID := int64(-1001234567890) // Замените на ID вашей группы
+
+	// Генерация invite-ссылки
+	inviteLink, err := bot.ExportChatInviteLink(groupChatID, nil)
+	if err != nil {
+		log.Printf("Ошибка генерации invite-ссылки: %v", err)
+		return nil // Возвращаем nil, чтобы не завершить inline-запрос с ошибкой
+	}
+
+	// Создаем inline-результат
+	results := []gotgbot.InlineQueryResult{
+		&gotgbot.InlineQueryResultArticle{
+			Id:    "invite_link", // Уникальный ID результата
+			Title: "Ссылка приглашения в группу",
+			InputMessageContent: gotgbot.InputTextMessageContent{
+				MessageText: fmt.Sprintf("Вот ваша ссылка приглашения: %s", inviteLink),
+			},
+			Description: "Нажмите, чтобы получить ссылку приглашения в группу.",
+		},
+	}
+
+	// Отправляем результаты
+	_, err = query.Answer(bot, results, &gotgbot.AnswerInlineQueryOpts{
+		CacheTime: 0, // Не кэшировать запросы
+	})
+	if err != nil {
+		log.Printf("Ошибка отправки inline-ответа: %v", err)
+	}
+
+	return nil
+}
+
+
+func searchArgs(ctx *ext.Context) string {
+	// Получаем полный текст команды
+	commandText := ctx.EffectiveMessage.Text
+
+	// Проверяем, содержит ли текст `start `
+	if strings.HasPrefix(commandText, "/start ") {
+		// Извлекаем всё после пробела
+		return strings.TrimSpace(strings.TrimPrefix(commandText, "/start "))
+	}
+
+	// Если аргументов нет, возвращаем пустую строку
+	return ""
 }
