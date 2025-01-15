@@ -33,7 +33,7 @@ type ShortServiceType struct {
 	Username *string `json:"username" validate:"required"`
 	Price    float64 `json:"price" validate:"required"`
 
-	Infos    []InfosType   `json:"infos"`
+	Infos    InfosType     `json:"infos"`
 	Tags     *[]TagsType   `json:"tags,omitempty"`
 	Settings *SettingsType `json:"settings"`
 }

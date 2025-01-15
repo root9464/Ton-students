@@ -81,7 +81,7 @@ func (s *serviceModuleService) GetShortServices(ctx context.Context) (*[]serv_dt
 			UserID:   service.UserId,
 			Username: &visibleName,
 			Price:    service.Price,
-			Infos:    infos,
+			Infos:    infos[0],
 			Settings: settings,
 		}
 
