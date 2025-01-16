@@ -3,26 +3,26 @@ package bot_controller
 import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"github.com/root9464/Ton-students/shared/logger" // Подключаем ваш логгер
-
 	"github.com/root9464/Ton-students/config"
+	"github.com/root9464/Ton-students/shared/logger"
+
 	service "github.com/root9464/Ton-students/module/bot/service"
 )
 
 type BotController struct {
-	config *config.Config
-	logger *logger.Logger // Используем ваш логгер
+	logger  *logger.Logger
+	service *service.BotService
 }
 
 func NewBotController(config *config.Config, logger *logger.Logger) *BotController {
 	return &BotController{
-		config: config,
-		logger: logger,
+		service: service.NewBotService(config, logger),
 	}
 }
 
+//start
 func (c *BotController) Start(b *gotgbot.Bot, ctx *ext.Context) error {
-	err := service.Start(b, ctx, c.config.ChannelId, c.logger.Logger)
+	err := c.service.Start(b, ctx)
 	if err != nil {
 		c.logger.Error("Failed to execute Start command: " + err.Error())
 		return err
@@ -30,8 +30,9 @@ func (c *BotController) Start(b *gotgbot.Bot, ctx *ext.Context) error {
 	return nil
 }
 
+///support
 func (c *BotController) SupportStart(b *gotgbot.Bot, ctx *ext.Context) error {
-	err := service.SupportStart(b, ctx, c.config.AdminId, c.logger.Logger)
+	err := c.service.SupportStart(b, ctx)
 	if err != nil {
 		c.logger.Error("Failed to execute SupportStart command: " + err.Error())
 		return err
@@ -40,7 +41,7 @@ func (c *BotController) SupportStart(b *gotgbot.Bot, ctx *ext.Context) error {
 }
 
 func (c *BotController) SupportReply(b *gotgbot.Bot, ctx *ext.Context) error {
-	err := service.SupportReply(b, ctx, c.logger.Logger)
+	err := c.service.SupportReply(b, ctx)
 	if err != nil {
 		c.logger.Error("Failed to execute SupportReply command: " + err.Error())
 		return err
@@ -49,7 +50,7 @@ func (c *BotController) SupportReply(b *gotgbot.Bot, ctx *ext.Context) error {
 }
 
 func (c *BotController) SendAdminResponse(b *gotgbot.Bot, ctx *ext.Context) error {
-	err := service.SendAdminResponse(b, ctx, c.logger.Logger)
+	err := c.service.SendAdminResponse(b, ctx)
 	if err != nil {
 		c.logger.Error("Failed to execute SendAdminResponse command: " + err.Error())
 		return err
@@ -57,12 +58,31 @@ func (c *BotController) SendAdminResponse(b *gotgbot.Bot, ctx *ext.Context) erro
 	return nil
 }
 
-// func (c *BotController) Payment(b *gotgbot.Bot, ctx *ext.Context) error {
-// 	str, err := service.GeneratePayment(b, id  c.logger.Logger)
-// 	if err != nil {
-// 		c.logger.Error("Failed to execute SendUserResponse command: " + err.Error())
-// 		return err
-// 	}
-// 	fmt.Println(str)
-// 	return nil
-// }
+//inline 
+func (c *BotController) InlineQuery(b *gotgbot.Bot, ctx *ext.Context) error {
+	err := c.service.InlineQuery(b, ctx)
+	if err != nil {
+		c.logger.Error("Failed to execute InlineQuery command: " + err.Error())
+		return err
+	}
+	return nil
+}
+
+//payment
+func (c *BotController) PreCheckout(b *gotgbot.Bot, ctx *ext.Context) error {
+	err := c.service.PreCheckout(b, ctx)
+	if err != nil {
+		c.logger.Error("Failed to execute PreCheckout command: " + err.Error())
+		return err
+	}
+	return nil
+}
+
+func (c *BotController) PaymentComplete(b *gotgbot.Bot, ctx *ext.Context) error {
+	err := c.service.PaymentComplete(b, ctx)
+	if err != nil {
+		c.logger.Error("Failed to execute PaymentComplete command: " + err.Error())
+		return err
+	}
+	return nil
+}

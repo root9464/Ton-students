@@ -7,7 +7,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 
 	dto "github.com/root9464/Ton-students/module/bot/dto"
-	service "github.com/root9464/Ton-students/module/bot/service"
 )
 
 func (c *BotController) GeneratePaymentHandler(bot *gotgbot.Bot, ctx *fiber.Ctx) error {
@@ -20,7 +19,7 @@ func (c *BotController) GeneratePaymentHandler(bot *gotgbot.Bot, ctx *fiber.Ctx)
 	}
 	log.Printf("user id: %s\n", body.UserId)
 
-	paymentLink, err := service.GeneratePayment(bot, body.UserId, c.logger.Logger)
+	paymentLink, err := c.service.GeneratePayment(bot, body.UserId)
 	if err != nil {
 		c.logger.Error("Failed to generate payment link: " + err.Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -34,7 +33,7 @@ func (c *BotController) GeneratePaymentHandler(bot *gotgbot.Bot, ctx *fiber.Ctx)
 }
 
 func (c *BotController) InvateLinkHandler(bot *gotgbot.Bot, ctx *fiber.Ctx) error {
-	invateLink, err := service.InvateLink(bot, c.config.ChatBotId, c.logger.Logger)
+	invateLink, err := c.service.InvateLink(bot)
 	if err != nil {
 		c.logger.Error("Failed to generate invate link: " + err.Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -46,5 +45,3 @@ func (c *BotController) InvateLinkHandler(bot *gotgbot.Bot, ctx *fiber.Ctx) erro
 		"invate_link": invateLink,
 	})
 }
-
-
