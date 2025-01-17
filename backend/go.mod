@@ -3,8 +3,10 @@ module github.com/root9464/Ton-students
 go 1.23.2
 
 require (
+	github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-rc.30
 	github.com/go-playground/validator/v10 v10.23.0
 	github.com/gofiber/fiber/v2 v2.52.5
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
 	github.com/mitchellh/mapstructure v1.5.0
@@ -16,17 +18,7 @@ require (
 	gorm.io/gorm v1.25.12
 )
 
-require (
-	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
-	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/emirpasic/gods v1.18.1 // indirect
-	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
-	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
-	github.com/reactivex/rxgo/v2 v2.5.0 // indirect
-	github.com/stretchr/objx v0.5.2 // indirect
-	github.com/stretchr/testify v1.10.0 // indirect
-	github.com/teivah/onecontext v1.3.0 // indirect
-)
+require github.com/stretchr/testify v1.10.0 // indirect
 
 require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
