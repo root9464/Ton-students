@@ -7,6 +7,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/message"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/precheckoutquery"
+	"github.com/gofiber/fiber/v2"
 	"github.com/root9464/Ton-students/config"
 	bot_controller "github.com/root9464/Ton-students/module/bot/controller"
 	"github.com/root9464/Ton-students/shared/logger"
@@ -103,4 +104,14 @@ func (m *BotModule) startPolling() error {
 		return err
 	}
 	return nil
+}
+
+func (m *BotModule) BotRoutes(router fiber.Router) {
+	router.Get("/generate-payment", func(ctx *fiber.Ctx) error {
+		return m.controller.GeneratePaymentHandler(m.bot, ctx)
+	})
+
+	router.Get("/ref", func(ctx *fiber.Ctx) error {
+		return m.controller.InvateLinkHandler(m.bot, ctx)
+	})
 }
