@@ -9,23 +9,23 @@ type CreateUserDto struct {
 }
 
 type ShortUserType struct {
-	ID          int64          `json:"id" validate:"required"`
-	VisibleName string         `json:"username" validate:"required"`
-	Role        string         `json:"role" validate:"required"`
-	Hash        string         `json:"hash" validate:"required"`
-	Infos       []UserInfoType `json:"infos" validate:"required"`
+	ID          int64           `json:"id" validate:"required"`
+	VisibleName string          `json:"username" validate:"required"`
+	Role        string          `json:"role" validate:"required"`
+	Hash        string          `json:"hash" validate:"required"`
+	Infos       *[]UserInfoType `json:"infos" validate:"required"`
 }
 
 type UserType struct {
-	ID           int64          `json:"id" validate:"required"`
-	Username     string         `json:"username" validate:"required,min=3,max=50"`
-	Firstname    *string        `json:"firstname" `
-	Lastname     *string        `json:"lastname" `
-	Nickname     *string        `json:"nickname" `
-	SelectedName *string        `json:"selectedName"`
-	Info         []UserInfoType `json:"info"`
-	IsPremium    bool           `json:"isPremium"`
-	Hash         string         `json:"hash" validate:"required"`
+	ID           int64           `json:"id" validate:"required"`
+	Username     string          `json:"username" validate:"required,min=3,max=50"`
+	Firstname    *string         `json:"firstname"`
+	Lastname     *string         `json:"lastname"`
+	Nickname     *string         `json:"nickname"`
+	SelectedName *string         `json:"selectedName"`
+	Info         *[]UserInfoType `json:"info"`
+	IsPremium    bool            `json:"isPremium"`
+	Hash         string          `json:"hash" validate:"required"`
 }
 
 type UserInfoType struct {

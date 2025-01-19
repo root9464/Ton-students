@@ -182,10 +182,8 @@ func main() {
 	)
 
 	accessToken, refreshToken, _ := jwt.GenerateKeyPair(jwt_dto.UserData{
-		ID:        2200607311,
-		Username:  "rootton_vf",
-		FirstName: "RootTon",
-		LastName:  nil,
+		ID:       2200607311,
+		Username: "rootton_vf",
 	})
 
 	newAccessToken, err := jwt.RefreshAccessToken(*refreshToken, pubK, privK)

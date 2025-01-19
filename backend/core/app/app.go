@@ -37,8 +37,8 @@ func NewApp() *App {
 
 func (app *App) Run() error {
 	app.app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:5173, http://0.0.0.0:5173, https://4f67-95-105-125-55.ngrok-free.app",
-		AllowCredentials: true,
+		AllowOrigins:     "*",
+		AllowCredentials: false,
 	}))
 	app.app.Use(middleware.LoggerMiddleware())
 

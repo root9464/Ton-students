@@ -30,7 +30,7 @@ type User struct {
 	Lastname     *string      `json:"lastname"`
 	Nickname     *string      `json:"nickname"`
 	SelectedName SelectedName `gorm:"column:selected_name;type:selected_name;not null;default:username" json:"selectedName"`
-	Role         Role         `gorm:"column:role;type:role;not null" json:"role"`
+	Role         Role         `gorm:"column:role;type:role;not null;default:user" json:"role"`
 	IsPremium    bool         `gorm:"default:false" json:"isPremium"`
 	Hash         string       `gorm:"not null" json:"hash"`
 

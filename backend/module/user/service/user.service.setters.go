@@ -42,16 +42,6 @@ func (s *userService) UpsertUser(ctx context.Context, dto *user_dto.UserType) (*
 		}
 	}
 
-	convert, err := utils.ConvertDtoToEntity[user_dto.ShortUserType](userInDb)
-	if err != nil {
-		s.logger.Warnf("convert dto to entity error: %s", err.Error())
-		return nil, &fiber.Error{
-			Code:    500,
-			Message: err.Error(),
-		}
-	}
-	convert.VisibleName = utils.GetVisibleName(userInDb)
-
 	if userInDb == nil {
 		newUser, err := s.repo.Create(ctx, modelUser)
 		if err != nil {
@@ -104,7 +94,17 @@ func (s *userService) UpsertUser(ctx context.Context, dto *user_dto.UserType) (*
 		return returnedUser, nil
 	}
 
-	return convert, nil
+	returnedUser, err := utils.ConvertDtoToEntity[user_dto.ShortUserType](userInDb)
+	if err != nil {
+		s.logger.Warnf("convert dto to entity error: %s", err.Error())
+		return nil, &fiber.Error{
+			Code:    500,
+			Message: err.Error(),
+		}
+	}
+	returnedUser.VisibleName = utils.GetVisibleName(userInDb)
+
+	return returnedUser, nil
 }
 
 func (s *userService) AddUserInfo(ctx context.Context, dto *user_dto.UserInfoType) error {
