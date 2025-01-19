@@ -3,24 +3,9 @@ package bot_controller
 import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"github.com/root9464/Ton-students/config"
-	"github.com/root9464/Ton-students/shared/logger"
-
-	service "github.com/root9464/Ton-students/module/bot/service"
 )
 
-type BotController struct {
-	logger  *logger.Logger
-	service *service.BotService
-}
-
-func NewBotController(config *config.Config, logger *logger.Logger) *BotController {
-	return &BotController{
-		service: service.NewBotService(config, logger),
-	}
-}
-
-//start
+// start
 func (c *BotController) Start(b *gotgbot.Bot, ctx *ext.Context) error {
 	err := c.service.Start(b, ctx)
 	if err != nil {
@@ -30,7 +15,7 @@ func (c *BotController) Start(b *gotgbot.Bot, ctx *ext.Context) error {
 	return nil
 }
 
-///support
+// /support
 func (c *BotController) SupportStart(b *gotgbot.Bot, ctx *ext.Context) error {
 	err := c.service.SupportStart(b, ctx)
 	if err != nil {
@@ -58,7 +43,7 @@ func (c *BotController) SendAdminResponse(b *gotgbot.Bot, ctx *ext.Context) erro
 	return nil
 }
 
-//inline 
+// inline
 func (c *BotController) InlineQuery(b *gotgbot.Bot, ctx *ext.Context) error {
 	err := c.service.InlineQuery(b, ctx)
 	if err != nil {
@@ -68,7 +53,7 @@ func (c *BotController) InlineQuery(b *gotgbot.Bot, ctx *ext.Context) error {
 	return nil
 }
 
-//payment
+// payment
 func (c *BotController) PreCheckout(b *gotgbot.Bot, ctx *ext.Context) error {
 	err := c.service.PreCheckout(b, ctx)
 	if err != nil {

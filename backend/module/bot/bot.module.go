@@ -7,9 +7,11 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/message"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/precheckoutquery"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/root9464/Ton-students/config"
 	bot_controller "github.com/root9464/Ton-students/module/bot/controller"
+	bot_service "github.com/root9464/Ton-students/module/bot/service"
 	"github.com/root9464/Ton-students/shared/logger"
 )
 
@@ -38,7 +40,8 @@ func NewBotModule(config *config.Config, logger *logger.Logger) (*BotModule, err
 	})
 
 	updater := ext.NewUpdater(dispatcher, nil)
-	controller := bot_controller.NewBotController(config, logger)
+	service := bot_service.NewBotService(config, logger)
+	controller := bot_controller.NewBotController(bot, service, logger)
 
 	return &BotModule{
 		bot:        bot,
@@ -108,10 +111,14 @@ func (m *BotModule) startPolling() error {
 
 func (m *BotModule) BotRoutes(router fiber.Router) {
 	router.Get("/generate-payment", func(ctx *fiber.Ctx) error {
-		return m.controller.GeneratePaymentHandler(m.bot, ctx)
+		return m.controller.GeneratePaymentHandler(ctx)
 	})
 
 	router.Get("/ref", func(ctx *fiber.Ctx) error {
-		return m.controller.InvateLinkHandler(m.bot, ctx)
+		return m.controller.InvateLinkHandler(ctx)
 	})
+}
+
+func Startbot(b *gotgbot.Bot, ctx *ext.Context) error {
+	return nil
 }

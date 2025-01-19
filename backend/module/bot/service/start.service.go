@@ -6,8 +6,6 @@ import (
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"github.com/root9464/Ton-students/config"
-	"github.com/root9464/Ton-students/shared/logger"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,18 +14,6 @@ var replyState = struct {
 	active map[int64]int64
 }{
 	active: make(map[int64]int64),
-}
-
-type BotService struct {
-	config *config.Config
-	logger *logger.Logger
-}
-
-func NewBotService(config *config.Config, logger *logger.Logger) *BotService {
-	return &BotService{
-		config: config,
-		logger: logger,
-	}
 }
 
 // Start - Логика обработки команды /start
