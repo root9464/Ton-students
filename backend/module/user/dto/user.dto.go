@@ -13,7 +13,7 @@ type ShortUserType struct {
 	VisibleName string          `json:"username" validate:"required"`
 	Role        string          `json:"role" validate:"required"`
 	Hash        string          `json:"hash" validate:"required"`
-	Infos       *[]UserInfoType `json:"infos" validate:"required"`
+	Infos       *[]UserInfoType `json:"infos,omitempty" validate:"required"`
 }
 
 type UserType struct {

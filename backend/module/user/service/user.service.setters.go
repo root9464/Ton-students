@@ -145,7 +145,7 @@ func (s *userService) AddUserInfo(ctx context.Context, dto *user_dto.UserInfoTyp
 		}
 	}
 
-	if len(*userInDb.Infos) >= 3 {
+	if len(userInDb.Infos) >= 3 {
 		return &fiber.Error{
 			Code:    409,
 			Message: "Maximum number of user infos reached",
@@ -228,7 +228,7 @@ func (s *userService) SetUserNickname(ctx context.Context, dto *user_dto.SetUser
 		}
 	}
 
-	s.logger.Infof("set user nickname: %+v, user: %+v", dto.Nickname, *userInDb.Nickname)
+	s.logger.Infof("set user nickname: %+v, user: %+v", dto.Nickname, userInDb.Nickname)
 	if *userInDb.Nickname == dto.Nickname {
 		return &fiber.Error{
 			Code:    400,
@@ -347,14 +347,14 @@ func (s *userService) AddManyUserInfo(ctx context.Context, dto *user_dto.ManyUse
 		}
 	}
 
-	if len(*userInDb.Infos) >= 3 {
+	if len(userInDb.Infos) >= 3 {
 		return &fiber.Error{
 			Code:    409,
 			Message: "Maximum number of user infos reached",
 		}
 	}
 
-	recordsToAdd := 3 - len(*userInDb.Infos)
+	recordsToAdd := 3 - len(userInDb.Infos)
 	newInfos := dto.Infos[:recordsToAdd]
 
 	userManyInfos := make([]*user_model.UserInfo, len(newInfos))

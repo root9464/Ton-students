@@ -19,6 +19,10 @@ func (r *userRepository) GetByID(ctx context.Context, id int64) (*user_model.Use
 		return nil, err
 	}
 
+	if len(user.Infos) == 0 {
+		user.Infos = nil
+	}
+
 	r.logger.Infof("User with ID %d retrieved successfully", id)
 	return user, nil
 }

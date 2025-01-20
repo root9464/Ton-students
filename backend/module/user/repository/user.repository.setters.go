@@ -9,7 +9,7 @@ import (
 
 func (r *userRepository) Create(ctx context.Context, user *user_model.User) (*user_model.User, error) {
 	r.logger.Info("Creating user...")
-	if err := r.db.WithContext(ctx).Create(&user).Error; err != nil {
+	if err := r.db.WithContext(ctx).Create(&user).Preload("Infos").Error; err != nil {
 		r.logger.Errorf("Error creating user: %v", err)
 		return nil, err
 	}
