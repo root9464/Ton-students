@@ -7,7 +7,7 @@ import (
 )
 
 func (c *userController) AddUserInfo(ctx *fiber.Ctx) error {
-	userInfo := new(user_dto.UserInfoType)
+	userInfo := new(user_dto.UserCreateInfoType)
 	if err := ctx.BodyParser(userInfo); err != nil {
 		return &fiber.Error{
 			Code:    400,
@@ -91,11 +91,11 @@ func (c *userController) UpdateUserInfo(ctx *fiber.Ctx) error {
 }
 
 func (c *userController) DeleteUserInfo(ctx *fiber.Ctx) error {
-	userInfo := new(user_dto.DeleteUserInfoType)
-	if err := ctx.BodyParser(userInfo); err != nil {
+	userInfo := ctx.Query("id")
+	if userInfo == "" {
 		return &fiber.Error{
 			Code:    400,
-			Message: err.Error(),
+			Message: "id is required",
 		}
 	}
 

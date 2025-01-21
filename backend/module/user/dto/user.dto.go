@@ -30,6 +30,7 @@ type UserType struct {
 
 type UserInfoType struct {
 	UserId  int64  `json:"userId" validate:"required"`
+	ID      string `json:"id" validate:"required"`
 	Title   string `json:"title" validate:"required"`
 	Content string `json:"content" validate:"required"`
 }
@@ -37,40 +38,37 @@ type UserInfoType struct {
 type SelectVisibleNameType struct {
 	ID           int64  `json:"id" validate:"required"`
 	SelectedName string `json:"selectedName" validate:"required,oneof=firstname lastname nickname username"`
-	Hash         string `json:"hash" validate:"required"`
 }
 
 type SetUserNicknameType struct {
 	ID       int64  `json:"id" validate:"required"`
 	Nickname string `json:"nickname" validate:"required,min=3,max=50"`
-	Hash     string `json:"hash" validate:"required"`
 }
 
 type UpdateUserInfoType struct {
 	ID      string `json:"id" validate:"required"`
 	Title   string `json:"title" validate:"required"`
 	Content string `json:"content" validate:"required"`
-	Hash    string `json:"hash" validate:"required"`
 }
 
 type DeleteUserInfoType struct {
-	ID   string `json:"id" validate:"required"`
-	Hash string `json:"hash" validate:"required"`
+	ID string `json:"id" validate:"required"`
+}
+
+type UserCreateInfoType struct {
+	UserId  int64  `json:"userId" validate:"required"`
+	Title   string `json:"title" validate:"required"`
+	Content string `json:"content" validate:"required"`
 }
 
 func MaxInfos(fl validator.FieldLevel) bool {
-	if field, ok := fl.Field().Interface().([]UserInfosType); ok {
+	if field, ok := fl.Field().Interface().([]UserInfoType); ok {
 		return len(field) <= 3
 	}
 	return false
 }
 
 type ManyUserInfoType struct {
-	UserId int64           `json:"userId" validate:"required"`
-	Infos  []UserInfosType `json:"infos" validate:"required,maxinfos"`
-}
-
-type UserInfosType struct {
-	Title   string `json:"title" validate:"required"`
-	Content string `json:"content" validate:"required"`
+	UserId int64          `json:"userId" validate:"required"`
+	Infos  []UserInfoType `json:"infos" validate:"required,maxinfos"`
 }

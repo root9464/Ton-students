@@ -107,7 +107,7 @@ func (s *userService) UpsertUser(ctx context.Context, dto *user_dto.UserType) (*
 	return returnedUser, nil
 }
 
-func (s *userService) AddUserInfo(ctx context.Context, dto *user_dto.UserInfoType) error {
+func (s *userService) AddUserInfo(ctx context.Context, dto *user_dto.UserCreateInfoType) error {
 	if err := s.validator.Struct(dto); err != nil {
 		s.logger.Warnf("validate error: %s", err.Error())
 		return &fiber.Error{
@@ -189,7 +189,6 @@ func (s *userService) SelectVisibleName(ctx context.Context, dto *user_dto.Selec
 	}
 
 	userInDb.SelectedName = user_model.SelectedName(dto.SelectedName)
-	userInDb.Hash = dto.Hash
 
 	_, err = s.repo.Update(ctx, userInDb)
 	if err != nil {
@@ -286,16 +285,16 @@ func (s *userService) UpdateUserInfo(ctx context.Context, dto *user_dto.UpdateUs
 	return nil
 }
 
-func (s *userService) DeleteUserInfo(ctx context.Context, dto *user_dto.DeleteUserInfoType) error {
-	if err := s.validator.Struct(dto); err != nil {
-		s.logger.Warnf("validate error: %s", err.Error())
+func (s *userService) DeleteUserInfo(ctx context.Context, id string) error {
+	if id == "" {
+		s.logger.Warnf("validate error: %s", "id is empty")
 		return &fiber.Error{
 			Code:    400,
-			Message: err.Error(),
+			Message: fmt.Sprint("id is empty", id),
 		}
 	}
 
-	if err := s.repo.DeleteUserInfo(ctx, dto.ID); err != nil {
+	if err := s.repo.DeleteUserInfo(ctx, id); err != nil {
 		s.logger.Warnf("delete user info error: %s", err.Error())
 		return &fiber.Error{
 			Code:    500,
