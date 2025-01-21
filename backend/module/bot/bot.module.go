@@ -7,25 +7,25 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/message"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/precheckoutquery"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/root9464/Ton-students/config"
-	bot_controller "github.com/root9464/Ton-students/module/bot/controller"
-	bot_service "github.com/root9464/Ton-students/module/bot/service"
+	controller "github.com/root9464/Ton-students/module/bot/controller"
+	service "github.com/root9464/Ton-students/module/bot/service"
 	"github.com/root9464/Ton-students/shared/logger"
 )
 
 type BotModule struct {
-	bot        *gotgbot.Bot
-	dispatcher *ext.Dispatcher
-	updater    *ext.Updater
-	config     *config.Config
-	logger     *logger.Logger
-	controller *bot_controller.BotController
+	bot           *gotgbot.Bot
+	dispatcher    *ext.Dispatcher
+	updater       *ext.Updater
+	config        *config.Config
+	logger        *logger.Logger
+	botController controller.IBotController
+	botService    service.IBotService
 }
 
 func NewBotModule(config *config.Config, logger *logger.Logger) (*BotModule, error) {
-	bot, err := gotgbot.NewBot(config.BotToken, nil)
+	bot, err := gotgbot.NewBot(config.TelegramBotToken, nil)
 	if err != nil {
 		logger.Error("failed to create new bot: " + err.Error())
 		return nil, err
@@ -40,8 +40,6 @@ func NewBotModule(config *config.Config, logger *logger.Logger) (*BotModule, err
 	})
 
 	updater := ext.NewUpdater(dispatcher, nil)
-	service := bot_service.NewBotService(config, logger)
-	controller := bot_controller.NewBotController(bot, service, logger)
 
 	return &BotModule{
 		bot:        bot,
@@ -49,8 +47,21 @@ func NewBotModule(config *config.Config, logger *logger.Logger) (*BotModule, err
 		updater:    updater,
 		config:     config,
 		logger:     logger,
-		controller: controller,
 	}, nil
+}
+
+func (m *BotModule) BotService() service.IBotService {
+	if m.botService == nil {
+		m.botService = service.NewBotService(m.config, m.logger)
+	}
+	return m.botService
+}
+
+func (m *BotModule) BotController() controller.IBotController {
+	if m.botController == nil {
+		m.botController = controller.NewBotController(m.bot, m.BotService(), m.logger)
+	}
+	return m.botController
 }
 
 func (m *BotModule) Start() error {
@@ -61,37 +72,36 @@ func (m *BotModule) Start() error {
 	}
 
 	m.logger.Info("👾 Bot started successfully")
-
 	m.updater.Idle()
 	return nil
 }
 
 func (m *BotModule) registerHandlers() {
-	m.dispatcher.AddHandler(handlers.NewCommand("start", m.controller.Start))
-	m.dispatcher.AddHandler(handlers.NewCommand("support", m.controller.SupportStart))
+	m.dispatcher.AddHandler(handlers.NewCommand("start", m.BotController().Start))
+	m.dispatcher.AddHandler(handlers.NewCommand("support", m.BotController().SupportStart))
 
 	m.dispatcher.AddHandler(handlers.NewCallback(
 		filters.CallbackQuery(func(query *gotgbot.CallbackQuery) bool {
 			return query.Data != "" && query.Data[:6] == "reply_"
 		}),
-		m.controller.SupportReply,
+		m.BotController().SupportReply,
 	))
 
 	m.dispatcher.AddHandler(handlers.NewMessage(
 		filters.Message(func(msg *gotgbot.Message) bool {
 			return msg.Chat.Id == m.config.AdminId
 		}),
-		m.controller.SendAdminResponse,
+		m.BotController().SendAdminResponse,
 	))
 
-	m.dispatcher.AddHandler(handlers.NewPreCheckoutQuery(precheckoutquery.All, m.controller.PreCheckout))
-	m.dispatcher.AddHandler(handlers.NewMessage(message.SuccessfulPayment, m.controller.PaymentComplete))
+	m.dispatcher.AddHandler(handlers.NewPreCheckoutQuery(precheckoutquery.All, m.BotController().PreCheckout))
+	m.dispatcher.AddHandler(handlers.NewMessage(message.SuccessfulPayment, m.BotController().PaymentComplete))
 
 	m.dispatcher.AddHandler(handlers.NewInlineQuery(
 		filters.InlineQuery(func(query *gotgbot.InlineQuery) bool {
 			return query.Query == "invite"
 		}),
-		m.controller.InlineQuery,
+		m.BotController().InlineQuery,
 	))
 }
 
@@ -110,15 +120,6 @@ func (m *BotModule) startPolling() error {
 }
 
 func (m *BotModule) BotRoutes(router fiber.Router) {
-	router.Get("/generate-payment", func(ctx *fiber.Ctx) error {
-		return m.controller.GeneratePaymentHandler(ctx)
-	})
-
-	router.Get("/ref", func(ctx *fiber.Ctx) error {
-		return m.controller.InvateLinkHandler(ctx)
-	})
-}
-
-func Startbot(b *gotgbot.Bot, ctx *ext.Context) error {
-	return nil
+	router.Get("/generate-payment", m.BotController().GeneratePaymentHandler)
+	//router.Get("/ref", m.BotController().InvateLinkHandler)
 }

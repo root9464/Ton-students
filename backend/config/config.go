@@ -6,10 +6,9 @@ import (
 )
 
 type Config struct {
-	TelegramBotToken string `mapstructure:"TELEGRAM_BOT_TOKEN"`
 	DatabaseUrl      string `mapstructure:"DATABASE_URL"`
 	KafkaBrokerUrl   string `mapstructure:"KAFKA_BROKER_URL"`
-	BotToken         string `mapstructure:"BOT_APITOKEN"`
+	TelegramBotToken string `mapstructure:"TELEGRAM_BOT_TOKEN"`
 	AdminId          int64  `mapstructure:"ADMIN_ID"`
 	ChannelId        int64  `mapstructure:"REQUIRED_CHANNEL"`
 	ChatBotId        int64  `mapstructure:"CHAT_BOT_ID"`
