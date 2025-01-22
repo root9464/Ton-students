@@ -20,15 +20,12 @@ func (c *BotService) InvateLink(b *gotgbot.Bot) (string, error) {
 
 
 func (c *BotService) InlineQuery(b *gotgbot.Bot, ctx *ext.Context) error {
-	// Получаем текст запроса пользователя
 	query := ctx.InlineQuery.Query
 
-	// Проверяем, что запрос содержит "invite"
 	if query == "invite" {
-		// Создаем inline-результат с кнопкой
 		results := []gotgbot.InlineQueryResult{
 			&gotgbot.InlineQueryResultArticle{
-				Id:    "1", // уникальный ID результата
+				Id:    "1", 
 				Title: "Send Invite Link",
 				InputMessageContent: &gotgbot.InputTextMessageContent{
 					MessageText: "Click the button below to join!",
@@ -37,8 +34,8 @@ func (c *BotService) InlineQuery(b *gotgbot.Bot, ctx *ext.Context) error {
 					InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
 						{
 							{
-								Text: "Join Now",                                     // Текст кнопки
-								Url:  "https://t.me/ttonstudents_bot?start=12345678", // Ссылка на приглашение
+								Text: "Join Now",                                     
+								Url:  "https://t.me/ttonstudents_bot?start=12345678", 
 							},
 						},
 					},
@@ -46,9 +43,8 @@ func (c *BotService) InlineQuery(b *gotgbot.Bot, ctx *ext.Context) error {
 			},
 		}
 
-		// Отправляем inline-результаты
 		_, err := b.AnswerInlineQuery(ctx.InlineQuery.Id, results, &gotgbot.AnswerInlineQueryOpts{
-			CacheTime: 0, // Обнуляем кэш, чтобы изменения были видны сразу
+			CacheTime: 0, 
 		})
 		if err != nil {
 			return fmt.Errorf("failed to answer inline query: %w", err)

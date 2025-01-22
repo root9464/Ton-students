@@ -16,7 +16,6 @@ var replyState = struct {
 	active: make(map[int64]int64),
 }
 
-// Start - Логика обработки команды /start
 func (c *BotService) Start(b *gotgbot.Bot, ctx *ext.Context) error {
 	//считывает аргументы команды start
 	referalCode := searchArgs(ctx)

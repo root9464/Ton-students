@@ -10,13 +10,13 @@ import (
 )
 
 type IBotController interface {
-	Start(bot *gotgbot.Bot, ctx *ext.Context) error
-	SupportStart(bot *gotgbot.Bot, ctx *ext.Context) error
-	SupportReply(bot *gotgbot.Bot, ctx *ext.Context) error
-	SendAdminResponse(bot *gotgbot.Bot, ctx *ext.Context) error
-	InlineQuery(bot *gotgbot.Bot, ctx *ext.Context) error
-	PreCheckout(bot *gotgbot.Bot, ctx *ext.Context) error
-	PaymentComplete(bot *gotgbot.Bot, ctx *ext.Context) error
+	StartHandler(bot *gotgbot.Bot, ctx *ext.Context) error
+	SupportStartHandler(bot *gotgbot.Bot, ctx *ext.Context) error
+	SupportReplyHandler(bot *gotgbot.Bot, ctx *ext.Context) error
+	SendAdminResponseHandler(bot *gotgbot.Bot, ctx *ext.Context) error
+	InlineQueryHandler(bot *gotgbot.Bot, ctx *ext.Context) error
+	PreCheckoutHandler(bot *gotgbot.Bot, ctx *ext.Context) error
+	PaymentCompleteHandler(bot *gotgbot.Bot, ctx *ext.Context) error
 
 	GeneratePaymentHandler(ctx *fiber.Ctx) error
 }

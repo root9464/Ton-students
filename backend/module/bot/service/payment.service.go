@@ -8,11 +8,9 @@ import (
 )
 
 func (c *BotService) GeneratePayment(b *gotgbot.Bot, id string) (string, error) {
-	//payload := strconv.FormatInt(b.User.Id , 10)
-	//log.Println(payload)
 	paymentLink, err := b.CreateInvoiceLink("title", "desription", id, "XTR", []gotgbot.LabeledPrice{{
 		Label:  "Some product",
-		Amount: 1, //1 stars
+		Amount: 1,
 	}}, nil)
 
 	if err != nil {
@@ -26,15 +24,15 @@ func (c *BotService) GeneratePayment(b *gotgbot.Bot, id string) (string, error) 
 func (c *BotService) PreCheckout(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	userId := strconv.FormatInt(ctx.PreCheckoutQuery.From.Id, 10)
-	c.logger.Infof("Пользователь, отправивший запрос", userId)
+	c.logger.Infof("Пользователь, отправивший запрос %s", userId)
 
 	payload := ctx.PreCheckoutQuery.InvoicePayload
-	c.logger.Infof("payload", payload)
+	c.logger.Infof("payload %v", payload)
 
 	if payload != userId {
 		_, err := ctx.PreCheckoutQuery.Answer(b, false, nil)
 		if err != nil {
-			c.logger.Errorf("failed to answer precheckout query: %w", err)
+			c.logger.Errorf("failed to answer precheckout query: %s", err)
 			return err
 		}
 		return nil

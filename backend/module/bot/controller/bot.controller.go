@@ -8,7 +8,7 @@ import (
 	dto "github.com/root9464/Ton-students/module/bot/dto"
 )
 
-func (c *BotController) InvateLinkHandler(ctx *fiber.Ctx) error {
+func (c *BotController) InvateLinkHandlerHandler(ctx *fiber.Ctx) error {
 	invateLink, err := c.service.InvateLink(c.bot)
 	if err != nil {
 		c.logger.Error("Failed to generate invate link: " + err.Error())

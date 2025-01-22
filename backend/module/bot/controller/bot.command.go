@@ -5,8 +5,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 )
 
-// start
-func (c *BotController) Start(b *gotgbot.Bot, ctx *ext.Context) error {
+func (c *BotController) StartHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	err := c.service.Start(b, ctx)
 	if err != nil {
 		c.logger.Error("Failed to execute Start command: " + err.Error())
@@ -15,8 +14,7 @@ func (c *BotController) Start(b *gotgbot.Bot, ctx *ext.Context) error {
 	return nil
 }
 
-// /support
-func (c *BotController) SupportStart(b *gotgbot.Bot, ctx *ext.Context) error {
+func (c *BotController) SupportStartHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	err := c.service.SupportStart(b, ctx)
 	if err != nil {
 		c.logger.Error("Failed to execute SupportStart command: " + err.Error())
@@ -25,7 +23,7 @@ func (c *BotController) SupportStart(b *gotgbot.Bot, ctx *ext.Context) error {
 	return nil
 }
 
-func (c *BotController) SupportReply(b *gotgbot.Bot, ctx *ext.Context) error {
+func (c *BotController) SupportReplyHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	err := c.service.SupportReply(b, ctx)
 	if err != nil {
 		c.logger.Error("Failed to execute SupportReply command: " + err.Error())
@@ -34,7 +32,7 @@ func (c *BotController) SupportReply(b *gotgbot.Bot, ctx *ext.Context) error {
 	return nil
 }
 
-func (c *BotController) SendAdminResponse(b *gotgbot.Bot, ctx *ext.Context) error {
+func (c *BotController) SendAdminResponseHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	err := c.service.SendAdminResponse(b, ctx)
 	if err != nil {
 		c.logger.Error("Failed to execute SendAdminResponse command: " + err.Error())
@@ -43,8 +41,7 @@ func (c *BotController) SendAdminResponse(b *gotgbot.Bot, ctx *ext.Context) erro
 	return nil
 }
 
-// inline
-func (c *BotController) InlineQuery(b *gotgbot.Bot, ctx *ext.Context) error {
+func (c *BotController) InlineQueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	err := c.service.InlineQuery(b, ctx)
 	if err != nil {
 		c.logger.Error("Failed to execute InlineQuery command: " + err.Error())
@@ -53,8 +50,7 @@ func (c *BotController) InlineQuery(b *gotgbot.Bot, ctx *ext.Context) error {
 	return nil
 }
 
-// payment
-func (c *BotController) PreCheckout(b *gotgbot.Bot, ctx *ext.Context) error {
+func (c *BotController) PreCheckoutHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	err := c.service.PreCheckout(b, ctx)
 	if err != nil {
 		c.logger.Error("Failed to execute PreCheckout command: " + err.Error())
@@ -63,7 +59,7 @@ func (c *BotController) PreCheckout(b *gotgbot.Bot, ctx *ext.Context) error {
 	return nil
 }
 
-func (c *BotController) PaymentComplete(b *gotgbot.Bot, ctx *ext.Context) error {
+func (c *BotController) PaymentCompleteHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	err := c.service.PaymentComplete(b, ctx)
 	if err != nil {
 		c.logger.Error("Failed to execute PaymentComplete command: " + err.Error())

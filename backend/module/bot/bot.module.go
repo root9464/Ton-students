@@ -63,7 +63,7 @@ func (m *BotModule) InitBot() error {
 
 	updater := ext.NewUpdater(dispatcher, nil)
 	err := updater.StartPolling(m.bot, &ext.PollingOpts{
-		DropPendingUpdates: false,
+		DropPendingUpdates: true,
 		GetUpdatesOpts: &gotgbot.GetUpdatesOpts{
 			Timeout: 60,
 		},
@@ -77,7 +77,6 @@ func (m *BotModule) InitBot() error {
 	m.dispatcher = dispatcher
 	m.updater = updater
 
-	// Регистрация handlers перед запуском
 	m.registerHandlers()
 
 	m.logger.Info("👾 Bot started successfully")
@@ -86,35 +85,34 @@ func (m *BotModule) InitBot() error {
 }
 
 func (m *BotModule) registerHandlers() {
-	m.dispatcher.AddHandler(handlers.NewCommand("start", m.BotController().Start))
-	m.dispatcher.AddHandler(handlers.NewCommand("support", m.BotController().SupportStart))
+	m.dispatcher.AddHandler(handlers.NewCommand("start", m.BotController().StartHandler))
+	m.dispatcher.AddHandler(handlers.NewCommand("support", m.BotController().SupportStartHandler))
 
 	m.dispatcher.AddHandler(handlers.NewCallback(
 		filters.CallbackQuery(func(query *gotgbot.CallbackQuery) bool {
 			return query.Data != "" && query.Data[:6] == "reply_"
 		}),
-		m.BotController().SupportReply,
+		m.BotController().SupportReplyHandler,
 	))
 
 	m.dispatcher.AddHandler(handlers.NewMessage(
 		filters.Message(func(msg *gotgbot.Message) bool {
 			return msg.Chat.Id == m.config.AdminId
 		}),
-		m.BotController().SendAdminResponse,
+		m.BotController().SendAdminResponseHandler,
 	))
 
-	m.dispatcher.AddHandler(handlers.NewPreCheckoutQuery(precheckoutquery.All, m.BotController().PreCheckout))
-	m.dispatcher.AddHandler(handlers.NewMessage(message.SuccessfulPayment, m.BotController().PaymentComplete))
+	m.dispatcher.AddHandler(handlers.NewPreCheckoutQuery(precheckoutquery.All, m.BotController().PreCheckoutHandler))
+	m.dispatcher.AddHandler(handlers.NewMessage(message.SuccessfulPayment, m.BotController().PaymentCompleteHandler))
 
 	m.dispatcher.AddHandler(handlers.NewInlineQuery(
 		filters.InlineQuery(func(query *gotgbot.InlineQuery) bool {
 			return query.Query == "invite"
 		}),
-		m.BotController().InlineQuery,
+		m.BotController().InlineQueryHandler,
 	))
 }
 
 func (m *BotModule) BotRoutes(router fiber.Router) {
 	router.Get("/generate-payment", m.BotController().GeneratePaymentHandler)
-	//router.Get("/ref", m.BotController().InvateLinkHandler)
 }

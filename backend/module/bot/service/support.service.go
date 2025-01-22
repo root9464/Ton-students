@@ -68,15 +68,14 @@ func (c *BotService) SupportStart(b *gotgbot.Bot, ctx *ext.Context) error {
 	return err
 }
 
-// SupportReply - Логика для ответа на запросы поддержки
 func (c *BotService) SupportReply(b *gotgbot.Bot, ctx *ext.Context) error {
 	callbackData := ctx.CallbackQuery.Data
-	c.logger.Infof("SupportReply called with callbackData:", callbackData)
+	c.logger.Infof("SupportReply called with callbackData: %v", callbackData)
 
 	userIDStr := strings.TrimPrefix(callbackData, "reply_")
 	userID, err := strconv.ParseInt(userIDStr, 10, 64)
 	if err != nil {
-		c.logger.Errorf("Error parsing userID from callbackData:", err)
+		c.logger.Errorf("Error parsing userID from callbackData: %v", err)
 		return err
 	}
 
