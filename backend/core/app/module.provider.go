@@ -2,9 +2,9 @@ package app
 
 import (
 	auth_module "github.com/root9464/Ton-students/module/auth"
-	user_module "github.com/root9464/Ton-students/module/user"
 	bot_model "github.com/root9464/Ton-students/module/bot"
 	chat_module "github.com/root9464/Ton-students/module/chat"
+	user_module "github.com/root9464/Ton-students/module/user"
 )
 
 type moduleProvider struct {
@@ -59,7 +59,6 @@ func (p *moduleProvider) ChatModule() error {
 	return nil
 }
 
-
 func (p *moduleProvider) BotModule() error {
 	botModule, err := bot_model.NewBotModule(p.app.config, p.app.logger)
 	if err != nil {
@@ -69,12 +68,10 @@ func (p *moduleProvider) BotModule() error {
 
 	// Запуск бота
 	go func() {
-		if err := p.botModule.Start(); err != nil {
+		if err := p.botModule.InitBot(); err != nil {
 			p.app.logger.Error("Failed to start bot: " + err.Error())
 		}
 	}()
 
 	return nil
 }
-
-

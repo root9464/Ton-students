@@ -31,22 +31,10 @@ func NewBotModule(config *config.Config, logger *logger.Logger) (*BotModule, err
 		return nil, err
 	}
 
-	dispatcher := ext.NewDispatcher(&ext.DispatcherOpts{
-		Error: func(b *gotgbot.Bot, ctx *ext.Context, err error) ext.DispatcherAction {
-			logger.Error("An error occurred while handling update: " + err.Error())
-			return ext.DispatcherActionNoop
-		},
-		MaxRoutines: ext.DefaultMaxRoutines,
-	})
-
-	updater := ext.NewUpdater(dispatcher, nil)
-
 	return &BotModule{
-		bot:        bot,
-		dispatcher: dispatcher,
-		updater:    updater,
-		config:     config,
-		logger:     logger,
+		bot:    bot,
+		config: config,
+		logger: logger,
 	}, nil
 }
 
@@ -64,12 +52,33 @@ func (m *BotModule) BotController() controller.IBotController {
 	return m.botController
 }
 
-func (m *BotModule) Start() error {
-	m.registerHandlers()
+func (m *BotModule) InitBot() error {
+	dispatcher := ext.NewDispatcher(&ext.DispatcherOpts{
+		Error: func(b *gotgbot.Bot, ctx *ext.Context, err error) ext.DispatcherAction {
+			m.logger.Error("An error occurred while handling update: " + err.Error())
+			return ext.DispatcherActionNoop
+		},
+		MaxRoutines: ext.DefaultMaxRoutines,
+	})
 
-	if err := m.startPolling(); err != nil {
+	updater := ext.NewUpdater(dispatcher, nil)
+	err := updater.StartPolling(m.bot, &ext.PollingOpts{
+		DropPendingUpdates: false,
+		GetUpdatesOpts: &gotgbot.GetUpdatesOpts{
+			Timeout: 60,
+		},
+	})
+
+	if err != nil {
+		m.logger.Error("Failed to start polling: " + err.Error())
 		return err
 	}
+
+	m.dispatcher = dispatcher
+	m.updater = updater
+
+	// Регистрация handlers перед запуском
+	m.registerHandlers()
 
 	m.logger.Info("👾 Bot started successfully")
 	m.updater.Idle()
@@ -103,20 +112,6 @@ func (m *BotModule) registerHandlers() {
 		}),
 		m.BotController().InlineQuery,
 	))
-}
-
-func (m *BotModule) startPolling() error {
-	err := m.updater.StartPolling(m.bot, &ext.PollingOpts{
-		DropPendingUpdates: false,
-		GetUpdatesOpts: &gotgbot.GetUpdatesOpts{
-			Timeout: 60,
-		},
-	})
-	if err != nil {
-		m.logger.Error("Failed to start polling: " + err.Error())
-		return err
-	}
-	return nil
 }
 
 func (m *BotModule) BotRoutes(router fiber.Router) {
