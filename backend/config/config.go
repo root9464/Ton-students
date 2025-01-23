@@ -9,25 +9,16 @@ import (
 )
 
 type Config struct {
-	DatabaseUrl      string `mapstructure:"DATABASE_URL"`
-	KafkaBrokerUrl   string `mapstructure:"KAFKA_BROKER_URL"`
-	TelegramBotToken string `mapstructure:"TELEGRAM_BOT_TOKEN"`
-	AdminId          int64  `mapstructure:"ADMIN_ID"`
-	ChannelId        int64  `mapstructure:"REQUIRED_CHANNEL"`
-	ChatBotId        int64  `mapstructure:"CHAT_BOT_ID"`
-}
-
-func LoadConfig(path string) (*Config, error) {
 	DatabaseUrl string `mapstructure:"DATABASE_URL"`
 	RedisUrl    string `mapstructure:"REDIS_URL"`
 
 	JwtPrivateKey string `mapstructure:"JWT_PRIVATE_KEY"`
 	JwtPublicKey  string `mapstructure:"JWT_PUBLIC_KEY"`
 
-	TelegramBotToken        string `mapstructure:"TELEGRAM_BOT_TOKEN"`
-	TelegramAdminId         int64  `mapstructure:"TELEGRAM_ADMIN_ID"`
-	TelegramRequiredChannel int64  `mapstructure:"TELEGRAM_REQUIRED_CHANNEL"`
-	TelegramChatBotId       int64  `mapstructure:"TELEGRAM_CHAT_BOT_ID"`
+	TelegramBotToken string `mapstructure:"TELEGRAM_BOT_TOKEN"`
+	AdminId          int64  `mapstructure:"ADMIN_ID"`
+	ChannelId        int64  `mapstructure:"REQUIRED_CHANNEL"`
+	ChatBotId        int64  `mapstructure:"CHAT_BOT_ID"`
 }
 
 func validateConfig(config *Config) error {
@@ -39,9 +30,9 @@ func validateConfig(config *Config) error {
 		"JWT_PUBLIC_KEY":  config.JwtPublicKey,
 
 		"TELEGRAM_BOT_TOKEN":        config.TelegramBotToken,
-		"TELEGRAM_ADMIN_ID":         config.TelegramAdminId,
-		"TELEGRAM_REQUIRED_CHANNEL": config.TelegramRequiredChannel,
-		"TELEGRAM_CHAT_BOT_ID":      config.TelegramChatBotId,
+		"TELEGRAM_ADMIN_ID":         config.AdminId,
+		"TELEGRAM_REQUIRED_CHANNEL": config.ChannelId,
+		"TELEGRAM_CHAT_BOT_ID":      config.ChatBotId,
 	}
 
 	for key, value := range configMap {
@@ -64,8 +55,6 @@ func LoadConfig(path string) (config *Config, err error) {
 	err = viper.ReadInConfig()
 	if err != nil {
 		return nil, err
-	if err := viper.ReadInConfig(); err != nil {
-		return nil, err
 	}
 
 	err = viper.Unmarshal(&config)
@@ -79,12 +68,6 @@ func LoadConfig(path string) (config *Config, err error) {
 	}
 
 	return config, nil
-	var config Config
-	if err := viper.Unmarshal(&config); err != nil {
-		return nil, err
-	}
-
-	return &config, nil
 }
 
 func Load(path string) error {

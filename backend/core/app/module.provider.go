@@ -13,8 +13,6 @@ type moduleProvider struct {
 	userModule    *user_module.UserModule
 	authModule    *auth_module.AuthModule
 	serviceModule *service_module.ServiceModule
-	authModule    *auth_module.AuthModule
-	userModule    *user_module.UserModule
 	botModule     *bot_model.BotModule
 	chatModule    *chat_module.ChatModule
 
