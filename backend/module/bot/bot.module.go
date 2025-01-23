@@ -1,6 +1,8 @@
 package bot_module
 
 import (
+	"time"
+
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
@@ -66,6 +68,9 @@ func (m *BotModule) InitBot() error {
 		DropPendingUpdates: true,
 		GetUpdatesOpts: &gotgbot.GetUpdatesOpts{
 			Timeout: 60,
+			RequestOpts: &gotgbot.RequestOpts{
+				Timeout: time.Second * 60,
+			},
 		},
 	})
 
