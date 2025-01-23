@@ -2,6 +2,8 @@ package app
 
 import (
 	auth_module "github.com/root9464/Ton-students/module/auth"
+	bot_model "github.com/root9464/Ton-students/module/bot"
+	chat_module "github.com/root9464/Ton-students/module/chat"
 	jwt_module "github.com/root9464/Ton-students/module/jwt"
 	service_module "github.com/root9464/Ton-students/module/service_module"
 	user_module "github.com/root9464/Ton-students/module/user"
@@ -11,6 +13,8 @@ type moduleProvider struct {
 	userModule    *user_module.UserModule
 	authModule    *auth_module.AuthModule
 	serviceModule *service_module.ServiceModule
+	botModule     *bot_model.BotModule
+	chatModule    *chat_module.ChatModule
 
 	jwtModule *jwt_module.JwtModule
 	app       *App
@@ -34,6 +38,8 @@ func (p *moduleProvider) initDeps() error {
 		p.UserModule,
 		p.AuthModule,
 		p.ServiceModule,
+		p.BotModule,
+		p.ChatModule,
 	}
 	for _, init := range inits {
 		err := init()
@@ -61,5 +67,27 @@ func (p *moduleProvider) AuthModule() error {
 
 func (p *moduleProvider) ServiceModule() error {
 	p.serviceModule = service_module.NewServiceModule(p.app.logger, p.app.validator, p.app.db, p.userModule.UserRepo(), *p.jwtModule, p.app.config.JwtPublicKey)
+	return nil
+}
+
+func (p *moduleProvider) ChatModule() error {
+	p.chatModule = chat_module.NewChatModule()
+	return nil
+}
+
+func (p *moduleProvider) BotModule() error {
+	botModule, err := bot_model.NewBotModule(p.app.config, p.app.logger)
+	if err != nil {
+		return err
+	}
+	p.botModule = botModule
+
+	// Запуск бота
+	go func() {
+		if err := p.botModule.InitBot(); err != nil {
+			p.app.logger.Error("Failed to start bot: " + err.Error())
+		}
+	}()
+
 	return nil
 }

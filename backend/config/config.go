@@ -15,10 +15,10 @@ type Config struct {
 	JwtPrivateKey string `mapstructure:"JWT_PRIVATE_KEY"`
 	JwtPublicKey  string `mapstructure:"JWT_PUBLIC_KEY"`
 
-	TelegramBotToken        string `mapstructure:"TELEGRAM_BOT_TOKEN"`
-	TelegramAdminId         int64  `mapstructure:"TELEGRAM_ADMIN_ID"`
-	TelegramRequiredChannel int64  `mapstructure:"TELEGRAM_REQUIRED_CHANNEL"`
-	TelegramChatBotId       int64  `mapstructure:"TELEGRAM_CHAT_BOT_ID"`
+	TelegramBotToken string `mapstructure:"TELEGRAM_BOT_TOKEN"`
+	AdminId          int64  `mapstructure:"ADMIN_ID"`
+	ChannelId        int64  `mapstructure:"REQUIRED_CHANNEL"`
+	ChatBotId        int64  `mapstructure:"CHAT_BOT_ID"`
 }
 
 func validateConfig(config *Config) error {
@@ -30,9 +30,9 @@ func validateConfig(config *Config) error {
 		"JWT_PUBLIC_KEY":  config.JwtPublicKey,
 
 		"TELEGRAM_BOT_TOKEN":        config.TelegramBotToken,
-		"TELEGRAM_ADMIN_ID":         config.TelegramAdminId,
-		"TELEGRAM_REQUIRED_CHANNEL": config.TelegramRequiredChannel,
-		"TELEGRAM_CHAT_BOT_ID":      config.TelegramChatBotId,
+		"TELEGRAM_ADMIN_ID":         config.AdminId,
+		"TELEGRAM_REQUIRED_CHANNEL": config.ChannelId,
+		"TELEGRAM_CHAT_BOT_ID":      config.ChatBotId,
 	}
 
 	for key, value := range configMap {
@@ -46,9 +46,10 @@ func validateConfig(config *Config) error {
 
 func LoadConfig(path string) (config *Config, err error) {
 	viper.AddConfigPath(path)
-	viper.SetConfigName(".env")
+	viper.SetConfigName("../.env")
 	viper.SetConfigType("env")
 
+	// Automatically map environment variables
 	viper.AutomaticEnv()
 
 	err = viper.ReadInConfig()

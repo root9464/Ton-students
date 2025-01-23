@@ -82,7 +82,7 @@ func (app *App) initConfig() error {
 		app.config = config
 	}
 
-	err := config.Load(".env")
+	err := config.Load("../.env")
 	if err != nil {
 		return fmt.Errorf("%s", "✖ Failed to load config: "+err.Error())
 	}
