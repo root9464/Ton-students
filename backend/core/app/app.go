@@ -63,6 +63,8 @@ func (app *App) initDeps() error {
 
 		app.initModuleProvider,
 		app.initRouter,
+
+		app.initBot,
 	}
 	for _, init := range inits {
 		err := init()
@@ -169,6 +171,20 @@ func (app *App) runHttpServer() error {
 		app.logger.Errorf("%s", "✖ Failed to start server: "+err.Error())
 		return fmt.Errorf("✖ Failed to start server: %v", err)
 	}
+
+	return nil
+}
+
+func (app *App) initBot() error {
+	if app.moduleProvider.botModule == nil {
+		return fmt.Errorf("bot module is not initialized")
+	}
+
+	go func() {
+		if err := app.moduleProvider.botModule.InitBot(); err != nil {
+			app.logger.Errorf("%s", "✖ Failed to start bot: "+err.Error())
+		}
+	}()
 
 	return nil
 }

@@ -81,13 +81,5 @@ func (p *moduleProvider) BotModule() error {
 		return err
 	}
 	p.botModule = botModule
-
-	// Запуск бота
-	go func() {
-		if err := p.botModule.InitBot(); err != nil {
-			p.app.logger.Error("Failed to start bot: " + err.Error())
-		}
-	}()
-
 	return nil
 }
