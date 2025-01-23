@@ -67,7 +67,7 @@ func (m *BotModule) InitBot() error {
 	err := updater.StartPolling(m.bot, &ext.PollingOpts{
 		DropPendingUpdates: true,
 		GetUpdatesOpts: &gotgbot.GetUpdatesOpts{
-			Timeout: 60,
+			Limit: 4,
 			RequestOpts: &gotgbot.RequestOpts{
 				Timeout: time.Second * 60,
 			},
