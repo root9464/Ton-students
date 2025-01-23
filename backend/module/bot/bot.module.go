@@ -119,5 +119,6 @@ func (m *BotModule) registerHandlers() {
 }
 
 func (m *BotModule) BotRoutes(router fiber.Router) {
-	router.Get("/generate-payment", m.BotController().GeneratePaymentHandler)
+	bot := router.Group("/bot")
+	bot.Post("/generate-payment", m.BotController().GeneratePaymentHandler)
 }

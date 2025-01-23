@@ -2,7 +2,7 @@ package app
 
 import (
 	auth_module "github.com/root9464/Ton-students/module/auth"
-	bot_model "github.com/root9464/Ton-students/module/bot"
+	bot_module "github.com/root9464/Ton-students/module/bot"
 	chat_module "github.com/root9464/Ton-students/module/chat"
 	jwt_module "github.com/root9464/Ton-students/module/jwt"
 	service_module "github.com/root9464/Ton-students/module/service_module"
@@ -13,7 +13,7 @@ type moduleProvider struct {
 	userModule    *user_module.UserModule
 	authModule    *auth_module.AuthModule
 	serviceModule *service_module.ServiceModule
-	botModule     *bot_model.BotModule
+	botModule     *bot_module.BotModule
 	chatModule    *chat_module.ChatModule
 
 	jwtModule *jwt_module.JwtModule
@@ -76,7 +76,7 @@ func (p *moduleProvider) ChatModule() error {
 }
 
 func (p *moduleProvider) BotModule() error {
-	botModule, err := bot_model.NewBotModule(p.app.config, p.app.logger)
+	botModule, err := bot_module.NewBotModule(p.app.config, p.app.logger)
 	if err != nil {
 		return err
 	}
