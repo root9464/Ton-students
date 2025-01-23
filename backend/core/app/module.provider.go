@@ -4,16 +4,22 @@ import (
 	auth_module "github.com/root9464/Ton-students/module/auth"
 	bot_model "github.com/root9464/Ton-students/module/bot"
 	chat_module "github.com/root9464/Ton-students/module/chat"
+	jwt_module "github.com/root9464/Ton-students/module/jwt"
+	service_module "github.com/root9464/Ton-students/module/service_module"
 	user_module "github.com/root9464/Ton-students/module/user"
 )
 
 type moduleProvider struct {
-	authModule *auth_module.AuthModule
-	userModule *user_module.UserModule
-	botModule  *bot_model.BotModule
-	chatModule *chat_module.ChatModule
+	userModule    *user_module.UserModule
+	authModule    *auth_module.AuthModule
+	serviceModule *service_module.ServiceModule
+	authModule    *auth_module.AuthModule
+	userModule    *user_module.UserModule
+	botModule     *bot_model.BotModule
+	chatModule    *chat_module.ChatModule
 
-	app *App
+	jwtModule *jwt_module.JwtModule
+	app       *App
 }
 
 func NewModuleProvider(app *App) (*moduleProvider, error) {
@@ -30,8 +36,10 @@ func NewModuleProvider(app *App) (*moduleProvider, error) {
 
 func (p *moduleProvider) initDeps() error {
 	inits := []func() error{
+		p.JwtModule,
 		p.UserModule,
 		p.AuthModule,
+		p.ServiceModule,
 		p.BotModule,
 		p.ChatModule,
 	}
@@ -45,12 +53,22 @@ func (p *moduleProvider) initDeps() error {
 }
 
 func (p *moduleProvider) UserModule() error {
-	p.userModule = user_module.NewUserModule(p.app.logger, p.app.validator)
+	p.userModule = user_module.NewUserModule(p.app.logger, p.app.validator, p.app.db, *p.jwtModule, p.app.config.JwtPublicKey)
+	return nil
+}
+
+func (p *moduleProvider) JwtModule() error {
+	p.jwtModule = jwt_module.NewJwtModule(p.app.logger, p.app.validator, p.app.db, p.app.config.JwtPrivateKey, p.app.config.JwtPublicKey)
 	return nil
 }
 
 func (p *moduleProvider) AuthModule() error {
-	p.authModule = auth_module.NewAuthModule(p.app.logger, p.app.validator, p.app.config, p.userModule.UserService())
+	p.authModule = auth_module.NewAuthModule(p.app.logger, p.app.validator, p.app.config, p.userModule.UserService(), *p.jwtModule)
+	return nil
+}
+
+func (p *moduleProvider) ServiceModule() error {
+	p.serviceModule = service_module.NewServiceModule(p.app.logger, p.app.validator, p.app.db, p.userModule.UserRepo(), *p.jwtModule, p.app.config.JwtPublicKey)
 	return nil
 }
 

@@ -1,27 +1,31 @@
 package app
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/log"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/redis/go-redis/v9"
 	"github.com/root9464/Ton-students/config"
-	"github.com/root9464/Ton-students/ent"
+	"github.com/root9464/Ton-students/database"
+	redis_connect "github.com/root9464/Ton-students/redis"
 	"github.com/root9464/Ton-students/shared/logger"
 	"github.com/root9464/Ton-students/shared/middleware"
+	"gorm.io/gorm"
 )
 
 type App struct {
 	app *fiber.App
 
-	logger         *logger.Logger
-	db             *ent.Client
-	validator      *validator.Validate
-	config         *config.Config
-	httpConfig     config.HTTPConfig
+	config     *config.Config
+	logger     *logger.Logger
+	validator  *validator.Validate
+	httpConfig config.HTTPConfig
+
+	db    *gorm.DB
+	redis *redis.Client
+
 	moduleProvider *moduleProvider
 }
 
@@ -31,121 +35,152 @@ func NewApp() *App {
 	}
 }
 
-func (a *App) Run() error {
-	a.app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:5173, http://0.0.0.0:5173, https://4f67-95-105-125-55.ngrok-free.app",
-		AllowCredentials: true,
+func (app *App) Run() error {
+	app.app.Use(cors.New(cors.Config{
+		AllowOrigins:     "http://localhost:6969",
+		AllowCredentials: false,
 	}))
-	a.app.Use(middleware.LoggerMiddleware())
+	app.app.Use(middleware.LoggerMiddleware())
 
-	a.initDeps()
+	err := app.initDeps()
 
-	return a.runHttpServer()
+	if err != nil {
+		return err
+	}
+
+	return app.runHttpServer()
 }
 
-func (a *App) initDeps() {
+func (app *App) initDeps() error {
+
 	inits := []func() error{
-		a.initConfig,
-		//a.initDb,
-		a.initLogger,
-		a.initValidator,
-		a.initModuleProvider,
-		a.initRouter,
+		app.initConfig,
+		app.initLogger,
+		app.initValidator,
+
+		app.initDb,
+		app.initRedis,
+
+		app.initModuleProvider,
+		app.initRouter,
 	}
 	for _, init := range inits {
 		err := init()
 		if err != nil {
-			log.Fatalf("✖ Failed to initialize dependencies: %s", err.Error())
+			return fmt.Errorf("%s", "✖ Failed to initialize dependencies: "+err.Error())
 		}
 	}
+	return nil
 }
 
-func (a *App) initConfig() error {
-	if a.config == nil {
+func (app *App) initConfig() error {
+	if app.config == nil {
 		config, err := config.LoadConfig(".")
 		if err != nil {
-			return fmt.Errorf("✖ Failed to load config: %s", err.Error())
+			return fmt.Errorf("%s", "✖ Failed to load config: "+err.Error())
 		}
-		a.config = config
+		app.config = config
 	}
 
 	err := config.Load("../.env")
 	if err != nil {
-		return fmt.Errorf("✖ Failed to load config: %s", err.Error())
+		return fmt.Errorf("%s", "✖ Failed to load config: "+err.Error())
 	}
 
 	return nil
 }
 
-func (a *App) initDb() error {
-	if a.db == nil {
-		db, err := ent.Open("postgres", a.config.DatabaseUrl)
+func (app *App) initDb() error {
+	if app.db == nil {
+		db, err := database.ConnectDb(app.config.DatabaseUrl, app.logger)
 		if err != nil {
-			return fmt.Errorf("✖ Failed to connect to database: %s", err.Error())
+			return err
 		}
-		a.db = db
+		app.db = db
 
-		if err := db.Schema.Create(context.Background()); err != nil {
-			return fmt.Errorf("✖ Failed to create schema resources: %s", err.Error())
+		// true - запустить миграцию
+		// false - не запускать
+		if err := database.Migrate(db, false, app.logger); err != nil {
+			return fmt.Errorf("%s", "✖ Failed to migrate database: "+err.Error())
 		}
 	}
 
 	return nil
 }
 
-func (a *App) initLogger() error {
-	if a.logger == nil {
-		a.logger = logger.GetLogger()
+func (app *App) initRedis() error {
+	if app.redis == nil {
+		redis, err := redis_connect.Connect(app.config.RedisUrl, app.logger)
+		if err != nil {
+			app.logger.Errorf("Failed to connect to Redis: %v", err)
+			return nil
+		}
+		app.redis = redis
+
+		// 0 - не трогать кэш
+		// 1 - выборочная очистка
+		// 2 - полная очистка
+		if err := redis_connect.FlushRedisCache(redis, 0, app.logger); err != nil {
+			err = fmt.Errorf("✖ Failed to flush redis cache: %v", err)
+			app.logger.Errorf("%s", err.Error())
+			return err
+		}
 	}
 	return nil
 }
 
-func (a *App) initValidator() error {
-	if a.validator == nil {
-		a.validator = validator.New()
+func (app *App) initLogger() error {
+	if app.logger == nil {
+		app.logger = logger.GetLogger()
 	}
 	return nil
 }
 
-func (a *App) initModuleProvider() error {
-	var err error
-	a.moduleProvider, err = NewModuleProvider(a)
+func (app *App) initValidator() error {
+	if app.validator == nil {
+		app.validator = validator.New()
+	}
+	return nil
+}
+
+func (app *App) initModuleProvider() error {
+	err := error(nil)
+	app.moduleProvider, err = NewModuleProvider(app)
 	if err != nil {
+		app.logger.Errorf("%s", err.Error())
 		return err
 	}
 	return nil
 }
 
-func (a *App) runHttpServer() error {
-	if a.httpConfig == nil {
+func (app *App) runHttpServer() error {
+	if app.httpConfig == nil {
 		cfg, err := config.NewHTTPConfig()
 		if err != nil {
-			return fmt.Errorf("✖ Failed to load config: %s", err.Error())
+			app.logger.Errorf("%s", "✖ Failed to load config: "+err.Error())
+			return fmt.Errorf("✖ Failed to load config: %v", err)
 		}
-		a.httpConfig = cfg
+		app.httpConfig = cfg
 	}
 
-	log.Infof("🌐 Server is running on %s", a.httpConfig.Address())
-	log.Info("✅ Server started successfully")
-	if err := a.app.Listen(a.httpConfig.Address()); err != nil {
-		return fmt.Errorf("✖ Failed to start http server: %s", err.Error())
-	}
-
-	log.Infof("🌐 Server is running on %s", a.httpConfig.ChatAddres())
-	log.Info("✅ Server started successfully")
-	if err := a.app.Listen(a.httpConfig.ChatAddres()); err != nil {
-		return fmt.Errorf("✖ Failed to start http server: %s", err.Error())
+	app.logger.Infof("🌐 Server is running on %s", app.httpConfig.Address())
+	app.logger.Info("✅ Server started successfully")
+	if err := app.app.Listen(app.httpConfig.Address()); err != nil {
+		app.logger.Errorf("%s", "✖ Failed to start server: "+err.Error())
+		return fmt.Errorf("✖ Failed to start server: %v", err)
 	}
 
 	return nil
 }
 
-func (a *App) initRouter() error {
-	api := a.app.Group("/api")
+func (app *App) initRouter() error {
+	api := app.app.Group("/api")
 
-	a.moduleProvider.authModule.AuthRoutes(api)
-	a.moduleProvider.userModule.UserRoutes(api)
-	a.moduleProvider.chatModule.ChatRoutes(api)
-	a.moduleProvider.botModule.BotRoutes(api)
+	app.moduleProvider.authModule.AuthRoutes(api)
+	app.moduleProvider.userModule.UserRoutes(api)
+
+	creator := api.Group("/creator")
+	app.moduleProvider.serviceModule.ServiceRoutes(creator)
+
 	return nil
 }

@@ -6,17 +6,18 @@ import (
 )
 
 type IUserController interface {
-	GetByID(ctx *fiber.Ctx) error
+	AddUserInfo(ctx *fiber.Ctx) error
+	SelectVisibleName(ctx *fiber.Ctx) error
+	SetUserNickname(ctx *fiber.Ctx) error
+	UpdateUserInfo(ctx *fiber.Ctx) error
+	DeleteUserInfo(ctx *fiber.Ctx) error
+	AddManyUserInfo(ctx *fiber.Ctx) error
 }
 
 type userController struct {
 	userService user_service.IUserService
 }
 
-func NewUserController(
-	userService user_service.IUserService,
-) *userController {
-	return &userController{
-		userService: userService,
-	}
+func NewUserController(userService user_service.IUserService) *userController {
+	return &userController{userService: userService}
 }
