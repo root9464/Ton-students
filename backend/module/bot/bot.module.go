@@ -6,9 +6,13 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/message"
+	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/precheckoutquery"
 	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/fiber/v2"
 	"github.com/root9464/Ton-students/config"
 	bot_command "github.com/root9464/Ton-students/module/bot/command"
+	bot_controller "github.com/root9464/Ton-students/module/bot/controller"
 	jwt_module "github.com/root9464/Ton-students/module/jwt"
 	"github.com/root9464/Ton-students/shared/logger"
 	"gorm.io/gorm"
@@ -19,7 +23,8 @@ type BotModule struct {
 	dispatcher *ext.Dispatcher
 	updater    *ext.Updater
 
-	botCommand bot_command.IBotCommand
+	botCommand    bot_command.IBotCommand
+	botController bot_controller.IBotController
 
 	logger    *logger.Logger
 	validator *validator.Validate
@@ -29,15 +34,29 @@ type BotModule struct {
 	jwtModule jwt_module.JwtModule
 }
 
-func (m *BotModule) BotCommand() bot_command.IBotCommand {
-	if m.botCommand == nil {
-		m.botCommand = bot_command.NewBotCommand(m.logger)
+func NewBotModule(logger *logger.Logger, validator *validator.Validate, db *gorm.DB, config *config.Config, jwtModule jwt_module.JwtModule) *BotModule {
+	bot, err := gotgbot.NewBot(config.TelegramBotToken, nil)
+	if err != nil {
+		logger.Error("failed to create new bot: " + err.Error())
+		return nil
 	}
-	return m.botCommand
+
+	return &BotModule{
+		bot: bot,
+
+		logger:    logger,
+		validator: validator,
+		db:        db,
+		config:    config,
+		jwtModule: jwtModule,
+	}
 }
 
 func (m *BotModule) registerCommands() {
 	m.dispatcher.AddHandler(handlers.NewCommand("start", m.BotCommand().StartMessage))
+
+	m.dispatcher.AddHandler(handlers.NewPreCheckoutQuery(precheckoutquery.All, m.BotCommand().PreCheckout))
+	m.dispatcher.AddHandler(handlers.NewMessage(message.SuccessfulPayment, m.BotCommand().PaymentComplete))
 }
 
 func (m *BotModule) InitBot() error {
@@ -72,20 +91,22 @@ func (m *BotModule) InitBot() error {
 	return nil
 }
 
-func NewBotModule(logger *logger.Logger, validator *validator.Validate, db *gorm.DB, config *config.Config, jwtModule jwt_module.JwtModule) *BotModule {
-	bot, err := gotgbot.NewBot(config.TelegramBotToken, nil)
-	if err != nil {
-		logger.Error("failed to create new bot: " + err.Error())
-		return nil
+func (m *BotModule) BotCommand() bot_command.IBotCommand {
+	if m.botCommand == nil {
+		m.botCommand = bot_command.NewBotCommand(m.logger, m.validator)
 	}
+	return m.botCommand
+}
 
-	return &BotModule{
-		bot: bot,
-
-		logger:    logger,
-		validator: validator,
-		db:        db,
-		config:    config,
-		jwtModule: jwtModule,
+func (m *BotModule) BotController() bot_controller.IBotController {
+	if m.botController == nil {
+		m.botController = bot_controller.NewBotController(m.logger, m.bot, m.BotCommand())
 	}
+	return m.botController
+}
+
+func (m *BotModule) BotRoutes(router fiber.Router) {
+	bot := router.Group("/bot")
+
+	bot.Post("/payment", m.BotController().Payment)
 }
