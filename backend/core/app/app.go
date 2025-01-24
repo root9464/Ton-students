@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -35,6 +36,8 @@ func NewApp() *App {
 	}
 }
 
+var wg sync.WaitGroup
+
 func (app *App) Run() error {
 	app.app.Use(cors.New(cors.Config{
 		AllowOrigins:     "http://localhost:6969",
@@ -48,7 +51,25 @@ func (app *App) Run() error {
 		return err
 	}
 
-	return app.runHttpServer()
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		if err := app.runHttpServer(); err != nil {
+			app.logger.Errorf("%s", "✖ Failed to start server: "+err.Error())
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		if err := app.initBot(); err != nil {
+			app.logger.Errorf("%s", "✖ Failed to start bot: "+err.Error())
+		}
+	}()
+
+	wg.Wait()
+
+	return nil
 }
 
 func (app *App) initDeps() error {
@@ -63,8 +84,6 @@ func (app *App) initDeps() error {
 
 		app.initModuleProvider,
 		app.initRouter,
-
-		app.initBot,
 	}
 	for _, init := range inits {
 		err := init()
@@ -180,11 +199,9 @@ func (app *App) initBot() error {
 		return fmt.Errorf("bot module is not initialized")
 	}
 
-	go func() {
-		if err := app.moduleProvider.botModule.InitBot(); err != nil {
-			app.logger.Errorf("%s", "✖ Failed to start bot: "+err.Error())
-		}
-	}()
+	if err := app.moduleProvider.botModule.InitBot(); err != nil {
+		app.logger.Errorf("%s", "✖ Failed to start bot: "+err.Error())
+	}
 
 	return nil
 }

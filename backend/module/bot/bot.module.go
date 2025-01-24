@@ -57,6 +57,7 @@ func (m *BotModule) registerCommands() {
 
 	m.dispatcher.AddHandler(handlers.NewPreCheckoutQuery(precheckoutquery.All, m.BotCommand().PreCheckout))
 	m.dispatcher.AddHandler(handlers.NewMessage(message.SuccessfulPayment, m.BotCommand().PaymentComplete))
+
 }
 
 func (m *BotModule) InitBot() error {
