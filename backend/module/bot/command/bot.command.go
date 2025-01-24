@@ -8,6 +8,16 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 )
 
+const (
+	PRICE_PAYMENT       = 1
+	DESCRIPTION_PAYMENT = `
+Превратите знания в доход! 🎓💰
+Покупайте и продавайте курсовые, дипломные и другие студенческие работы. 
+Найдите готовые решения или предлагайте свои услуги другим студентам. 
+Подключите премиум-подписку, чтобы зарабатывать на своих знаниях без ограничений! 🚀
+	`
+)
+
 func (cm *botCommand) StartMessage(bot *gotgbot.Bot, ctx *ext.Context) error {
 	username := ctx.EffectiveUser.FirstName
 	if username == "" {
@@ -35,10 +45,12 @@ func (cm *botCommand) GeneratePayment(b *gotgbot.Bot, id int64) (*string, error)
 	cm.logger.Infof("Validation successful: %v", id)
 
 	cm.logger.Info("Creating invoice link...")
-	paymentLink, err := b.CreateInvoiceLink("title", "desription", fmt.Sprint(id), "XTR", []gotgbot.LabeledPrice{{
-		Label:  "Some product",
-		Amount: 1,
-	}}, nil)
+	paymentLink, err := b.CreateInvoiceLink("Creator subscription", DESCRIPTION_PAYMENT, fmt.Sprint(id), "XTR", []gotgbot.LabeledPrice{{
+		Label:  "TonStudents",
+		Amount: PRICE_PAYMENT,
+	}}, &gotgbot.CreateInvoiceLinkOpts{
+		PhotoUrl: "https://cdn-icons-png.flaticon.com/512/4689/4689222.png",
+	})
 
 	if err != nil {
 		cm.logger.Error("Failed to execute GeneratePayment command: " + err.Error())
