@@ -6,6 +6,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/message"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/precheckoutquery"
 	"github.com/go-playground/validator/v10"
@@ -69,6 +70,28 @@ func (m *BotModule) registerCommands() {
 	m.dispatcher.AddHandler(handlers.NewPreCheckoutQuery(precheckoutquery.All, m.BotCommand().PreCheckout))
 	m.dispatcher.AddHandler(handlers.NewMessage(message.SuccessfulPayment, m.BotCommand().PaymentComplete))
 
+
+	m.dispatcher.AddHandler(handlers.NewCommand("support", m.BotCommand().SupportStart))
+	m.dispatcher.AddHandler(handlers.NewCallback(
+		filters.CallbackQuery(func(query *gotgbot.CallbackQuery) bool {
+			return query.Data != "" && query.Data[:6] == "reply_"
+		}),
+		m.BotCommand().SupportReply,
+	))
+	m.dispatcher.AddHandler(handlers.NewMessage(
+		filters.Message(func(msg *gotgbot.Message) bool {
+			return msg.Chat.Id == m.config.AdminId
+		}),
+		m.BotCommand().SendAdminResponse,
+	))
+
+	m.dispatcher.AddHandler(handlers.NewInlineQuery(
+		filters.InlineQuery(func(query *gotgbot.InlineQuery) bool {
+			return query.Query == "invite"
+		}),
+		m.BotCommand().InlineQuery,
+	))
+
 }
 
 func (m *BotModule) InitBot() error {
@@ -105,7 +128,7 @@ func (m *BotModule) InitBot() error {
 
 func (m *BotModule) BotCommand() bot_command.IBotCommand {
 	if m.botCommand == nil {
-		m.botCommand = bot_command.NewBotCommand(m.logger, m.validator)
+		m.botCommand = bot_command.NewBotCommand(m.logger, m.validator, m.config)
 	}
 	return m.botCommand
 }
