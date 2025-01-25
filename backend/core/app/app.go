@@ -40,7 +40,7 @@ var wg sync.WaitGroup
 
 func (app *App) Run() error {
 	app.app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:6969",
+		AllowOrigins:     "*",
 		AllowCredentials: false,
 	}))
 	app.app.Use(middleware.LoggerMiddleware())
@@ -51,7 +51,7 @@ func (app *App) Run() error {
 		return err
 	}
 
-	wg.Add(1)
+	wg.Add(2)
 
 	go func() {
 		defer wg.Done()
@@ -60,12 +60,12 @@ func (app *App) Run() error {
 		}
 	}()
 
-	// go func() {
-	// 	defer wg.Done()
-	// 	if err := app.initBot(); err != nil {
-	// 		app.logger.Errorf("%s", "✖ Failed to start bot: "+err.Error())
-	// 	}
-	// }()
+	go func() {
+		defer wg.Done()
+		if err := app.initBot(); err != nil {
+			app.logger.Errorf("%s", "✖ Failed to start bot: "+err.Error())
+		}
+	}()
 
 	wg.Wait()
 

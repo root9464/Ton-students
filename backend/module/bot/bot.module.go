@@ -70,7 +70,6 @@ func (m *BotModule) registerCommands() {
 	m.dispatcher.AddHandler(handlers.NewPreCheckoutQuery(precheckoutquery.All, m.BotCommand().PreCheckout))
 	m.dispatcher.AddHandler(handlers.NewMessage(message.SuccessfulPayment, m.BotCommand().PaymentComplete))
 
-
 	m.dispatcher.AddHandler(handlers.NewCommand("support", m.BotCommand().SupportStart))
 	m.dispatcher.AddHandler(handlers.NewCallback(
 		filters.CallbackQuery(func(query *gotgbot.CallbackQuery) bool {
@@ -146,5 +145,5 @@ func (m *BotModule) BotRoutes(router fiber.Router) {
 
 	bot := router.Group("/bot", middleware.UserOnly())
 
-	bot.Post("/payment", m.BotController().Payment)
+	bot.Get("/payment", m.BotController().Payment)
 }

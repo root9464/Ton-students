@@ -42,7 +42,7 @@ func (f *JwtFuncs) GenerateKeyPair(userData jwt_dto.UserData) (*string, *string,
 		"iss":       "Ton-students::admin",
 		"sub":       userData.ID,
 		"iat":       time.Now().Unix(),
-		"exp":       time.Now().Add(15 * time.Minute).Unix(),
+		"exp":       time.Now().Add(24 * time.Hour).Unix(),
 		"role":      string(userData.Role),
 		"user_hash": refinedHash,
 	}
