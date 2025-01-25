@@ -76,6 +76,6 @@ func (p *moduleProvider) ChatModule() error {
 }
 
 func (p *moduleProvider) BotModule() error {
-	p.botModule = bot_module.NewBotModule(p.app.logger, p.app.validator, p.app.db, p.app.config, *p.jwtModule)
+	p.botModule = bot_module.NewBotModule(p.app.logger, p.app.validator, p.app.db, p.app.config, *p.userModule, *p.jwtModule)
 	return nil
 }

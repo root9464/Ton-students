@@ -35,17 +35,17 @@ func (cm *botCommand) StartMessage(bot *gotgbot.Bot, ctx *ext.Context) error {
 	return nil
 }
 
-func (cm *botCommand) GeneratePayment(b *gotgbot.Bot, id int64) (*string, error) {
+func (cm *botCommand) GeneratePayment(b *gotgbot.Bot, id string) (*string, error) {
 	cm.logger.Infof("Generating payment for id: %v", id)
 
-	if id == 0 {
-		return nil, fmt.Errorf("id cannot be 0")
+	if id == "" {
+		return nil, fmt.Errorf("id cannot be empty")
 	}
 
 	cm.logger.Infof("Validation successful: %v", id)
 
 	cm.logger.Info("Creating invoice link...")
-	paymentLink, err := b.CreateInvoiceLink("Creator subscription", DESCRIPTION_PAYMENT, fmt.Sprint(id), "XTR", []gotgbot.LabeledPrice{{
+	paymentLink, err := b.CreateInvoiceLink("Creator subscription", DESCRIPTION_PAYMENT, id, "XTR", []gotgbot.LabeledPrice{{
 		Label:  "TonStudents",
 		Amount: PRICE_PAYMENT,
 	}}, &gotgbot.CreateInvoiceLinkOpts{

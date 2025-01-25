@@ -2,21 +2,19 @@ package bot_controller
 
 import (
 	"github.com/gofiber/fiber/v2"
-	bot_dto "github.com/root9464/Ton-students/module/bot/dto"
 )
 
 func (c *botController) Payment(ctx *fiber.Ctx) error {
-	body := new(bot_dto.Payment)
-	if err := ctx.BodyParser(body); err != nil {
-		return &fiber.Error{
-			Code:    400,
-			Message: err.Error(),
-		}
+	userId := ctx.Query("userId")
+	if userId == "" {
+		return ctx.Status(400).JSON(fiber.Map{
+			"error": "User ID is required",
+		})
 	}
 
-	paymentLink, err := c.botCommand.GeneratePayment(c.bot, body.UserId)
+	paymentLink, err := c.botCommand.GeneratePayment(c.bot, userId)
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		return ctx.Status(500).JSON(fiber.Map{
 			"error": "Failed to generate payment link",
 		})
 	}

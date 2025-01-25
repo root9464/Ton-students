@@ -51,7 +51,7 @@ func (m *UserModule) UserController() user_controller.IUserController {
 }
 
 func (m *UserModule) UserRoutes(router fiber.Router) {
-	middleware := middleware.NewRoleMiddleware(m.logger, m.userRepo, m.jwtModule.JwtHelpers(), m.publicKey)
+	middleware := middleware.NewMiddleware(m.logger, m.userRepo, m.jwtModule.JwtHelpers(), m.publicKey)
 
 	user := router.Group("/user", middleware.UserOnly())
 

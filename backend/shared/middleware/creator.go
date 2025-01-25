@@ -13,7 +13,7 @@ import (
 	"github.com/root9464/Ton-students/shared/logger"
 )
 
-type RoleMiddleware struct {
+type Middleware struct {
 	logger     *logger.Logger
 	userRepo   user_repository.IUserRepository
 	jwtHelpers jwt_helpers.IJwtHelper
@@ -21,13 +21,13 @@ type RoleMiddleware struct {
 	publicKey string
 }
 
-func NewRoleMiddleware(
+func NewMiddleware(
 	logger *logger.Logger,
 	userRepo user_repository.IUserRepository,
 	jwtHelpers jwt_helpers.IJwtHelper,
 	publicKey string,
-) *RoleMiddleware {
-	return &RoleMiddleware{
+) *Middleware {
+	return &Middleware{
 		logger:     logger,
 		userRepo:   userRepo,
 		jwtHelpers: jwtHelpers,
@@ -49,7 +49,7 @@ var whitelist = map[string]*regexp.Regexp{
 	"/api/creator/service/feed":         nil,
 }
 
-func (rm *RoleMiddleware) CreatorOnly() fiber.Handler {
+func (rm *Middleware) CreatorOnly() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		path := ctx.Path()
 		for route, re := range whitelist {

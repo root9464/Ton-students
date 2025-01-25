@@ -11,7 +11,7 @@ var _ IBotCommand = (*botCommand)(nil)
 
 type IBotCommand interface {
 	StartMessage(bot *gotgbot.Bot, ctx *ext.Context) error
-	GeneratePayment(b *gotgbot.Bot, id int64) (*string, error)
+	GeneratePayment(b *gotgbot.Bot, id string) (*string, error)
 	PreCheckout(b *gotgbot.Bot, ctx *ext.Context) error
 	PaymentComplete(b *gotgbot.Bot, ctx *ext.Context) error
 }

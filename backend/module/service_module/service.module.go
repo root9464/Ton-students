@@ -55,7 +55,7 @@ func (m *ServiceModule) ServiceController() serv_controller.IServiceModuleContro
 }
 
 func (m *ServiceModule) ServiceRoutes(router fiber.Router) {
-	middleware := middleware.NewRoleMiddleware(m.logger, m.userRepo, m.jwtModule.JwtHelpers(), m.publicKey)
+	middleware := middleware.NewMiddleware(m.logger, m.userRepo, m.jwtModule.JwtHelpers(), m.publicKey)
 
 	service := router.Group("/service", middleware.CreatorOnly())
 

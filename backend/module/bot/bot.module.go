@@ -14,7 +14,9 @@ import (
 	bot_command "github.com/root9464/Ton-students/module/bot/command"
 	bot_controller "github.com/root9464/Ton-students/module/bot/controller"
 	jwt_module "github.com/root9464/Ton-students/module/jwt"
+	user_module "github.com/root9464/Ton-students/module/user"
 	"github.com/root9464/Ton-students/shared/logger"
+	"github.com/root9464/Ton-students/shared/middleware"
 	"gorm.io/gorm"
 )
 
@@ -31,10 +33,19 @@ type BotModule struct {
 	db        *gorm.DB
 	config    *config.Config
 
-	jwtModule jwt_module.JwtModule
+	userModule user_module.UserModule
+	jwtModule  jwt_module.JwtModule
 }
 
-func NewBotModule(logger *logger.Logger, validator *validator.Validate, db *gorm.DB, config *config.Config, jwtModule jwt_module.JwtModule) *BotModule {
+func NewBotModule(
+	logger *logger.Logger,
+	validator *validator.Validate,
+	db *gorm.DB,
+	config *config.Config,
+
+	userModule user_module.UserModule,
+	jwtModule jwt_module.JwtModule,
+) *BotModule {
 	bot, err := gotgbot.NewBot(config.TelegramBotToken, nil)
 	if err != nil {
 		logger.Error("failed to create new bot: " + err.Error())
@@ -107,7 +118,10 @@ func (m *BotModule) BotController() bot_controller.IBotController {
 }
 
 func (m *BotModule) BotRoutes(router fiber.Router) {
-	bot := router.Group("/bot")
+
+	middleware := middleware.NewMiddleware(m.logger, m.userModule.UserRepo(), m.jwtModule.JwtHelpers(), m.config.JwtPublicKey)
+
+	bot := router.Group("/bot", middleware.UserOnly())
 
 	bot.Post("/payment", m.BotController().Payment)
 }
