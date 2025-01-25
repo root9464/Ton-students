@@ -55,6 +55,7 @@ func (m *UserModule) UserRoutes(router fiber.Router) {
 
 	user := router.Group("/user", middleware.UserOnly())
 
+	user.Get("/get-user", m.UserController().GetUser)
 	user.Post("/add-info", m.UserController().AddUserInfo)
 	user.Patch("/select-name", m.UserController().SelectVisibleName)
 	user.Patch("/set-nickname", m.UserController().SetUserNickname)

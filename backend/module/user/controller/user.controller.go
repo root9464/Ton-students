@@ -6,6 +6,7 @@ import (
 )
 
 type IUserController interface {
+	GetUser(ctx *fiber.Ctx) error
 	AddUserInfo(ctx *fiber.Ctx) error
 	SelectVisibleName(ctx *fiber.Ctx) error
 	SetUserNickname(ctx *fiber.Ctx) error

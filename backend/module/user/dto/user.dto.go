@@ -10,7 +10,8 @@ type CreateUserDto struct {
 
 type ShortUserType struct {
 	ID          int64           `json:"id" validate:"required"`
-	VisibleName string          `json:"username" validate:"required"`
+	Username    string          `json:"username" validate:"required"`
+	VisibleName string          `json:"visibleName" validate:"required"`
 	Role        string          `json:"role" validate:"required"`
 	Hash        string          `json:"hash" validate:"required"`
 	Infos       *[]UserInfoType `json:"infos,omitempty" validate:"required"`
