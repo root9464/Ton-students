@@ -47,7 +47,11 @@ func NewBotModule(
 	userModule user_module.UserModule,
 	jwtModule jwt_module.JwtModule,
 ) *BotModule {
-	bot, err := gotgbot.NewBot(config.TelegramBotToken, nil)
+	bot, err := gotgbot.NewBot(config.TelegramBotToken, &gotgbot.BotOpts{
+		BotClient: &gotgbot.BaseBotClient{
+			UseTestEnvironment: true,
+		},
+	})
 	if err != nil {
 		logger.Error("failed to create new bot: " + err.Error())
 		return nil
