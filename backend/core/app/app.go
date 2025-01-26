@@ -196,7 +196,8 @@ func (app *App) runHttpServer() error {
 
 func (app *App) initBot() error {
 	if app.moduleProvider.botModule == nil {
-		return fmt.Errorf("bot module is not initialized")
+		app.logger.Warnf("Bot module is not initialized")
+		return nil
 	}
 
 	if err := app.moduleProvider.botModule.InitBot(); err != nil {
@@ -212,8 +213,7 @@ func (app *App) initRouter() error {
 	app.moduleProvider.authModule.AuthRoutes(api)
 	app.moduleProvider.userModule.UserRoutes(api)
 
-	creator := api.Group("/creator")
-	app.moduleProvider.serviceModule.ServiceRoutes(creator)
+	app.moduleProvider.serviceModule.ServiceRoutes(api)
 
 	app.moduleProvider.botModule.BotRoutes(api)
 

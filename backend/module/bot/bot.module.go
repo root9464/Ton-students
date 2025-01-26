@@ -49,9 +49,10 @@ func NewBotModule(
 ) *BotModule {
 	bot, err := gotgbot.NewBot(config.TelegramBotToken, &gotgbot.BotOpts{
 		BotClient: &gotgbot.BaseBotClient{
-			UseTestEnvironment: true,
+			UseTestEnvironment: false,
 		},
 	})
+
 	if err != nil {
 		logger.Error("failed to create new bot: " + err.Error())
 		return nil
@@ -144,10 +145,12 @@ func (m *BotModule) BotController() bot_controller.IBotController {
 }
 
 func (m *BotModule) BotRoutes(router fiber.Router) {
+	if m == nil {
+		return
+	}
 
 	middleware := middleware.NewMiddleware(m.logger, m.userModule.UserRepo(), m.jwtModule.JwtHelpers(), m.config.JwtPublicKey)
 
 	bot := router.Group("/bot", middleware.UserOnly())
-
 	bot.Get("/payment", m.BotController().Payment)
 }

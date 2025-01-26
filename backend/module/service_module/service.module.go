@@ -57,7 +57,7 @@ func (m *ServiceModule) ServiceController() serv_controller.IServiceModuleContro
 func (m *ServiceModule) ServiceRoutes(router fiber.Router) {
 	middleware := middleware.NewMiddleware(m.logger, m.userRepo, m.jwtModule.JwtHelpers(), m.publicKey)
 
-	service := router.Group("/service", middleware.CreatorOnly())
+	service := router.Group("/creator/service", middleware.CreatorOnly())
 
 	service.Get("/ping", m.ServiceController().Pong)
 

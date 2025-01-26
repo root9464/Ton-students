@@ -44,6 +44,7 @@ func (p *moduleProvider) initDeps() error {
 	for _, init := range inits {
 		err := init()
 		if err != nil {
+			p.app.logger.Errorf("%s", "✖ Failed to initialize module: "+err.Error())
 			return err
 		}
 	}

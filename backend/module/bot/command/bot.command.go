@@ -29,7 +29,7 @@ func (cm *botCommand) StartMessage(bot *gotgbot.Bot, ctx *ext.Context) error {
 	messageText := fmt.Sprintf("Hello, %s! 👋\nWelcome to the bot. How can I assist you today?", username)
 
 	_, err := ctx.EffectiveMessage.Reply(bot, messageText, &gotgbot.SendMessageOpts{
-		ReplyMarkup:keyboards.Keyboard, 
+		ReplyMarkup: keyboards.Keyboard,
 	})
 	if err != nil {
 		cm.logger.Error("Failed to send start message: " + err.Error())
@@ -53,7 +53,8 @@ func (cm *botCommand) GeneratePayment(b *gotgbot.Bot, id string) (*string, error
 		Label:  "TonStudents",
 		Amount: PRICE_PAYMENT,
 	}}, &gotgbot.CreateInvoiceLinkOpts{
-		PhotoUrl: "https://cdn-icons-png.flaticon.com/512/4689/4689222.png",
+		PhotoUrl:           "https://cdn-icons-png.flaticon.com/512/4689/4689222.png",
+		SubscriptionPeriod: 2592000,
 	})
 
 	if err != nil {
@@ -74,7 +75,9 @@ func (cm *botCommand) PreCheckout(b *gotgbot.Bot, ctx *ext.Context) error {
 	cm.logger.Infof("getting payload %v", payload)
 
 	if payload != userId {
-		_, err := ctx.PreCheckoutQuery.Answer(b, false, nil)
+		_, err := ctx.PreCheckoutQuery.Answer(b, false, &gotgbot.AnswerPreCheckoutQueryOpts{
+			ErrorMessage: "Похоже вы пытаетесь оплатить за другого пользователя.",
+		})
 		if err != nil {
 			cm.logger.Errorf("failed to answer precheckout query: %s", err)
 			return err
@@ -91,7 +94,7 @@ func (cm *botCommand) PreCheckout(b *gotgbot.Bot, ctx *ext.Context) error {
 }
 
 func (cm *botCommand) PaymentComplete(b *gotgbot.Bot, ctx *ext.Context) error {
-	_, err := ctx.EffectiveMessage.Reply(b, "Payment complete - in a real bot, this is where you would provision the product that has been paid for.", nil)
+	_, err := ctx.EffectiveMessage.Reply(b, "Оплата прошла успешно, поздравляем с преобретением подписки.", nil)
 	if err != nil {
 		cm.logger.Errorf("failed to send payment complete message: %v", err)
 		return err
@@ -114,7 +117,7 @@ func (cm *botCommand) SupportStart(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	question := strings.Join(args, " ")
 	cm.logger.Infof("Received support question from userID %d: %s", userID, question)
-	
+
 	_, err := b.SendMessage(cm.config.AdminId,
 		fmt.Sprintf(
 			"📩 <b>Новый запрос от пользователя</b>\n\n<b>Пользователь:</b> @%s\n<b>ID:</b> <code>%d</code>\n\n<b>Вопрос:</b>\n%s",

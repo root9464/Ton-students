@@ -4,10 +4,6 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type CreateUserDto struct {
-	InitDataRaw string `json:"init-data-raw" validate:"required"`
-}
-
 type ShortUserType struct {
 	ID          int64           `json:"id" validate:"required"`
 	Username    string          `json:"username" validate:"required"`
