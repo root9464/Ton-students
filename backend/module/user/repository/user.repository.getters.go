@@ -43,10 +43,10 @@ func (r *userRepository) GetByHash(ctx context.Context, hash string) (*user_mode
 	return user, nil
 }
 
-func (r *userRepository) UserServices(ctx context.Context) (*user_model.User, error) {
+func (r *userRepository) UserServices(ctx context.Context) (*[]user_model.User, error) {
 	r.logger.Info("Getting creator services...")
 
-	user := new(user_model.User)
+	user := new([]user_model.User)
 
 	if err := r.db.WithContext(ctx).Preload("Services.Infos").Preload("Services.Tags").Preload("Services.Settings").Find(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {

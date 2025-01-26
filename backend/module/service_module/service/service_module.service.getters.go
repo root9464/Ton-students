@@ -6,6 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	serv_dto "github.com/root9464/Ton-students/module/service_module/dto"
 	serv_model "github.com/root9464/Ton-students/module/service_module/model"
+	user_model "github.com/root9464/Ton-students/module/user/model"
 	"github.com/root9464/Ton-students/shared/utils"
 	"github.com/samber/lo"
 )
@@ -34,10 +35,10 @@ func (s *serviceModuleService) GetServiceById(ctx context.Context, id string) (*
 	return service, nil
 }
 
-func (s *serviceModuleService) GetShortServices(ctx context.Context) (*[]serv_dto.ShortServiceType, error) {
+func (s *serviceModuleService) GetShortServices(ctx context.Context) (*[]serv_dto.FeedServiceType, error) {
 	s.logger.Info("Getting creator services...")
 
-	user, err := s.userRepo.UserServices(ctx)
+	users, err := s.userRepo.UserServices(ctx)
 	if err != nil {
 		return nil, &fiber.Error{
 			Code:    500,
@@ -45,51 +46,52 @@ func (s *serviceModuleService) GetShortServices(ctx context.Context) (*[]serv_dt
 		}
 	}
 
-	s.logger.Infof("Got creator services: %+v", user)
+	s.logger.Infof("Got creator services: %+v", users)
 
-	// Проверяем, что Services не nil и не пустой
-	if user == nil || user.Services == nil || len(user.Services) == 0 {
-		s.logger.Info("No services found for user")
+	if users == nil || len(*users) == 0 {
+		s.logger.Infof("No services found for users %+v", users)
 		return nil, nil
 	}
 
-	shortServices := lo.Map(user.Services, func(service serv_model.Service, _ int) serv_dto.ShortServiceType {
-		infos := lo.Map(service.Infos, func(info serv_model.ServiceInfo, _ int) serv_dto.InfosType {
-			return serv_dto.InfosType{
-				Title:   info.Title,
-				Content: info.Content,
-			}
-		})
+	shortServices := lo.FlatMap(*users, func(user user_model.User, _ int) []serv_dto.FeedServiceType {
+		visibleName := utils.GetVisibleName(&user)
 
-		tags := new([]serv_dto.TagsType)
-		if service.Tags != nil && len(*service.Tags) > 0 {
-			mappedTags := lo.Map(*service.Tags, func(tag serv_model.Tags, _ int) serv_dto.TagsType {
-				return serv_dto.TagsType{
-					ServiceId: tag.ServiceId,
-					Name:      tag.Name,
+		return lo.Map(user.Services, func(service serv_model.Service, _ int) serv_dto.FeedServiceType {
+			infos := lo.Map(service.Infos, func(info serv_model.ServiceInfo, _ int) serv_dto.InfosType {
+				return serv_dto.InfosType{
+					Title:   info.Title,
+					Content: info.Content,
 				}
 			})
-			tags = &mappedTags
-		}
 
-		settings, _ := utils.ConvertDtoToEntity[serv_dto.SettingsType](service.Settings)
+			tags := new([]serv_dto.TagsType)
+			if service.Tags != nil && len(*service.Tags) > 0 {
+				mappedTags := lo.Map(*service.Tags, func(tag serv_model.Tags, _ int) serv_dto.TagsType {
+					return serv_dto.TagsType{
+						ServiceId: tag.ServiceId,
+						Name:      tag.Name,
+					}
+				})
+				tags = &mappedTags
+			}
 
-		visibleName := utils.GetVisibleName(user)
+			settings, _ := utils.ConvertDtoToEntity[serv_dto.SettingsType](service.Settings)
 
-		result := serv_dto.ShortServiceType{
-			ID:       service.ID,
-			UserID:   service.UserId,
-			Username: &visibleName,
-			Price:    service.Price,
-			Infos:    infos[0],
-			Settings: settings,
-		}
+			result := serv_dto.FeedServiceType{
+				ID:       service.ID,
+				UserID:   service.UserId,
+				Username: &visibleName,
+				Price:    service.Price,
+				Infos:    &infos,
+				Settings: settings,
+			}
 
-		if tags != nil && len(*tags) > 0 {
-			result.Tags = tags
-		}
+			if tags != nil && len(*tags) > 0 {
+				result.Tags = tags
+			}
 
-		return result
+			return result
+		})
 	})
 
 	s.logger.Infof("Short creator services retrieved: count = %d", len(shortServices))
