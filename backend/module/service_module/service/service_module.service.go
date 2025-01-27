@@ -18,7 +18,7 @@ type IServiceModuleService interface {
 	UpdateInformation(ctx context.Context, dto *serv_dto.UpdateServiceType) error
 
 	GetServiceById(ctx context.Context, id string) (*serv_dto.ServiceType, error)
-	GetShortServices(ctx context.Context) (*[]serv_dto.FeedServiceType, error)
+	GetShortServices(ctx context.Context, page, size int) (*[]serv_dto.FeedServiceType, error)
 }
 
 type serviceModuleService struct {

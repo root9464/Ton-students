@@ -1,6 +1,8 @@
 package serv_controller
 
 import (
+	"strconv"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -34,7 +36,26 @@ func (c *serviceModuleController) GetServiceById(ctx *fiber.Ctx) error {
 }
 
 func (c *serviceModuleController) ServiceFeed(ctx *fiber.Ctx) error {
-	services, err := c.service.GetShortServices(ctx.Context())
+
+	queryParams := ctx.Queries()
+
+	page, err := strconv.Atoi(queryParams["page"])
+	if err != nil {
+		return ctx.Status(400).JSON(&fiber.Error{
+			Code:    400,
+			Message: "Invalid page number",
+		})
+	}
+
+	pageSize, err := strconv.Atoi(queryParams["size"])
+	if err != nil {
+		return ctx.Status(400).JSON(&fiber.Error{
+			Code:    400,
+			Message: "Invalid page size",
+		})
+	}
+
+	services, err := c.service.GetShortServices(ctx.Context(), page, pageSize)
 	if err != nil {
 		return ctx.Status(500).JSON(&fiber.Error{
 			Code:    500,

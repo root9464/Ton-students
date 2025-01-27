@@ -35,7 +35,7 @@ func (s *serviceModuleService) GetServiceById(ctx context.Context, id string) (*
 	return service, nil
 }
 
-func (s *serviceModuleService) GetShortServices(ctx context.Context) (*[]serv_dto.FeedServiceType, error) {
+func (s *serviceModuleService) GetShortServices(ctx context.Context, page int, size int) (*[]serv_dto.FeedServiceType, error) {
 	s.logger.Info("Getting creator services...")
 
 	users, err := s.userRepo.UserServices(ctx)
@@ -52,6 +52,9 @@ func (s *serviceModuleService) GetShortServices(ctx context.Context) (*[]serv_dt
 		s.logger.Infof("No services found for users %+v", users)
 		return nil, nil
 	}
+
+	start := (page - 1) * size
+	end := start + size
 
 	shortServices := lo.FlatMap(*users, func(user user_model.User, _ int) []serv_dto.FeedServiceType {
 		visibleName := utils.GetVisibleName(&user)
@@ -94,7 +97,17 @@ func (s *serviceModuleService) GetShortServices(ctx context.Context) (*[]serv_dt
 		})
 	})
 
-	s.logger.Infof("Short creator services retrieved: count = %d", len(shortServices))
+	if start > len(shortServices) {
+		return nil, nil
+	}
 
-	return &shortServices, nil
+	if end > len(shortServices) {
+		end = len(shortServices)
+	}
+
+	paginatedServices := shortServices[start:end]
+
+	s.logger.Infof("Short creator services retrieved: count = %d", len(paginatedServices))
+
+	return &paginatedServices, nil
 }
