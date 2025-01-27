@@ -82,7 +82,7 @@ func (s *serviceModuleService) GetShortServices(ctx context.Context, page int, s
 
 			result := serv_dto.FeedServiceType{
 				ID:       service.ID,
-				UserID:   service.UserId,
+				UserID:   service.UserID,
 				Username: &visibleName,
 				Price:    service.Price,
 				Infos:    &infos,

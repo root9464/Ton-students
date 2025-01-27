@@ -2,7 +2,7 @@ package serv_model
 
 type Service struct {
 	ID     string  `gorm:"primaryKey;type:uuid;default:uuid_generate_v4()" json:"id"`
-	UserId int64   `gorm:"not null;" json:"userId"`
+	UserID int64   `gorm:"not null;" json:"userID"`
 	Price  float64 `gorm:"not null" json:"price"`
 
 	Infos    []ServiceInfo   `gorm:"foreignKey:ServiceId" json:"infos"`

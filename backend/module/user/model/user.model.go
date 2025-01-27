@@ -35,7 +35,7 @@ type User struct {
 	Hash         string       `gorm:"not null" json:"hash"`
 
 	Infos    []UserInfo           `gorm:"foreignKey:UserID" json:"infos"`
-	Services []serv_model.Service `gorm:"foreignKey:UserId" json:"services"`
+	Services []serv_model.Service `gorm:"foreignKey:UserID" json:"services"`
 }
 
 type UserInfo struct {
