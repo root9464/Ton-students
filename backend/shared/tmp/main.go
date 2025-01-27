@@ -20,13 +20,11 @@ func main() {
 
 	user := new([]user_model.User)
 
-	if err := db.WithContext(context.Background()).
-		Model(&user).
-		// Limit(1).
-		// Offset(0).
-		Preload("Services").
-		Find(&user).
-		Error; err != nil {
+	if err := db.WithContext(context.Background()).Offset(0).Limit(2).
+		Preload("Services.Infos").
+		Preload("Services.Tags").
+		Preload("Services.Settings").
+		Find(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			fmt.Printf("User with ID %d not found", 1)
 		}
@@ -34,24 +32,12 @@ func main() {
 
 	}
 
-	sql := db.ToSQL(func(tx *gorm.DB) *gorm.DB {
-		return tx.WithContext(context.Background()).
-			Preload("Services.Infos").
-			Preload("Services.Tags").
-			Preload("Services.Settings").
-			Find(&user)
-
-	})
-
-	fmt.Println("SQL:", sql)
-
 	jsonData, err := json.MarshalIndent(user, "", "  ")
 	if err != nil {
 		fmt.Println("Ошибка при преобразовании в JSON:", err)
 		return
 	}
 
-	// Выводим результат в виде JSON
 	fmt.Println("Результат в формате JSON:")
 	fmt.Println(string(jsonData))
 }

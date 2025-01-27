@@ -3,7 +3,6 @@ package database
 import (
 	"time"
 
-	"github.com/joho/godotenv"
 	"github.com/root9464/Ton-students/shared/logger"
 	"gorm.io/driver/postgres"
 
@@ -12,15 +11,11 @@ import (
 )
 
 func ConnectDb(url string, log *logger.Logger) (*gorm.DB, error) {
-	if err := godotenv.Load("../.env"); err != nil {
-		log.Errorf("Error loading .env file: %v", err)
-	}
-
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DSN:                  url,
 		PreferSimpleProtocol: true,
 	}), &gorm.Config{
-		Logger: gormLogger.Default.LogMode(gormLogger.Warn),
+		Logger: gormLogger.Default.LogMode(gormLogger.Info),
 	})
 
 	if err != nil {
