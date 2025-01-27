@@ -18,6 +18,7 @@ type IServiceModuleRepository interface {
 	UpdateServiceInfo(ctx context.Context, service *serv_model.ServiceInfo) error
 	UpdateServicePrice(ctx context.Context, id string, price float64) error
 	GetServiceById(ctx context.Context, id string) (*serv_model.Service, error)
+	UserServices(ctx context.Context, page, size int) (*[]serv_model.Service, error)
 }
 
 type serviceRepository struct {

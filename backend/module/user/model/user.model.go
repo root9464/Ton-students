@@ -2,8 +2,6 @@ package user_model
 
 import (
 	"fmt"
-
-	serv_model "github.com/root9464/Ton-students/module/service_module/model"
 )
 
 type SelectedName string
@@ -34,8 +32,7 @@ type User struct {
 	IsPremium    bool         `gorm:"default:false" json:"isPremium"`
 	Hash         string       `gorm:"not null" json:"hash"`
 
-	Infos    []UserInfo           `gorm:"foreignKey:UserID" json:"infos"`
-	Services []serv_model.Service `gorm:"foreignKey:UserID" json:"services"`
+	Infos []UserInfo `gorm:"foreignKey:UserID" json:"infos"`
 }
 
 type UserInfo struct {

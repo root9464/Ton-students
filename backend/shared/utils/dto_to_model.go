@@ -3,6 +3,7 @@ package utils
 import (
 	"crypto/ed25519"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -103,4 +104,13 @@ func GetVisibleName(newUser *user_model.User) string {
 	}
 
 	return "none"
+}
+
+func FormatData[T any](service T) (string, error) {
+	jsonData, err := json.MarshalIndent(service, "", "  ")
+	if err != nil {
+		return "", fmt.Errorf("error marshaling JSON: %v", err)
+	}
+
+	return string(jsonData), nil
 }

@@ -1,11 +1,11 @@
 package serv_dto
 
 type ServiceType struct {
-	UserId   int64         `json:"userId" validate:"required"`
-	Price    float64       `json:"price" validate:"required"`
-	Infos    []InfosType   `json:"infos"`
-	Tags     *[]TagsType   `json:"tags,omitempty"`
-	Settings *SettingsType `json:"settings"`
+	UserId   int64        `json:"userId" validate:"required"`
+	Price    float64      `json:"price" validate:"required"`
+	Infos    []InfosType  `json:"infos"`
+	Tags     []TagsType   `json:"tags,omitempty"`
+	Settings SettingsType `json:"settings"`
 }
 
 type InfosType struct {
@@ -53,4 +53,9 @@ type UpdateTagsType struct {
 type UpdateInfoType struct {
 	ID string `json:"id" validate:"required"`
 	InfosType
+}
+
+type GetServicesType struct {
+	Username string `json:"username" validate:"required"`
+	ServiceType
 }

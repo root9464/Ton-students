@@ -14,6 +14,7 @@ func Migrate(db *gorm.DB, trigger bool, log *logger.Logger) error {
 		models := []interface{}{
 			&user_model.User{},
 			&user_model.UserInfo{},
+
 			&serv_model.Service{},
 			&serv_model.ServiceInfo{},
 			&serv_model.Tags{},

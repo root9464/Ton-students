@@ -1,12 +1,16 @@
 package serv_model
 
-type Service struct {
-	ID     string  `gorm:"primaryKey;type:uuid;default:uuid_generate_v4()" json:"id"`
-	UserID int64   `gorm:"not null;" json:"userID"`
-	Price  float64 `gorm:"not null" json:"price"`
+import user_model "github.com/root9464/Ton-students/module/user/model"
 
-	Infos    []ServiceInfo   `gorm:"foreignKey:ServiceId" json:"infos"`
-	Tags     *[]Tags         `gorm:"foreignKey:ServiceId" json:"tags"`
+type Service struct {
+	ID     string `gorm:"primaryKey;type:uuid;default:uuid_generate_v4()" json:"id"`
+	UserID int64  `gorm:"not null;" json:"userID"`
+
+	Price float64       `gorm:"not null" json:"price"`
+	Infos []ServiceInfo `gorm:"foreignKey:ServiceId" json:"infos"`
+	Tags  []Tags        `gorm:"foreignKey:ServiceId" json:"tags"`
+
+	User     user_model.User `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"user"`
 	Settings ServiceSettings `gorm:"foreignKey:ServiceId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"settings"`
 }
 
