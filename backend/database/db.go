@@ -15,7 +15,7 @@ func ConnectDb(url string, log *logger.Logger) (*gorm.DB, error) {
 		DSN:                  url,
 		PreferSimpleProtocol: true,
 	}), &gorm.Config{
-		Logger: gormLogger.Default.LogMode(gormLogger.Info),
+		Logger: gormLogger.Default.LogMode(gormLogger.Error),
 	})
 
 	if err != nil {

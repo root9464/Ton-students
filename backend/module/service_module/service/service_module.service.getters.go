@@ -34,7 +34,7 @@ func (s *serviceModuleService) GetServiceById(ctx context.Context, id string) (*
 	return service, nil
 }
 
-func (s *serviceModuleService) GetShortServices(ctx context.Context, page int, size int) (*[]serv_dto.FeedServiceType, int64, error) {
+func (s *serviceModuleService) GetShortServices(ctx context.Context, page int, size int) (*[]serv_dto.FeedServiceType, int64, int64, error) {
 	s.logger.Info("Getting creator services...")
 
 	var (
@@ -72,7 +72,7 @@ func (s *serviceModuleService) GetShortServices(ctx context.Context, page int, s
 	select {
 	case <-done:
 	case <-ctx.Done():
-		return nil, 0, ctx.Err()
+		return nil, 0, 0, ctx.Err()
 	}
 
 	if totalErr != nil || servicesErr != nil {
@@ -83,14 +83,15 @@ func (s *serviceModuleService) GetShortServices(ctx context.Context, page int, s
 		if servicesErr != nil {
 			errMsg += " Services error: " + servicesErr.Error()
 		}
-		return nil, 0, &fiber.Error{Code: 500, Message: strings.TrimSpace(errMsg)}
+		return nil, 0, 0, &fiber.Error{Code: 500, Message: strings.TrimSpace(errMsg)}
 	}
 
 	if len(services) == 0 {
 		s.logger.Infof("No services found for page %d and size %d", page, size)
-		return nil, total, nil
+		return nil, total, 0, nil
 	}
 
+	s.logger.Infof("Getting %d services for page %d and size %d", len(services), page, size)
 	shortServices := lo.Map(services, func(service serv_model.Service, _ int) serv_dto.FeedServiceType {
 		infos := lo.Map(service.Infos, func(info serv_model.ServiceInfo, _ int) serv_dto.InfosType {
 			return serv_dto.InfosType{Title: info.Title, Content: info.Content}
@@ -117,5 +118,5 @@ func (s *serviceModuleService) GetShortServices(ctx context.Context, page int, s
 		}
 	})
 
-	return &shortServices, total, nil
+	return &shortServices, total, (total / int64(size)), nil
 }

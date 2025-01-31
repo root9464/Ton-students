@@ -55,7 +55,7 @@ func (c *serviceModuleController) ServiceFeed(ctx *fiber.Ctx) error {
 		})
 	}
 
-	services, total, err := c.service.GetShortServices(ctx.Context(), page, pageSize)
+	services, total, pages, err := c.service.GetShortServices(ctx.Context(), page, pageSize)
 	if err != nil {
 		return ctx.Status(500).JSON(&fiber.Error{
 			Code:    500,
@@ -68,5 +68,6 @@ func (c *serviceModuleController) ServiceFeed(ctx *fiber.Ctx) error {
 		"message": "Services fetched successfully",
 		"data":    services,
 		"total":   total,
+		"pages":   pages,
 	})
 }
