@@ -19,6 +19,7 @@ type IServiceModuleRepository interface {
 	UpdateServicePrice(ctx context.Context, id string, price float64) error
 	GetServiceById(ctx context.Context, id string) (*serv_model.Service, error)
 	UserServices(ctx context.Context, page, size int) (*[]serv_model.Service, error)
+	TotalServices(ctx context.Context) (int64, error)
 }
 
 type serviceRepository struct {

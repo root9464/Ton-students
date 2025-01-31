@@ -47,6 +47,7 @@ var whitelist = map[string]*regexp.Regexp{
 	"/api/creator/service/get/":         regexp.MustCompile(`^/api/creator/service/get/[0-9a-fA-F-]+$`), //выражение валидатор
 	"/api/creator/service/get-service":  nil,
 	"/api/creator/service/feed":         nil,
+	"/api/user/get-user":                nil,
 }
 
 func (rm *Middleware) CreatorOnly() fiber.Handler {

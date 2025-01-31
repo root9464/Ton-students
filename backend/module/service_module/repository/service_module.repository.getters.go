@@ -49,3 +49,15 @@ func (r *serviceRepository) UserServices(ctx context.Context, page, size int) (*
 
 	return services, nil
 }
+
+func (r *serviceRepository) TotalServices(ctx context.Context) (int64, error) {
+	r.logger.Info("Getting total number of services...")
+	count := int64(0)
+
+	if err := r.db.WithContext(ctx).Model(&serv_model.Service{}).Count(&count).Error; err != nil {
+		r.logger.Errorf("Error getting total number of services: %v", err)
+		return 0, err
+	}
+
+	return count, nil
+}

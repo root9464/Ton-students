@@ -10,6 +10,13 @@ import (
 
 func (rm *Middleware) UserOnly() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
+		path := ctx.Path()
+		for route, re := range whitelist {
+			if path == route || (re != nil && re.MatchString(path)) {
+				return ctx.Next()
+			}
+		}
+
 		publicKeyBytes, err := hex.DecodeString(rm.publicKey)
 		if err != nil {
 			rm.logger.Errorf("Failed to decode public key: %v", err)
