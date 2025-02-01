@@ -25,7 +25,6 @@ func NewChatController(logger *logger.Logger) *ChatController {
 }
 
 func (c *ChatController) HandleWebSocket(conn *websocket.Conn) {
-	// Получаем ключ комнаты
 	roomID := conn.Query("key")
 	if roomID == "" || !c.service.RoomExists(roomID) {
 		conn.WriteMessage(websocket.TextMessage, []byte("Error: Invalid room key"))
