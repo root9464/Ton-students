@@ -215,7 +215,12 @@ func (app *App) initRouter() error {
 
 	app.moduleProvider.serviceModule.ServiceRoutes(api)
 
+
+
 	app.moduleProvider.botModule.BotRoutes(api)
 
+	chat := app.app.Group("/chat")
+	app.moduleProvider.chatModule.ChatRoutes(chat)
+	
 	return nil
 }

@@ -1,61 +1,79 @@
 package chat_controller
 
 import (
-	"log"
-	"net/http"
+	"sync"
 
+	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gorilla/websocket"
-	"github.com/valyala/fasthttp/fasthttpadaptor"
-
 	chat_service "github.com/root9464/Ton-students/module/chat/service"
+	"github.com/root9464/Ton-students/shared/logger"
 )
 
 type ChatController struct {
-	Hub         *chat_service.Hub
-	ChatService *chat_service.ChatService
-	Upgrader    *websocket.Upgrader
+	logger  *logger.Logger
+	service *chat_service.ChatService
+	rooms   map[string]map[*websocket.Conn]bool 
+	mu      sync.Mutex
 }
 
-func NewChatController(hub *chat_service.Hub, chatService *chat_service.ChatService) *ChatController {
+func NewChatController(logger *logger.Logger) *ChatController {
 	return &ChatController{
-		Hub:         hub,
-		ChatService: chatService,
-		Upgrader: &websocket.Upgrader{
-			ReadBufferSize:  1024,
-			WriteBufferSize: 1024,
-			CheckOrigin: func(r *http.Request) bool {
-				return true
-			},
-		},
+		logger:  logger,
+		service: chat_service.NewChatService(logger),
+		rooms:   make(map[string]map[*websocket.Conn]bool),
 	}
 }
 
-func (c *ChatController) HandleWebSocket(ctx *fiber.Ctx) error {
-	// Преобразование fasthttp в стандартные net/http типы
-	handler := func(w http.ResponseWriter, r *http.Request) {
-		conn, err := c.Upgrader.Upgrade(w, r, nil)
-		if err != nil {
-			log.Println("WebSocket upgrade error:", err)
-			return
-		}
-
-		client := &chat_service.Client{
-			Hub:  c.Hub,
-			Conn: conn,
-			Send: make(chan []byte, 256),
-		}
-
-		// Регистрация клиента
-		c.Hub.Register <- client
-		log.Printf("Клиент подключился: %s", conn.RemoteAddr().String())
-
-		// Запуск потоков для обработки клиента
-		go client.WritePump()
-		go client.ReadPump()
+func (c *ChatController) HandleWebSocket(conn *websocket.Conn) {
+	roomID := conn.Query("key")
+	if roomID == "" || !c.service.RoomExists(roomID) {
+		conn.WriteMessage(websocket.TextMessage, []byte("Error: Invalid room key"))
+		conn.Close()
+		return
 	}
 
-	// Адаптируем запрос через fasthttpadaptor
-	fasthttpadaptor.NewFastHTTPHandler(http.HandlerFunc(handler))(ctx.Context())
-	return nil
+	c.mu.Lock()
+	if _, exists := c.rooms[roomID]; !exists {
+		c.rooms[roomID] = make(map[*websocket.Conn]bool)
+	}
+	c.rooms[roomID][conn] = true
+	c.mu.Unlock()
+
+	c.logger.Infof("User connected to room %s", roomID)
+
+	defer func() {
+		c.mu.Lock()
+		delete(c.rooms[roomID], conn)
+		c.mu.Unlock()
+		c.logger.Infof("User disconnected from room %s", roomID)
+		conn.Close()
+	}()
+
+	for {
+		messageType, msg, err := conn.ReadMessage()
+		if err != nil {
+			break 
+		}
+
+		c.logger.Infof("Message in room %s: %s", roomID, string(msg))
+
+		c.mu.Lock()
+		for client := range c.rooms[roomID] {
+			if err := client.WriteMessage(messageType, msg); err != nil {
+				client.Close()
+				delete(c.rooms[roomID], client)
+			}
+		}
+		c.mu.Unlock()
+	}
+}
+
+func (c *ChatController) CreateRoomHandler(ctx *fiber.Ctx) error {
+	roomID := c.service.CreateRoom()
+	if roomID == "" {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create room"})
+	}
+
+	c.logger.Infof("Created new room: %s", roomID)
+	return ctx.JSON(fiber.Map{"room_id": roomID})
 }
