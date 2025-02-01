@@ -71,7 +71,7 @@ func (p *moduleProvider) ServiceModule() error {
 }
 
 func (p *moduleProvider) ChatModule() error {
-	p.chatModule = chat_module.NewChatModule()
+	p.chatModule = chat_module.NewChatModule(p.app.logger)
 	return nil
 }
 
