@@ -56,6 +56,7 @@ type UpdateInfoType struct {
 }
 
 type GetServicesType struct {
+	ID       string `json:"id" validate:"required"`
 	Username string `json:"username" validate:"required"`
 	ServiceType
 }

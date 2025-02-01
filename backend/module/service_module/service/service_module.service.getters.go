@@ -104,6 +104,13 @@ func (s *serviceModuleService) GetShortServices(ctx context.Context, page int, s
 			})
 		}
 
+		nilIfEmpty := func(s []serv_dto.TagsType) *[]serv_dto.TagsType {
+			if len(s) == 0 {
+				return nil
+			}
+			return &s
+		}
+
 		settings, _ := utils.ConvertDtoToEntity[serv_dto.SettingsType](service.Settings)
 		visibleName := utils.GetVisibleName(&service.User)
 
@@ -114,7 +121,7 @@ func (s *serviceModuleService) GetShortServices(ctx context.Context, page int, s
 			Price:    service.Price,
 			Infos:    &infos,
 			Settings: settings,
-			Tags:     &tags,
+			Tags:     nilIfEmpty(tags),
 		}
 	})
 
