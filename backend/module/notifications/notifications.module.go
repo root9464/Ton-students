@@ -2,7 +2,6 @@ package notifications_module
 
 import (
 	"github.com/go-playground/validator/v10"
-	notifications_controller "github.com/root9464/Ton-students/module/notifications/controller"
 	notifications_repository "github.com/root9464/Ton-students/module/notifications/repository"
 	notifications_service "github.com/root9464/Ton-students/module/notifications/service"
 	user_module "github.com/root9464/Ton-students/module/user"
@@ -15,9 +14,9 @@ type NotificationsModule struct {
 	validator *validator.Validate
 	db        *gorm.DB
 
-	notificationsController notifications_controller.INotificationsController
-	notificationsService    notifications_service.INotificationsService
-	notificationsRepo       notifications_repository.INotificationsRepository
+	// notificationsController notifications_controller.INotificationsController
+	notificationsService notifications_service.INotificationsService
+	notificationsRepo    notifications_repository.INotificationsRepository
 
 	userModule user_module.UserModule
 }
