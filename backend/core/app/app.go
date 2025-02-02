@@ -217,5 +217,7 @@ func (app *App) initRouter() error {
 
 	app.moduleProvider.botModule.BotRoutes(api)
 
+	// app.moduleProvider.notificationsModule.NotificationsRoutes(api)
+
 	return nil
 }

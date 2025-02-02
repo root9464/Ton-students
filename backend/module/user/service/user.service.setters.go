@@ -328,9 +328,9 @@ func (s *userService) AddManyUserInfo(ctx context.Context, dto *user_dto.ManyUse
 		return err
 	}
 
-	s.logger.Infof("Get user by id: %+v", dto.UserId)
+	s.logger.Infof("Get user by id: %+v", dto.UserID)
 
-	userInDb, err := s.repo.GetByID(ctx, dto.UserId)
+	userInDb, err := s.repo.GetByID(ctx, dto.UserID)
 	if err != nil {
 		s.logger.Warnf("get user by id error: %s", err.Error())
 		return &fiber.Error{
@@ -367,7 +367,7 @@ func (s *userService) AddManyUserInfo(ctx context.Context, dto *user_dto.ManyUse
 			}
 		}
 
-		userInfo.UserID = dto.UserId
+		userInfo.UserID = dto.UserID
 		userManyInfos[i] = userInfo
 	}
 

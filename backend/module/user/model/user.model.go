@@ -2,6 +2,8 @@ package user_model
 
 import (
 	"fmt"
+
+	notifications_model "github.com/root9464/Ton-students/module/notifications/model"
 )
 
 type SelectedName string
@@ -32,7 +34,8 @@ type User struct {
 	IsPremium    bool         `gorm:"default:false" json:"isPremium"`
 	Hash         string       `gorm:"not null" json:"hash"`
 
-	Infos []UserInfo `gorm:"foreignKey:UserID" json:"infos"`
+	Infos         []UserInfo                         `gorm:"foreignKey:UserID" json:"infos"`
+	Notifications []notifications_model.Notification `gorm:"foreignKey:SenderID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"notifications"`
 }
 
 type UserInfo struct {

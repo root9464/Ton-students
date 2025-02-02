@@ -5,16 +5,18 @@ import (
 	bot_module "github.com/root9464/Ton-students/module/bot"
 	chat_module "github.com/root9464/Ton-students/module/chat"
 	jwt_module "github.com/root9464/Ton-students/module/jwt"
+	notifications_module "github.com/root9464/Ton-students/module/notifications"
 	service_module "github.com/root9464/Ton-students/module/service_module"
 	user_module "github.com/root9464/Ton-students/module/user"
 )
 
 type moduleProvider struct {
-	userModule    *user_module.UserModule
-	authModule    *auth_module.AuthModule
-	serviceModule *service_module.ServiceModule
-	botModule     *bot_module.BotModule
-	chatModule    *chat_module.ChatModule
+	userModule          *user_module.UserModule
+	authModule          *auth_module.AuthModule
+	serviceModule       *service_module.ServiceModule
+	botModule           *bot_module.BotModule
+	chatModule          *chat_module.ChatModule
+	notificationsModule *notifications_module.NotificationsModule
 
 	jwtModule *jwt_module.JwtModule
 	app       *App
@@ -39,6 +41,7 @@ func (p *moduleProvider) initDeps() error {
 		p.AuthModule,
 		p.ServiceModule,
 		p.BotModule,
+		p.NotificationsModule,
 		p.ChatModule,
 	}
 	for _, init := range inits {
@@ -78,5 +81,10 @@ func (p *moduleProvider) ChatModule() error {
 
 func (p *moduleProvider) BotModule() error {
 	p.botModule = bot_module.NewBotModule(p.app.logger, p.app.validator, p.app.db, p.app.config, *p.userModule, *p.jwtModule)
+	return nil
+}
+
+func (p *moduleProvider) NotificationsModule() error {
+	p.notificationsModule = notifications_module.NewNotificationsModule(p.app.logger, p.app.validator, p.app.db, *p.userModule)
 	return nil
 }

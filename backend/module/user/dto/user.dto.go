@@ -26,7 +26,7 @@ type UserType struct {
 }
 
 type UserInfoType struct {
-	UserId  int64  `json:"userId" validate:"required"`
+	UserID  int64  `json:"userId" validate:"required"`
 	ID      string `json:"id" validate:"required"`
 	Title   string `json:"title" validate:"required"`
 	Content string `json:"content" validate:"required"`
@@ -53,7 +53,7 @@ type DeleteUserInfoType struct {
 }
 
 type UserCreateInfoType struct {
-	UserId  int64  `json:"userId" validate:"required"`
+	UserID  int64  `json:"userId" validate:"required"`
 	Title   string `json:"title" validate:"required"`
 	Content string `json:"content" validate:"required"`
 }
@@ -66,6 +66,6 @@ func MaxInfos(fl validator.FieldLevel) bool {
 }
 
 type ManyUserInfoType struct {
-	UserId int64          `json:"userId" validate:"required"`
+	UserID int64          `json:"userId" validate:"required"`
 	Infos  []UserInfoType `json:"infos" validate:"required,maxinfos"`
 }
