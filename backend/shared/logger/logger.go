@@ -55,7 +55,6 @@ func (l *Logger) logWithCaller(level logrus.Level, msg string) {
 	fileLine := fmt.Sprintf("%s:%d", path.Base(file), line)
 	coloredFileLine := fmt.Sprintf("\033[32m%s\033[0m", fileLine)
 	l.Logger.Log(level, fmt.Sprintf("%s %s", coloredFileLine, msg))
-
 }
 
 func (l *Logger) Error(msg string) { l.logWithCaller(logrus.ErrorLevel, msg) }
