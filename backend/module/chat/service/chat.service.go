@@ -1,29 +1,26 @@
 package chat_service
 
-import "log"
+import (
+	"github.com/go-playground/validator/v10"
+	chat_repository "github.com/root9464/Ton-students/module/chat/repository"
+	"github.com/root9464/Ton-students/shared/logger"
+)
 
-type ChatService struct {
-	Hub *Hub
+var _ IChatService = (*chatService)(nil)
+
+type IChatService interface{}
+
+type chatService struct {
+	logger    *logger.Logger
+	validator *validator.Validate
+
+	repo chat_repository.IChatRepository
 }
 
-func NewChatService(h *Hub) *ChatService {
-	return &ChatService{Hub: h}
-}
-
-// HandleMessage обрабатывает сообщение, отправленное пользователем.
-func (h *Hub) HandleMessage(client *Client, message []byte) {
-	log.Printf("отправленное сообщение: %s", message)
-	h.Broadcast <- message
-}
-
-// HandleConnection обраба
-func (h *Hub) HandleConnection(client *Client) {
-	log.Printf("клиент подключился: %s", client.Conn.RemoteAddr().String())
-	h.Clients[client] = true
-}
-
-// Disconnect обрабатывает отключение клиента.
-func (h *Hub) HandleDisconnect(client *Client) {
-	log.Printf("клиент отключился: %s", client.Conn.RemoteAddr().String())
-	h.Clients[client] = false
+func NewChatService(logger *logger.Logger, vavalidator *validator.Validate, repo chat_repository.IChatRepository) *chatService {
+	return &chatService{
+		logger:    logger,
+		validator: vavalidator,
+		repo:      repo,
+	}
 }

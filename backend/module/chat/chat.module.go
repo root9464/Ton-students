@@ -1,23 +1,26 @@
 package chat_module
 
 import (
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	chat_controller "github.com/root9464/Ton-students/module/chat/controller"
-	chat_service "github.com/root9464/Ton-students/module/chat/service"
+	"github.com/root9464/Ton-students/shared/logger"
+	"gorm.io/gorm"
 )
 
 type ChatModule struct {
-	hub        *chat_service.Hub
-	controller *chat_controller.ChatController
+	logger    *logger.Logger
+	db        *gorm.DB
+	validator *validator.Validate
 }
 
-func NewChatModule() *ChatModule {
-	hub := chat_service.NewHub()
-	go hub.Run()
-	controller := chat_controller.NewChatController(hub, chat_service.NewChatService(hub))
-	return &ChatModule{hub: hub, controller: controller}
+func NewChatModule(logger *logger.Logger, db *gorm.DB, vavalidator *validator.Validate) *ChatModule {
+	return &ChatModule{
+		logger:    logger,
+		db:        db,
+		validator: vavalidator,
+	}
 }
 
 func (m *ChatModule) ChatRoutes(router fiber.Router) {
-	router.Get("/chat", m.controller.HandleWebSocket)
+
 }

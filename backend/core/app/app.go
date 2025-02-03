@@ -5,6 +5,8 @@ import (
 	"sync"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/contrib/socketio"
+	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/redis/go-redis/v9"
@@ -26,6 +28,7 @@ type App struct {
 
 	db    *gorm.DB
 	redis *redis.Client
+	// socket
 
 	moduleProvider *moduleProvider
 }
@@ -44,6 +47,13 @@ func (app *App) Run() error {
 		AllowCredentials: false,
 	}))
 	app.app.Use(middleware.LoggerMiddleware())
+	app.app.Use(func(c *fiber.Ctx) error {
+		if websocket.IsWebSocketUpgrade(c) {
+			c.Locals("allowed", true)
+			return c.Next()
+		}
+		return fiber.ErrUpgradeRequired
+	})
 
 	err := app.initDeps()
 
