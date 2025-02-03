@@ -2,6 +2,7 @@ package serv_service
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/gofiber/fiber/v2"
@@ -113,6 +114,13 @@ func (s *serviceModuleService) UpdateInformation(ctx context.Context, dto *serv_
 				taskCtx, cancel := context.WithCancel(ctx)
 				defer cancel()
 
+				if info.ID == "" {
+					err := fmt.Errorf("empty ID for service info")
+					s.logger.Errorf("Failed to update service info: %s", err.Error())
+					processError(err)
+					return
+				}
+
 				serviceInfo, err := utils.ConvertDtoToEntity[serv_model.ServiceInfo](info)
 				if err != nil {
 					s.logger.Errorf("Failed to convert DTO to entity for service ID: %s. Error: %s", dto.ID, err.Error())
@@ -132,12 +140,45 @@ func (s *serviceModuleService) UpdateInformation(ctx context.Context, dto *serv_
 		}
 	}
 
+	s.logger.Infof("Updating service tags: %+v", dto.Tags)
+	if len(dto.Tags) > 0 {
+		for _, tag := range dto.Tags {
+			wg.Add(1)
+			go func(tag serv_dto.UpdateTagsType) {
+				defer wg.Done()
+				taskCtx, cancel := context.WithCancel(ctx)
+				defer cancel()
+
+				if tag.ID == "" {
+					err := fmt.Errorf("empty ID for service tag")
+					s.logger.Errorf("Failed to update service tag: %s", err.Error())
+					processError(err)
+					return
+				}
+
+				serviceTag, err := utils.ConvertDtoToEntity[serv_model.Tags](tag)
+				if err != nil {
+					s.logger.Errorf("Failed to convert DTO to entity for service ID: %s. Error: %s", dto.ID, err.Error())
+					processError(err)
+					return
+				}
+
+				if err := s.repo.UpdateServiceTag(taskCtx, serviceTag); err != nil {
+					s.logger.Errorf("Failed to update service tag for service ID: %s. Error: %s", dto.ID, err.Error())
+					processError(err)
+					return
+				}
+
+				s.logger.Infof("Service tag updated successfully for service ID: %s", dto.ID)
+				updatedFields = append(updatedFields, "tags")
+			}(tag)
+		}
+	}
 	wg.Wait()
 
 	if len(updatedFields) > 0 {
 		s.logger.Infof("Successfully updated fields: %v for service ID: %s", updatedFields, dto.ID)
 	}
-	s.logger.Warnf("No updates succeeded for service ID: %s", dto.ID)
 
 	if len(errors) > 0 {
 		s.logger.Errorf("Errors occurred during update: %v", errors)
