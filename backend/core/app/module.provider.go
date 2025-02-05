@@ -3,6 +3,7 @@ package app
 import (
 	auth_module "github.com/root9464/Ton-students/module/auth"
 	bot_module "github.com/root9464/Ton-students/module/bot"
+	chat_module "github.com/root9464/Ton-students/module/chat"
 	jwt_module "github.com/root9464/Ton-students/module/jwt"
 	notifications_module "github.com/root9464/Ton-students/module/notifications"
 	service_module "github.com/root9464/Ton-students/module/service_module"
@@ -15,6 +16,7 @@ type moduleProvider struct {
 	serviceModule       *service_module.ServiceModule
 	botModule           *bot_module.BotModule
 	notificationsModule *notifications_module.NotificationsModule
+	chatModule          *chat_module.ChatModule
 
 	jwtModule *jwt_module.JwtModule
 	app       *App
@@ -40,6 +42,7 @@ func (p *moduleProvider) initDeps() error {
 		p.ServiceModule,
 		p.BotModule,
 		p.NotificationsModule,
+		p.ChatModule,
 	}
 	for _, init := range inits {
 		err := init()
@@ -78,5 +81,10 @@ func (p *moduleProvider) BotModule() error {
 
 func (p *moduleProvider) NotificationsModule() error {
 	p.notificationsModule = notifications_module.NewNotificationsModule(p.app.logger, p.app.validator, p.app.db, *p.userModule)
+	return nil
+}
+
+func (p *moduleProvider) ChatModule() error {
+	p.chatModule = chat_module.NewChatModule(p.app.logger, p.app.db, p.app.validator)
 	return nil
 }

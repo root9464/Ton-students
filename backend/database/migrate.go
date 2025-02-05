@@ -1,6 +1,8 @@
 package database
 
 import (
+	chat_model "github.com/root9464/Ton-students/module/chat/model"
+	common_model "github.com/root9464/Ton-students/module/model/common"
 	notifications_model "github.com/root9464/Ton-students/module/notifications/model"
 	serv_model "github.com/root9464/Ton-students/module/service_module/model"
 	user_model "github.com/root9464/Ton-students/module/user/model"
@@ -22,6 +24,11 @@ func Migrate(db *gorm.DB, trigger bool, log *logger.Logger) error {
 			&serv_model.ServiceSettings{},
 
 			&notifications_model.Notification{},
+
+			&chat_model.Message{},
+			&chat_model.Chat{},
+
+			&common_model.ChatUser{},
 		}
 
 		log.Info("📦 Creating types...")

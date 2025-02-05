@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/gofiber/contrib/socketio"
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -113,7 +112,7 @@ func (app *App) initConfig() error {
 		app.config = config
 	}
 
-	err := config.Load("../.env")
+	err := config.Load(".env")
 	if err != nil {
 		return fmt.Errorf("%s", "✖ Failed to load config: "+err.Error())
 	}
@@ -227,6 +226,7 @@ func (app *App) initRouter() error {
 
 	app.moduleProvider.botModule.BotRoutes(api)
 
+	app.moduleProvider.chatModule.ChatRoutes(api)
 	// app.moduleProvider.notificationsModule.NotificationsRoutes(api)
 
 	return nil
