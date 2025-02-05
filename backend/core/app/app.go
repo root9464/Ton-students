@@ -60,7 +60,7 @@ func (app *App) Run() error {
 		return err
 	}
 
-	wg.Add(2)
+	wg.Add(1)
 
 	go func() {
 		defer wg.Done()
@@ -69,12 +69,12 @@ func (app *App) Run() error {
 		}
 	}()
 
-	go func() {
-		defer wg.Done()
-		if err := app.initBot(); err != nil {
-			app.logger.Errorf("%s", "✖ Failed to start bot: "+err.Error())
-		}
-	}()
+	// go func() {
+	// 	defer wg.Done()
+	// 	if err := app.initBot(); err != nil {
+	// 		app.logger.Errorf("%s", "✖ Failed to start bot: "+err.Error())
+	// 	}
+	// }()
 
 	wg.Wait()
 
@@ -112,7 +112,7 @@ func (app *App) initConfig() error {
 		app.config = config
 	}
 
-	err := config.Load(".env")
+	err := config.Load("../.env")
 	if err != nil {
 		return fmt.Errorf("%s", "✖ Failed to load config: "+err.Error())
 	}
