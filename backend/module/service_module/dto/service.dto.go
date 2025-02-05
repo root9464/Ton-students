@@ -30,7 +30,7 @@ type SettingsType struct {
 type FeedServiceType struct {
 	ID       string  `json:"id" validate:"required"`
 	UserID   int64   `json:"userId" validate:"required"`
-	Username *string `json:"username" validate:"required"`
+	Nickname string  `json:"nickname" validate:"required"`
 	Price    float64 `json:"price" validate:"required"`
 
 	Infos    *[]InfosType  `json:"infos"`
@@ -57,6 +57,6 @@ type UpdateInfoType struct {
 
 type GetServicesType struct {
 	ID       string `json:"id" validate:"required"`
-	Username string `json:"username" validate:"required"`
+	Nickname string `json:"nickname" validate:"required"`
 	ServiceType
 }

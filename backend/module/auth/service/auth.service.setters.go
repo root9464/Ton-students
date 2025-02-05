@@ -32,8 +32,6 @@ func (s *authService) Authorize(ctx context.Context, dto *auth_dto.AutorizeDto) 
 	srcUser := user_dto.UserType{
 		ID:        initData.User.ID,
 		Username:  initData.User.Username,
-		Firstname: &initData.User.FirstName,
-		Lastname:  &initData.User.LastName,
 		IsPremium: initData.User.IsPremium,
 		Hash:      initData.Hash,
 	}

@@ -27,27 +27,6 @@ func (c *userController) AddUserInfo(ctx *fiber.Ctx) error {
 	})
 }
 
-func (c *userController) SelectVisibleName(ctx *fiber.Ctx) error {
-	visibleName := new(user_dto.SelectVisibleNameType)
-	if err := ctx.BodyParser(visibleName); err != nil {
-		return &fiber.Error{
-			Code:    400,
-			Message: err.Error(),
-		}
-	}
-
-	if err := c.userService.SelectVisibleName(ctx.Context(), visibleName); err != nil {
-		if errorResponse, code := utils.HandlerError(err); errorResponse != nil {
-			return ctx.Status(code).JSON(errorResponse)
-		}
-	}
-
-	return ctx.Status(200).JSON(&fiber.Map{
-		"status":  "success",
-		"message": "User visible name selected successfully",
-	})
-}
-
 func (c *userController) SetUserNickname(ctx *fiber.Ctx) error {
 	nickname := new(user_dto.SetUserNicknameType)
 	if err := ctx.BodyParser(nickname); err != nil {

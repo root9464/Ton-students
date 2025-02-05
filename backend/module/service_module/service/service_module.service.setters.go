@@ -86,7 +86,7 @@ func (s *serviceModuleService) UpdateInformation(ctx context.Context, dto *serv_
 		mu.Unlock()
 	}
 
-	s.logger.Infof("Updating service price: %f", *dto.Price)
+	s.logger.Infof("Updating service price: %+v", dto.Price)
 	if dto.Price != nil {
 		wg.Add(1)
 		go func() {

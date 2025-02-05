@@ -15,7 +15,6 @@ type IUserService interface {
 	UpsertUser(ctx context.Context, dto *user_dto.UserType) (*user_dto.ShortUserType, error)
 
 	GetUser(ctx context.Context, id int64) (*user_dto.ShortUserType, error)
-	SelectVisibleName(ctx context.Context, dto *user_dto.SelectVisibleNameType) error
 	SetUserNickname(ctx context.Context, dto *user_dto.SetUserNicknameType) error
 	AddUserInfo(ctx context.Context, dto *user_dto.UserCreateInfoType) error
 	UpdateUserInfo(ctx context.Context, dto *user_dto.UpdateUserInfoType) error
@@ -26,10 +25,14 @@ type IUserService interface {
 type userService struct {
 	logger    *logger.Logger
 	validator *validator.Validate
+	hmac_key  string
 
 	repo user_repository.IUserRepository
 }
 
-func NewUserService(logger *logger.Logger, validator *validator.Validate, repo user_repository.IUserRepository) *userService {
-	return &userService{logger: logger, validator: validator, repo: repo}
+func NewUserService(
+	logger *logger.Logger, validator *validator.Validate, hmac_key string,
+	repo user_repository.IUserRepository,
+) *userService {
+	return &userService{logger: logger, validator: validator, hmac_key: hmac_key, repo: repo}
 }

@@ -5,24 +5,20 @@ import (
 )
 
 type ShortUserType struct {
-	ID          int64           `json:"id" validate:"required"`
-	Username    string          `json:"username" validate:"required"`
-	VisibleName string          `json:"visibleName" validate:"required"`
-	Role        string          `json:"role" validate:"required"`
-	Hash        string          `json:"hash" validate:"required"`
-	Infos       *[]UserInfoType `json:"infos,omitempty" validate:"required"`
+	ID       int64           `json:"id" validate:"required"`
+	Nickname string          `json:"visibleName" validate:"required"`
+	Role     string          `json:"role" validate:"required"`
+	Hash     string          `json:"hash" validate:"required"`
+	Infos    *[]UserInfoType `json:"infos,omitempty" validate:"required"`
 }
 
 type UserType struct {
-	ID           int64           `json:"id" validate:"required"`
-	Username     string          `json:"username" validate:"required,min=3,max=50"`
-	Firstname    *string         `json:"firstname"`
-	Lastname     *string         `json:"lastname"`
-	Nickname     *string         `json:"nickname"`
-	SelectedName *string         `json:"selectedName"`
-	Info         *[]UserInfoType `json:"info"`
-	IsPremium    bool            `json:"isPremium"`
-	Hash         string          `json:"hash" validate:"required"`
+	ID        int64           `json:"id" validate:"required"`
+	Username  string          `json:"username" validate:"required"`
+	Nickname  string          `json:"nickname"`
+	Info      *[]UserInfoType `json:"info"`
+	IsPremium bool            `json:"isPremium"`
+	Hash      string          `json:"hash" validate:"required"`
 }
 
 type UserInfoType struct {
@@ -34,7 +30,7 @@ type UserInfoType struct {
 
 type SelectVisibleNameType struct {
 	ID           int64  `json:"id" validate:"required"`
-	SelectedName string `json:"selectedName" validate:"required,oneof=firstname lastname nickname username"`
+	SelectedName string `json:"selectedName" validate:"required,oneof=nickname username"`
 }
 
 type SetUserNicknameType struct {

@@ -1,43 +1,52 @@
 package main
 
 import (
-	"context"
-	"encoding/json"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
-
-	"github.com/root9464/Ton-students/database"
-	user_model "github.com/root9464/Ton-students/module/user/model"
-	"github.com/root9464/Ton-students/shared/logger"
-	"gorm.io/gorm"
+	"strings"
 )
 
 const (
-	USER_ID = 99281932
+	USER_ID     = 99281932
+	USERNAME    = "rogue"
+	PRIVATE_KEY = "0x9de3bd5d174a7b4762cd4ca2d45680058054273daa5af4d568d6d616c597b438"
 )
 
-func main() {
-	db, _ := database.ConnectDb("postgresql://postgres.drrsenlocmidswbgjwzc:qwertyqwest7q8q1579@aws-0-eu-central-1.pooler.supabase.com:6543/postgres", logger.GetLogger())
+func generateAddressAndNickname(userID int, username, privateKey string) string {
+	// Генерация данных для хеширования
+	data := fmt.Sprintf("%d%s", userID, username)
 
-	user := new([]user_model.User)
+	// Применяем HMAC-SHA256 с использованием privateKey
+	mac := hmac.New(sha256.New, []byte(privateKey))
+	mac.Write([]byte(data))
+	hash := mac.Sum(nil)
 
-	if err := db.WithContext(context.Background()).Offset(0).Limit(2).
-		Preload("Services.Infos").
-		Preload("Services.Tags").
-		Preload("Services.Settings").
-		Find(&user).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			fmt.Printf("User with ID %d not found", 1)
+	// Генерируем адрес в формате hex
+	address := fmt.Sprintf("0x%s", hex.EncodeToString(hash))
+
+	// Получаем никнейм из адреса
+	addressWithoutPrefix := strings.TrimPrefix(address, "0x")
+	nickname := make([]byte, 0, 8)
+
+	// Преобразуем hex адрес в читаемый никнейм
+	for i := 0; i < len(addressWithoutPrefix) && len(nickname) < 8; i++ {
+		c := addressWithoutPrefix[i]
+		var idx byte
+		if c >= '0' && c <= '9' {
+			idx = c - '0'
+		} else {
+			idx = 10 + c - 'a'
 		}
-		fmt.Printf("Error getting user by ID: %v", err)
-
+		nickname = append(nickname, 'a'+idx)
 	}
 
-	jsonData, err := json.MarshalIndent(user, "", "  ")
-	if err != nil {
-		fmt.Println("Ошибка при преобразовании в JSON:", err)
-		return
-	}
+	// Возвращаем адрес и никнейм
+	return string(nickname)
+}
 
-	fmt.Println("Результат в формате JSON:")
-	fmt.Println(string(jsonData))
+func main() {
+	nickname := generateAddressAndNickname(USER_ID, USERNAME, PRIVATE_KEY)
+	fmt.Println("Generated Nickname:", nickname)
 }

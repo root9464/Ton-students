@@ -22,6 +22,7 @@ func (r *serviceRepository) GetServiceById(ctx context.Context, id string) (*ser
 	}
 
 	r.logger.Infof("Service with ID %s retrieved successfully", id)
+	r.logger.Infof("Service: %+v", service)
 
 	return service, nil
 }

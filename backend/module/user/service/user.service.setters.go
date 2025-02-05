@@ -7,6 +7,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	user_dto "github.com/root9464/Ton-students/module/user/dto"
+	user_funcs "github.com/root9464/Ton-students/module/user/funcs"
 	user_model "github.com/root9464/Ton-students/module/user/model"
 	"github.com/root9464/Ton-students/shared/utils"
 )
@@ -21,6 +22,8 @@ func (s *userService) UpsertUser(ctx context.Context, dto *user_dto.UserType) (*
 	}
 
 	s.logger.Infof("validate success: %+v", dto)
+
+	dto.Nickname = user_funcs.GenerateUserNickname(dto.ID, dto.Username, s.hmac_key)
 
 	modelUser, err := utils.ConvertDtoToEntity[user_model.User](dto)
 	if err != nil {
@@ -54,7 +57,6 @@ func (s *userService) UpsertUser(ctx context.Context, dto *user_dto.UserType) (*
 
 		s.logger.Infof("created user: %+v", newUser)
 		returnedUser, err := utils.ConvertDtoToEntity[user_dto.ShortUserType](newUser)
-		returnedUser.VisibleName = utils.GetVisibleName(newUser)
 
 		if err != nil {
 			s.logger.Warnf("convert dto to entity error: %s", err.Error())
@@ -82,7 +84,6 @@ func (s *userService) UpsertUser(ctx context.Context, dto *user_dto.UserType) (*
 		s.logger.Infof("updated user: %+v", updateUser)
 
 		returnedUser, err := utils.ConvertDtoToEntity[user_dto.ShortUserType](updateUser)
-		returnedUser.VisibleName = utils.GetVisibleName(updateUser)
 
 		if err != nil {
 			s.logger.Warnf("convert dto to entity error: %s", err.Error())
@@ -102,7 +103,6 @@ func (s *userService) UpsertUser(ctx context.Context, dto *user_dto.UserType) (*
 			Message: err.Error(),
 		}
 	}
-	returnedUser.VisibleName = utils.GetVisibleName(userInDb)
 
 	return returnedUser, nil
 }
@@ -163,45 +163,6 @@ func (s *userService) AddUserInfo(ctx context.Context, dto *user_dto.UserCreateI
 	return nil
 }
 
-func (s *userService) SelectVisibleName(ctx context.Context, dto *user_dto.SelectVisibleNameType) error {
-	if err := s.validator.Struct(dto); err != nil {
-		s.logger.Warnf("validate error: %s", err.Error())
-		return &fiber.Error{
-			Code:    400,
-			Message: err.Error(),
-		}
-	}
-
-	userInDb, err := s.repo.GetByID(ctx, dto.ID)
-	if err != nil {
-		s.logger.Warnf("get user by id error: %s", err.Error())
-		return &fiber.Error{
-			Code:    500,
-			Message: err.Error(),
-		}
-	}
-
-	if userInDb == nil {
-		return &fiber.Error{
-			Code:    404,
-			Message: "User not found",
-		}
-	}
-
-	userInDb.SelectedName = user_model.SelectedName(dto.SelectedName)
-
-	_, err = s.repo.Update(ctx, userInDb)
-	if err != nil {
-		s.logger.Warnf("update user error: %s", err.Error())
-		return &fiber.Error{
-			Code:    500,
-			Message: err.Error(),
-		}
-	}
-
-	return nil
-}
-
 func (s *userService) SetUserNickname(ctx context.Context, dto *user_dto.SetUserNicknameType) error {
 	if err := s.validator.Struct(dto); err != nil {
 		s.logger.Warnf("validate error: %s", err.Error())
@@ -228,7 +189,7 @@ func (s *userService) SetUserNickname(ctx context.Context, dto *user_dto.SetUser
 	}
 
 	s.logger.Infof("set user nickname: %+v, user: %+v", dto.Nickname, userInDb.Nickname)
-	if *userInDb.Nickname == dto.Nickname {
+	if userInDb.Nickname == dto.Nickname {
 		return &fiber.Error{
 			Code:    400,
 			Message: "Nickname don't change",

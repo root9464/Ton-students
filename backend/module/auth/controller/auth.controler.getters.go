@@ -25,7 +25,7 @@ func (c *authController) Authorize(ctx *fiber.Ctx) error {
 
 	accessToken, refreshToken, err := c.jwtModule.GenerateKeyPair(jwt_dto.UserData{
 		ID:       user.ID,
-		Username: user.VisibleName,
+		Username: user.Nickname,
 		Role:     string(user.Role),
 	})
 
