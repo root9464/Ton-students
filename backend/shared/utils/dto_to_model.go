@@ -39,9 +39,9 @@ func ConvertDtoToEntity[T, D any](dto D, opts ...copier.Option) (*T, error) {
 	return entity, nil
 }
 
-func HandlerError(err error) (*fiber.Map, int) {
+func HandlerError(err error) (fiber.Map, int) {
 	if e, ok := err.(*fiber.Error); ok {
-		return &fiber.Map{
+		return fiber.Map{
 			"status":  "error",
 			"message": e.Message,
 		}, e.Code

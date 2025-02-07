@@ -10,7 +10,7 @@ import (
 func (c *authController) Authorize(ctx *fiber.Ctx) error {
 	data := new(auth_dto.AutorizeDto)
 	if err := ctx.BodyParser(data); err != nil {
-		return ctx.Status(400).JSON(&fiber.Map{
+		return ctx.Status(400).JSON(fiber.Map{
 			"status":  "failed",
 			"message": err.Error(),
 		})
@@ -30,7 +30,7 @@ func (c *authController) Authorize(ctx *fiber.Ctx) error {
 	})
 
 	if err != nil {
-		return ctx.Status(400).JSON(&fiber.Map{
+		return ctx.Status(400).JSON(fiber.Map{
 			"status":  "failed",
 			"message": err.Error(),
 		})
@@ -52,7 +52,7 @@ func (c *authController) Authorize(ctx *fiber.Ctx) error {
 		SameSite: fiber.CookieSameSiteStrictMode,
 	})
 
-	return ctx.Status(200).JSON(&fiber.Map{
+	return ctx.Status(200).JSON(fiber.Map{
 		"status":  "success",
 		"message": "Welcome",
 		"token": fiber.Map{
@@ -65,7 +65,7 @@ func (c *authController) Authorize(ctx *fiber.Ctx) error {
 func (c *authController) RefreshAccessToken(ctx *fiber.Ctx) error {
 	refreshToken := ctx.Cookies("refresh_token")
 	if refreshToken == "" {
-		return ctx.Status(400).JSON(&fiber.Map{
+		return ctx.Status(400).JSON(fiber.Map{
 			"status":  "failed",
 			"message": "Refresh token is missing",
 		})
@@ -75,14 +75,14 @@ func (c *authController) RefreshAccessToken(ctx *fiber.Ctx) error {
 	if accessToken != "" {
 		isValid, err := c.jwtHelpers.CheckTokenExpiration(accessToken, c.publicKey)
 		if err != nil {
-			return ctx.Status(401).JSON(&fiber.Map{
+			return ctx.Status(401).JSON(fiber.Map{
 				"status":  "failed",
 				"message": "Failed to validate access token",
 			})
 		}
 
 		if isValid {
-			return ctx.Status(200).JSON(&fiber.Map{
+			return ctx.Status(200).JSON(fiber.Map{
 				"status":  "failed",
 				"message": "Access token is still valid",
 			})
@@ -91,7 +91,7 @@ func (c *authController) RefreshAccessToken(ctx *fiber.Ctx) error {
 
 	newAccessToken, err := c.jwtModule.RefreshAccessToken(refreshToken, c.publicKey, c.privateKey)
 	if err != nil {
-		return ctx.Status(401).JSON(&fiber.Map{
+		return ctx.Status(401).JSON(fiber.Map{
 			"status":  "failed",
 			"message": "Invalid or expired refresh token",
 		})
@@ -105,7 +105,7 @@ func (c *authController) RefreshAccessToken(ctx *fiber.Ctx) error {
 		SameSite: fiber.CookieSameSiteStrictMode,
 	})
 
-	return ctx.Status(200).JSON(&fiber.Map{
+	return ctx.Status(200).JSON(fiber.Map{
 		"status":  "success",
 		"message": "Access token refreshed successfully",
 		"token": fiber.Map{
@@ -115,7 +115,7 @@ func (c *authController) RefreshAccessToken(ctx *fiber.Ctx) error {
 }
 
 func (c *authController) JwtPing(ctx *fiber.Ctx) error {
-	return ctx.Status(200).JSON(&fiber.Map{
+	return ctx.Status(200).JSON(fiber.Map{
 		"status":  "success",
 		"message": c.jwtModule.Ping(),
 	})

@@ -21,7 +21,7 @@ func (c *userController) AddUserInfo(ctx *fiber.Ctx) error {
 		}
 	}
 
-	return ctx.Status(200).JSON(&fiber.Map{
+	return ctx.Status(200).JSON(fiber.Map{
 		"status":  "success",
 		"message": "User info added successfully",
 	})
@@ -42,7 +42,7 @@ func (c *userController) SetUserNickname(ctx *fiber.Ctx) error {
 		}
 	}
 
-	return ctx.Status(200).JSON(&fiber.Map{
+	return ctx.Status(200).JSON(fiber.Map{
 		"status":  "success",
 		"message": "User nickname set successfully",
 	})
@@ -63,7 +63,7 @@ func (c *userController) UpdateUserInfo(ctx *fiber.Ctx) error {
 		}
 	}
 
-	return ctx.Status(200).JSON(&fiber.Map{
+	return ctx.Status(200).JSON(fiber.Map{
 		"status":  "success",
 		"message": "User info updated successfully",
 	})
@@ -84,7 +84,7 @@ func (c *userController) DeleteUserInfo(ctx *fiber.Ctx) error {
 		}
 	}
 
-	return ctx.Status(200).JSON(&fiber.Map{
+	return ctx.Status(200).JSON(fiber.Map{
 		"status":  "success",
 		"message": "User info deleted successfully",
 	})
@@ -105,7 +105,7 @@ func (c *userController) AddManyUserInfo(ctx *fiber.Ctx) error {
 		}
 	}
 
-	return ctx.Status(200).JSON(&fiber.Map{
+	return ctx.Status(200).JSON(fiber.Map{
 		"status":  "success",
 		"message": "User info added successfully",
 	})

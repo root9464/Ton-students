@@ -22,7 +22,7 @@ func (c *notificationsController) CreateNotification(ctx *fiber.Ctx) error {
 		}
 	}
 
-	return ctx.Status(200).JSON(&fiber.Map{
+	return ctx.Status(200).JSON(fiber.Map{
 		"status":  "success",
 		"message": "Notification created successfully",
 	})

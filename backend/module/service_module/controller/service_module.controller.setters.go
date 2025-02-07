@@ -22,7 +22,7 @@ func (c *serviceModuleController) CreateService(ctx *fiber.Ctx) error {
 		}
 	}
 
-	return ctx.Status(200).JSON(&fiber.Map{
+	return ctx.Status(200).JSON(fiber.Map{
 		"status":  "success",
 		"message": "Service created successfully",
 	})
@@ -44,7 +44,7 @@ func (c *serviceModuleController) UpdateService(ctx *fiber.Ctx) error {
 		}
 	}
 
-	return ctx.Status(200).JSON(&fiber.Map{
+	return ctx.Status(200).JSON(fiber.Map{
 		"status":  "success",
 		"message": "Service updated successfully",
 	})

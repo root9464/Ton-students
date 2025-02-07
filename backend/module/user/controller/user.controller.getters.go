@@ -31,7 +31,7 @@ func (c *userController) GetUser(ctx *fiber.Ctx) error {
 		}
 	}
 
-	return ctx.Status(200).JSON(&fiber.Map{
+	return ctx.Status(200).JSON(fiber.Map{
 		"status":  "success",
 		"message": "User get successfully",
 		"data":    user,
