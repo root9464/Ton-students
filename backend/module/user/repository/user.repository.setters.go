@@ -97,3 +97,21 @@ func (r *userRepository) AddManyUserInfo(ctx context.Context, userInfo []*user_m
 	r.logger.Infof("Successfully added %d user info records", result.RowsAffected)
 	return nil
 }
+
+func (r *userRepository) ChangeUserRole(ctx context.Context, id string, role string) error {
+	r.logger.Info("Changing user role...")
+
+	result := r.db.WithContext(ctx).Model(&user_model.User{}).Where("id = ?", id).Update(role, user_model.UserRole)
+	if result.Error != nil {
+		r.logger.Errorf("Error changing user role: %v", result.Error)
+		return fmt.Errorf("error changing user role")
+	}
+
+	if result.RowsAffected == 0 {
+		r.logger.Errorf("Error changing user role: user with ID %s not found", id)
+		return fmt.Errorf("user with ID %s not found", id)
+	}
+
+	r.logger.Infof("Successfully changed user role for user with ID %s", id)
+	return nil
+}

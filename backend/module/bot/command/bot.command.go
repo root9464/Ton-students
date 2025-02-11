@@ -1,6 +1,7 @@
 package bot_command
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -57,6 +58,7 @@ func (cm *botCommand) GeneratePayment(b *gotgbot.Bot, id string) (*string, error
 		SubscriptionPeriod: 2592000,
 	})
 
+	cm.logger.Info("Executing GeneratePayment command...")
 	if err != nil {
 		cm.logger.Error("Failed to execute GeneratePayment command: " + err.Error())
 		return nil, err
@@ -67,6 +69,7 @@ func (cm *botCommand) GeneratePayment(b *gotgbot.Bot, id string) (*string, error
 }
 
 func (cm *botCommand) PreCheckout(b *gotgbot.Bot, ctx *ext.Context) error {
+	cm.logger.Infof("PreCheckout called with user id: %v", ctx.PreCheckoutQuery.From.Id)
 
 	userId := strconv.FormatInt(ctx.PreCheckoutQuery.From.Id, 10)
 	cm.logger.Infof("user id %s", userId)
@@ -85,20 +88,38 @@ func (cm *botCommand) PreCheckout(b *gotgbot.Bot, ctx *ext.Context) error {
 		return nil
 	}
 
+	cm.logger.Infof("Payload matches user id, proceeding with payment...")
 	_, err := ctx.PreCheckoutQuery.Answer(b, true, nil)
 	if err != nil {
 		cm.logger.Errorf("failed to answer precheckout query: %v", err)
 		return err
 	}
+
+	cm.logger.Info("Payment successful")
 	return nil
 }
 
 func (cm *botCommand) PaymentComplete(b *gotgbot.Bot, ctx *ext.Context) error {
-	_, err := ctx.EffectiveMessage.Reply(b, "Оплата прошла успешно, поздравляем с преобретением подписки.", nil)
+	cm.logger.Info("Payment complete")
+
+	cm.logger.Infof("Payload: %v", ctx.Message.SuccessfulPayment.InvoicePayload)
+	cm.logger.Infof("Date: %v", ctx.Message.SuccessfulPayment.SubscriptionExpirationDate)
+	cm.logger.Infof("All: %v", ctx.Message.SuccessfulPayment)
+
+	err := cm.userRepo.ChangeUserRole(context.Background(), ctx.Message.SuccessfulPayment.InvoicePayload, "creator")
+	if err != nil {
+		cm.logger.Errorf("failed to change user role: %v", err)
+		return err
+	}
+
+	cm.logger.Infof("Granting privileges to the user... %v", ctx.Message.SuccessfulPayment.OrderInfo)
+
+	_, err = ctx.EffectiveMessage.Reply(b, "Оплата прошла успешно, поздравляем с преобретением подписки.", nil)
 	if err != nil {
 		cm.logger.Errorf("failed to send payment complete message: %v", err)
 		return err
 	}
+	cm.logger.Info("Payment complete message sent")
 	return nil
 }
 
@@ -118,11 +139,12 @@ func (cm *botCommand) SupportStart(b *gotgbot.Bot, ctx *ext.Context) error {
 	question := strings.Join(args, " ")
 	cm.logger.Infof("Received support question from userID %d: %s", userID, question)
 
-	_, err := b.SendMessage(cm.config.AdminId,
-		fmt.Sprintf(
-			"📩 <b>Новый запрос от пользователя</b>\n\n<b>Пользователь:</b> @%s\n<b>ID:</b> <code>%d</code>\n\n<b>Вопрос:</b>\n%s",
-			ctx.EffectiveUser.Username, userID, question),
-		&gotgbot.SendMessageOpts{ParseMode: "HTML"})
+	_, err := b.SendMessage(cm.config.AdminId, fmt.Sprintf(
+		"📩 <b>Новый запрос от пользователя</b>\n\n<b>Пользователь:</b> @%s\n<b>ID:</b> <code>%d</code>\n\n<b>Вопрос:</b>\n%s",
+		ctx.EffectiveUser.Username, userID, question,
+	), &gotgbot.SendMessageOpts{
+		ParseMode: "HTML",
+	})
 	if err != nil {
 		cm.logger.Errorf("Error sending support message to admin: %v", err)
 		return err
@@ -152,62 +174,6 @@ func (cm *botCommand) SupportStart(b *gotgbot.Bot, ctx *ext.Context) error {
 			ParseMode:   "HTML",
 			ReplyMarkup: replyMarkup,
 		})
-	return err
-}
-
-func (cm *botCommand) SupportReply(b *gotgbot.Bot, ctx *ext.Context) error {
-	callbackData := ctx.CallbackQuery.Data
-	cm.logger.Infof("SupportReply called with callbackData: %v", callbackData)
-
-	userIDStr := strings.TrimPrefix(callbackData, "reply_")
-	userID, err := strconv.ParseInt(userIDStr, 10, 64)
-	if err != nil {
-		cm.logger.Errorf("Error parsing userID from callbackData: %v", err)
-		return err
-	}
-
-	replyState.mu.Lock()
-	replyState.active[ctx.EffectiveUser.Id] = userID
-	replyState.mu.Unlock()
-
-	_, err = b.SendMessage(ctx.EffectiveUser.Id,
-		"✍️ <b>Введите ваше сообщение для пользователя:</b>",
-		&gotgbot.SendMessageOpts{ParseMode: "HTML"})
-	return err
-}
-
-func (cm *botCommand) SendAdminResponse(b *gotgbot.Bot, ctx *ext.Context) error {
-	adminID := ctx.EffectiveUser.Id
-	messageText := ctx.EffectiveMessage.Text
-	fmt.Println(replyState.active)
-
-	cm.logger.Infof("SendAdminResponse called with adminID: %v, messageText: %v", adminID, messageText)
-
-	replyState.mu.Lock()
-	userID, ok := replyState.active[adminID]
-	if !ok {
-		replyState.mu.Unlock()
-		_, err := b.SendMessage(adminID,
-			"⚠️ <b>Нет активного запроса для ответа.</b>\n\nСначала нажмите кнопку \"Ответить\".",
-			&gotgbot.SendMessageOpts{ParseMode: "HTML"})
-		return err
-	}
-	delete(replyState.active, adminID)
-	replyState.mu.Unlock()
-
-	_, err := b.SendMessage(userID,
-		fmt.Sprintf(
-			"📬 <b>Ответ от администратора:</b>\n\n%s",
-			messageText),
-		&gotgbot.SendMessageOpts{ParseMode: "HTML"})
-	if err != nil {
-		cm.logger.Errorf("Error sending admin response to user: %v", err)
-		return err
-	}
-
-	_, err = b.SendMessage(adminID,
-		"✅ <b>Ваш ответ был успешно отправлен пользователю.</b>",
-		&gotgbot.SendMessageOpts{ParseMode: "HTML"})
 	return err
 }
 
