@@ -3,15 +3,20 @@ package chat_model
 import (
 	"time"
 
-	common_model "github.com/root9464/Ton-students/module/model/common"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Chat struct {
-	ID        string                  `gorm:"primaryKey" json:"id"`
-	Members   []common_model.ChatUser `gorm:"many2many:user_chats;joinForeignKey:ChatID;joinReferences:UserID" json:"-"`
-	Key       string                  `json:"key"`
-	CreatedAt time.Time               `json:"createdAt"`
-	Messages  []Message               `gorm:"foreignKey:ChatID" json:"messages"`
+	ID        string    `gorm:"primaryKey" json:"id"`
+	Key       string    `json:"key"`
+	CreatedAt time.Time `json:"createdAt"`
+	Messages  []Message `gorm:"foreignKey:ChatID" json:"messages"`
+}
+
+func (c *Chat) BeforeCreate(tx *gorm.DB) error {
+	c.ID = uuid.New().String()
+	return nil
 }
 
 type Message struct {

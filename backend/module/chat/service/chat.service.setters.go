@@ -2,8 +2,6 @@ package chat_service
 
 import (
 	"context"
-	"crypto/sha256"
-	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	chat_dto "github.com/root9464/Ton-students/module/chat/dto"
@@ -22,9 +20,11 @@ func (s *chatService) CreateChat(ctx context.Context, dto *chat_dto.CreateChatTy
 
 	chatModel := new(chat_model.Chat)
 
-	hash := sha256.New()
-	hash.Write([]byte(strconv.FormatInt(dto.Users[0]+dto.Users[1], 10)))
-	key := string(hash.Sum(nil))
+	// hash := sha256.New()
+	// hash.Write([]byte(strconv.FormatInt(dto.Users[0]+dto.Users[1], 10)))
+	// key := string(hash.Sum(nil))
+
+	key := "qwe"
 
 	chatModel.Key = key
 	if err := s.repo.CreateChat(ctx, chatModel); err != nil {

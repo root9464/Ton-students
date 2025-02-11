@@ -3,7 +3,6 @@ package user_model
 import (
 	"fmt"
 
-	"github.com/root9464/Ton-students/module/model/common"
 	notifications_model "github.com/root9464/Ton-students/module/notifications/model"
 )
 
@@ -37,7 +36,6 @@ type User struct {
 
 	Infos         []UserInfo                         `gorm:"foreignKey:UserID" json:"infos"`
 	Notifications []notifications_model.Notification `gorm:"foreignKey:SenderID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"notifications"`
-	Chats         []common_model.ChatUser            `gorm:"many2many:user_chats;joinForeignKey:UserID;joinReferences:ChatID" json:"-"`
 }
 
 func (u *User) GetID() int64 {

@@ -1,14 +1,20 @@
 package chat_service
 
 import (
+	"context"
+
 	"github.com/go-playground/validator/v10"
+	chat_dto "github.com/root9464/Ton-students/module/chat/dto"
 	chat_repository "github.com/root9464/Ton-students/module/chat/repository"
 	"github.com/root9464/Ton-students/shared/logger"
 )
 
 var _ IChatService = (*chatService)(nil)
 
-type IChatService interface{}
+type IChatService interface {
+	CreateChat(ctx context.Context, dto *chat_dto.CreateChatType) error
+	GetChatIDBetweenUsers(ctx context.Context, userIDs []int64) (*string, error)
+}
 
 type chatService struct {
 	logger    *logger.Logger

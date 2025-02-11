@@ -51,7 +51,7 @@ func (app *App) Run() error {
 			c.Locals("allowed", true)
 			return c.Next()
 		}
-		return fiber.ErrUpgradeRequired
+		return c.Next()
 	})
 
 	err := app.initDeps()
@@ -130,7 +130,7 @@ func (app *App) initDb() error {
 
 		// true - запустить миграцию
 		// false - не запускать
-		if err := database.Migrate(db, false, app.logger); err != nil {
+		if err := database.Migrate(db, true, app.logger); err != nil {
 			return fmt.Errorf("%s", "✖ Failed to migrate database: "+err.Error())
 		}
 	}

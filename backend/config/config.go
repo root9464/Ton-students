@@ -46,7 +46,7 @@ func validateConfig(config *Config) error {
 
 func LoadConfig(path string) (config *Config, err error) {
 	viper.AddConfigPath(path)
-	viper.SetConfigName(".env")
+	viper.SetConfigName("../.env")
 	viper.SetConfigType("env")
 
 	// Automatically map environment variables

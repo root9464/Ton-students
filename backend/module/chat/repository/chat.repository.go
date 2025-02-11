@@ -9,9 +9,12 @@ import (
 	"gorm.io/gorm"
 )
 
+var _ IChatRepository = (*chatRepository)(nil)
+
 type IChatRepository interface {
 	CreateChat(ctx context.Context, chat *chat_model.Chat) error
 	CreateChatMembers(ctx context.Context, chatMembers []common_model.ChatUser) error
+	GetChatIDBetweenUsers(ctx context.Context, userIDs []int64) (*string, error)
 }
 
 type chatRepository struct {
