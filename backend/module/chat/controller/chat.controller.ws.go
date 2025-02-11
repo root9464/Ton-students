@@ -45,7 +45,6 @@ func (c *ChatController) WS() func(*socketio.Websocket) {
 
 		userIDFloat, ok := dataMap["user_id"].(float64)
 		if !ok {
-			c.socketErr(ep, nil)
 		}
 		userIDStr := fmt.Sprintf("%.0f", userIDFloat) // Преобразуем float64 в строку
 		userID, err := strconv.ParseInt(userIDStr, 10, 64)

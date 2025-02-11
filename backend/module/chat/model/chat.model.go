@@ -8,7 +8,7 @@ import (
 )
 
 type Chat struct {
-	ID        string    `gorm:"primaryKey" json:"id"`
+	ID        string    `gorm:"primaryKey;type:uuid;default:uuid_generate_v4()" json:"id"`
 	Key       string    `json:"key"`
 	CreatedAt time.Time `json:"createdAt"`
 	Messages  []Message `gorm:"foreignKey:ChatID" json:"messages"`
