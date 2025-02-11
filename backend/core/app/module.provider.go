@@ -85,6 +85,6 @@ func (p *moduleProvider) NotificationsModule() error {
 }
 
 func (p *moduleProvider) ChatModule() error {
-	p.chatModule = chat_module.NewChatModule(p.app.logger, p.app.db, p.app.validator)
+	p.chatModule = chat_module.NewChatModule(p.app.logger, p.app.db, p.app.validator, p.serviceModule.ServService())
 	return nil
 }

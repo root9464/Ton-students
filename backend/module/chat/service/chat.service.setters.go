@@ -56,3 +56,36 @@ func (s *chatService) CreateChat(ctx context.Context, dto *chat_dto.CreateChatTy
 
 	return nil
 }
+
+func (s *chatService) CreateOrLoadChat(ctx context.Context, dto *chat_dto.CreateOrLoad) error {
+	s.logger.Infof("dto: %v", dto)
+	if err := s.validator.Struct(dto); err != nil {
+		s.logger.Warnf("validate error: %s", err.Error())
+		return &fiber.Error{
+			Code:    400,
+			Message: err.Error(),
+		}
+	}
+
+	service, err := s.serviceService.GetServiceById(ctx, dto.ServiceID)
+	if err != nil {
+		return err
+	}
+
+	userIDs := []int64{service.UserID, dto.UserID}
+	chatID, err := s.repo.GetChatIDBetweenUsers(ctx, userIDs)
+	if err != nil {
+		return &fiber.Error{
+			Code:    500,
+			Message: err.Error(),
+		}
+	}
+
+	if chatID == nil {
+		return s.CreateChat(ctx, &chat_dto.CreateChatType{
+			Users: userIDs,
+		})
+	}
+
+	return nil
+}
