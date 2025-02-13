@@ -25,8 +25,9 @@ func Migrate(db *gorm.DB, trigger bool, log *logger.Logger) error {
 
 			&notifications_model.Notification{},
 
-			&chat_model.Message{},
 			&chat_model.Chat{},
+
+			&chat_model.Message{},
 
 			&common_model.ChatUser{},
 		}

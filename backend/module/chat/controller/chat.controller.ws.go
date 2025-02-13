@@ -12,9 +12,7 @@ import (
 
 type MessageObject struct {
 	Data  interface{} `json:"data"`
-	From  string      `json:"from"`
 	Event string      `json:"event"`
-	To    string      `json:"to"`
 }
 
 func (c *ChatController) socketErr(ep *socketio.EventPayload, err error) {
@@ -36,15 +34,19 @@ func (c *ChatController) WS() func(*socketio.Websocket) {
 		message := new(MessageObject)
 		if err := json.Unmarshal(ep.Data, message); err != nil {
 			c.socketErr(ep, err)
+			return
 		}
 
 		dataMap, ok := message.Data.(map[string]interface{})
 		if !ok {
 			c.socketErr(ep, nil)
+			return
 		}
 
 		userIDFloat, ok := dataMap["user_id"].(float64)
 		if !ok {
+			c.socketErr(ep, nil)
+			return
 		}
 		userIDStr := fmt.Sprintf("%.0f", userIDFloat) // Преобразуем float64 в строку
 		userID, err := strconv.ParseInt(userIDStr, 10, 64)
@@ -59,8 +61,16 @@ func (c *ChatController) WS() func(*socketio.Websocket) {
 
 		c.logger.Infof("join dto: %v", dto)
 		ctx := context.Background()
-		c.chatService.CreateOrLoadChat(ctx, &dto)
+		chatID, err := c.chatService.CreateOrLoadChat(ctx, &dto)
+		if err != nil {
+			c.socketErr(ep, err)
+			return
+		}
 
+		c.logger.Infof("chatID: %v", chatID)
+		c.userToChat[ep.Kws.UUID] = *chatID
+
+		c.logger.Infof("userToChat: %v", c.userToChat)
 		c.logger.Info("Join event success")
 	})
 
@@ -81,28 +91,6 @@ func (c *ChatController) WS() func(*socketio.Websocket) {
 		if message.Event != "" {
 			ep.Kws.Fire(message.Event, ep.Data)
 		}
-
-		// userID, _ := strconv.ParseInt(ep.Kws.Params("id"), 10, 64)
-		// c.mu.RLock()
-		// defer c.mu.RUnlock()
-		// var chatMembers []common_model.ChatUser
-		// chatMembers = append(chatMembers, common_model.ChatUser{
-		// 	UserID: 123,
-		// 	ChatID: "1bc0ab1c-b334-4434-8ba4-3662053125f9",
-		// })
-		//
-		// chatMembers = append(chatMembers, common_model.ChatUser{
-		// 	UserID: 456,
-		// 	ChatID: "1bc0ab1c-b334-4434-8ba4-3662053125f9",
-		// })
-		// var membersConnections []string
-		// for _, member := range chatMembers {
-		// 	connection := c.connections[member.UserID]
-		// 	membersConnections = append(membersConnections, connection)
-		// }
-		//
-		// // ep.Kws.EmitToList(membersConnections, ep.Data)
-		// ep.Kws.Broadcast(ep.Data, false)
 	})
 
 	return func(kws *socketio.Websocket) {

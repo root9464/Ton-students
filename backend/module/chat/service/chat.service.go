@@ -13,9 +13,9 @@ import (
 var _ IChatService = (*chatService)(nil)
 
 type IChatService interface {
-	CreateChat(ctx context.Context, dto *chat_dto.CreateChatType) error
+	CreateChat(ctx context.Context, dto *chat_dto.CreateChatType) (*string, error)
 	GetChatIDBetweenUsers(ctx context.Context, userIDs []int64) (*string, error)
-	CreateOrLoadChat(ctx context.Context, dto *chat_dto.CreateOrLoad) error
+	CreateOrLoadChat(ctx context.Context, dto *chat_dto.CreateOrLoad) (*string, error)
 }
 
 type chatService struct {

@@ -1,7 +1,8 @@
 package chat_dto
 
 type CreateChatType struct {
-	Users []int64 `json:"users" validate:"required"`
+	Users     []int64 `json:"users" validate:"required"`
+	ServiceID string  `json:"service_id" validate:"required"`
 }
 
 type CreateOrLoad struct {

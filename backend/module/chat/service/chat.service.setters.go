@@ -9,15 +9,16 @@ import (
 	common_model "github.com/root9464/Ton-students/module/model/common"
 )
 
-func (s *chatService) CreateChat(ctx context.Context, dto *chat_dto.CreateChatType) error {
+func (s *chatService) CreateChat(ctx context.Context, dto *chat_dto.CreateChatType) (*string, error) {
 	if err := s.validator.Struct(dto); err != nil {
 		s.logger.Warnf("validate error: %s", err.Error())
-		return &fiber.Error{
+		return nil, &fiber.Error{
 			Code:    400,
 			Message: err.Error(),
 		}
 	}
 
+	s.logger.Infof("dto: %v", dto)
 	chatModel := new(chat_model.Chat)
 
 	// hash := sha256.New()
@@ -27,9 +28,10 @@ func (s *chatService) CreateChat(ctx context.Context, dto *chat_dto.CreateChatTy
 	key := "qwe"
 
 	chatModel.Key = key
+	chatModel.ServiceID = dto.ServiceID
 	if err := s.repo.CreateChat(ctx, chatModel); err != nil {
 		s.logger.Errorf("create chat error: %s", err.Error())
-		return &fiber.Error{
+		return nil, &fiber.Error{
 			Code:    500,
 			Message: err.Error(),
 		}
@@ -48,20 +50,20 @@ func (s *chatService) CreateChat(ctx context.Context, dto *chat_dto.CreateChatTy
 
 	if err := s.repo.CreateChatMembers(ctx, chatMembers); err != nil {
 		s.logger.Errorf("create chat members error: %s", err.Error())
-		return &fiber.Error{
+		return nil, &fiber.Error{
 			Code:    500,
 			Message: err.Error(),
 		}
 	}
 
-	return nil
+	return &chatModel.ID, nil
 }
 
-func (s *chatService) CreateOrLoadChat(ctx context.Context, dto *chat_dto.CreateOrLoad) error {
+func (s *chatService) CreateOrLoadChat(ctx context.Context, dto *chat_dto.CreateOrLoad) (*string, error) {
 	s.logger.Infof("dto: %v", dto)
 	if err := s.validator.Struct(dto); err != nil {
 		s.logger.Warnf("validate error: %s", err.Error())
-		return &fiber.Error{
+		return nil, &fiber.Error{
 			Code:    400,
 			Message: err.Error(),
 		}
@@ -69,23 +71,34 @@ func (s *chatService) CreateOrLoadChat(ctx context.Context, dto *chat_dto.Create
 
 	service, err := s.serviceService.GetServiceById(ctx, dto.ServiceID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	userIDs := []int64{service.UserID, dto.UserID}
 	chatID, err := s.repo.GetChatIDBetweenUsers(ctx, userIDs)
 	if err != nil {
-		return &fiber.Error{
+		return nil, &fiber.Error{
 			Code:    500,
 			Message: err.Error(),
 		}
 	}
 
 	if chatID == nil {
-		return s.CreateChat(ctx, &chat_dto.CreateChatType{
-			Users: userIDs,
+		if service.UserID == dto.UserID {
+			return nil, &fiber.Error{
+				Code:    400,
+				Message: "You can't chat with yourself",
+			}
+		}
+		idChat, err := s.CreateChat(ctx, &chat_dto.CreateChatType{
+			Users:     userIDs,
+			ServiceID: service.ID,
 		})
+		if err != nil {
+			return nil, err
+		}
+		chatID = idChat
 	}
 
-	return nil
+	return chatID, nil
 }

@@ -1,7 +1,6 @@
 package serv_model
 
 import (
-	chat_model "github.com/root9464/Ton-students/module/chat/model"
 	user_model "github.com/root9464/Ton-students/module/user/model"
 )
 
@@ -15,9 +14,6 @@ type Service struct {
 
 	User     user_model.User `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"user"`
 	Settings ServiceSettings `gorm:"foreignKey:ServiceId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"settings"`
-
-	ChatID *string          `gorm:"type:uuid;uniqueIndex" json:"chatId"` // Уникальный индекс для связи one-to-one
-	Chat   *chat_model.Chat `gorm:"foreignKey:ChatID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"chat"`
 }
 
 type ServiceInfo struct {

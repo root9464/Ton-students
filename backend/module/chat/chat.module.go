@@ -58,5 +58,4 @@ func (m *ChatModule) ChatRoutes(router fiber.Router) {
 	chat := router.Group("/chat")
 
 	chat.Get("/conn/:id", socketio.New(m.ChatController().WS()))
-	chat.Post("/", m.ChatController().CreateChat)
 }
