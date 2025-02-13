@@ -15,6 +15,7 @@ type IChatRepository interface {
 	CreateChat(ctx context.Context, chat *chat_model.Chat) error
 	CreateChatMembers(ctx context.Context, chatMembers []common_model.ChatUser) error
 	GetChatIDBetweenUsers(ctx context.Context, userIDs []int64) (*string, error)
+	GetChatByID(ctx context.Context, chatID string) (*chat_model.Chat, error)
 }
 
 type chatRepository struct {

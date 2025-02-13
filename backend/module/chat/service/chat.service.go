@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	chat_dto "github.com/root9464/Ton-students/module/chat/dto"
+	chat_model "github.com/root9464/Ton-students/module/chat/model"
 	chat_repository "github.com/root9464/Ton-students/module/chat/repository"
 	serv_service "github.com/root9464/Ton-students/module/service_module/service"
 	"github.com/root9464/Ton-students/shared/logger"
@@ -16,6 +17,7 @@ type IChatService interface {
 	CreateChat(ctx context.Context, dto *chat_dto.CreateChatType) (*string, error)
 	GetChatIDBetweenUsers(ctx context.Context, userIDs []int64) (*string, error)
 	CreateOrLoadChat(ctx context.Context, dto *chat_dto.CreateOrLoad) (*string, error)
+	GetChatByID(ctx context.Context, chatID string) (*chat_model.Chat, error)
 }
 
 type chatService struct {

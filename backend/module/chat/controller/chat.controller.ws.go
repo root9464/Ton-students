@@ -20,6 +20,21 @@ func (c *ChatController) socketErr(ep *socketio.EventPayload, err error) {
 	ep.Kws.Emit(errByte)
 }
 
+func (c *ChatController) encodeMessage(ep *socketio.EventPayload) (map[string]interface{}, error) {
+	message := new(MessageObject)
+	if err := json.Unmarshal(ep.Data, message); err != nil {
+		return nil, err
+	}
+
+	dataMap, ok := message.Data.(map[string]interface{})
+	if !ok {
+		c.socketErr(ep, nil)
+		return nil, fmt.Errorf("failed to parse data")
+	}
+
+	return dataMap, nil
+}
+
 func (c *ChatController) WS() func(*socketio.Websocket) {
 	// var hub map[string][]string // hub connection by room ID
 	socketio.On(socketio.EventConnect, func(ep *socketio.EventPayload) {
@@ -31,47 +46,68 @@ func (c *ChatController) WS() func(*socketio.Websocket) {
 	})
 
 	socketio.On("join", func(ep *socketio.EventPayload) {
-		message := new(MessageObject)
-		if err := json.Unmarshal(ep.Data, message); err != nil {
+		dataMap, err := c.encodeMessage(ep)
+		if err != nil {
 			c.socketErr(ep, err)
 			return
 		}
-
-		dataMap, ok := message.Data.(map[string]interface{})
+		chatID, ok := dataMap["chat_id"].(string)
 		if !ok {
-			c.socketErr(ep, nil)
+			c.socketErr(ep, fmt.Errorf("failed to parse chat_id"))
 			return
 		}
 
-		userIDFloat, ok := dataMap["user_id"].(float64)
-		if !ok {
-			c.socketErr(ep, nil)
-			return
-		}
-		userIDStr := fmt.Sprintf("%.0f", userIDFloat) // Преобразуем float64 в строку
-		userID, err := strconv.ParseInt(userIDStr, 10, 64)
-		if err != nil {
-			fmt.Println("Failed to parse user_id:", err)
-			return
-		}
-		dto := chat_dto.CreateOrLoad{
-			UserID:    userID,
-			ServiceID: dataMap["service_id"].(string),
+		dto := chat_dto.Join{
+			ChatID: chatID,
 		}
 
-		c.logger.Infof("join dto: %v", dto)
 		ctx := context.Background()
-		chatID, err := c.chatService.CreateOrLoadChat(ctx, &dto)
+		_, err = c.chatService.GetChatByID(ctx, dto.ChatID)
 		if err != nil {
 			c.socketErr(ep, err)
 			return
 		}
 
-		c.logger.Infof("chatID: %v", chatID)
-		c.userToChat[ep.Kws.UUID] = *chatID
+		c.addUserToChat(ep.Kws.UUID, chatID)
 
-		c.logger.Infof("userToChat: %v", c.userToChat)
 		c.logger.Info("Join event success")
+	})
+
+	socketio.On("message-event", func(ep *socketio.EventPayload) {
+		dataMap, err := c.encodeMessage(ep)
+		if err != nil {
+			c.socketErr(ep, err)
+			return
+		}
+
+		chatID, ok := c.userToChat[ep.Kws.UUID]
+		if !ok {
+			c.socketErr(ep, fmt.Errorf("user not in chat"))
+			return
+		}
+
+		participants, ok := c.chatToUsers[chatID]
+		if !ok {
+			c.socketErr(ep, fmt.Errorf("chat not found"))
+			return
+		}
+
+		var recipients []string
+		for _, uuid := range participants {
+			if uuid != ep.Kws.UUID {
+				recipients = append(recipients, uuid)
+			}
+		}
+
+		message, ok := dataMap["message"].(string)
+		if !ok {
+			c.socketErr(ep, fmt.Errorf("failed to parse message"))
+			return
+		}
+
+		ep.Kws.EmitToList(recipients, []byte(message))
+
+		c.logger.Info("Message event success")
 	})
 
 	socketio.On(socketio.EventDisconnect, func(ep *socketio.EventPayload) {
@@ -79,6 +115,7 @@ func (c *ChatController) WS() func(*socketio.Websocket) {
 		c.mu.Lock()
 		defer c.mu.Unlock()
 		delete(c.connections, userID)
+		c.removeUserFromChat(ep.Kws.UUID)
 		c.logger.Infof("User %v disconnected", userID)
 	})
 
@@ -96,4 +133,26 @@ func (c *ChatController) WS() func(*socketio.Websocket) {
 	return func(kws *socketio.Websocket) {
 		c.logger.Infof("KWS: %+v", kws)
 	}
+}
+
+func (c *ChatController) addUserToChat(userUUID string, chatID string) {
+	c.userToChat[userUUID] = chatID
+	c.chatToUsers[chatID] = append(c.chatToUsers[chatID], userUUID)
+}
+
+func (c *ChatController) removeUserFromChat(userUUID string) {
+	chatID, ok := c.userToChat[userUUID]
+	if !ok {
+		return // Пользователь не в чате
+	}
+
+	users := c.chatToUsers[chatID]
+	for i, uuid := range users {
+		if uuid == userUUID {
+			c.chatToUsers[chatID] = append(users[:i], users[i+1:]...)
+			break
+		}
+	}
+
+	delete(c.userToChat, userUUID)
 }

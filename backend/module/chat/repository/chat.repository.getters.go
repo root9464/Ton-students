@@ -3,10 +3,11 @@ package chat_repository
 import (
 	"context"
 	"strings"
+
+	chat_model "github.com/root9464/Ton-students/module/chat/model"
 )
 
 func (r *chatRepository) GetChatIDBetweenUsers(ctx context.Context, userIDs []int64) (*string, error) {
-
 	var chatID string
 
 	placeholders := make([]string, len(userIDs))
@@ -37,4 +38,12 @@ func (r *chatRepository) GetChatIDBetweenUsers(ctx context.Context, userIDs []in
 	}
 
 	return &chatID, nil
+}
+
+func (r *chatRepository) GetChatByID(ctx context.Context, chatID string) (*chat_model.Chat, error) {
+	chat := new(chat_model.Chat)
+	if err := r.db.WithContext(ctx).Where("id = ?", chatID).First(chat).Error; err != nil {
+		return nil, err
+	}
+	return chat, nil
 }

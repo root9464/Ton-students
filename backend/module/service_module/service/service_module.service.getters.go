@@ -100,7 +100,7 @@ func (s *serviceModuleService) GetShortServices(ctx context.Context, page int, s
 		tags := make([]serv_dto.TagsType, 0)
 		if len(service.Tags) > 0 {
 			tags = lo.Map(service.Tags, func(tag serv_model.Tags, _ int) serv_dto.TagsType {
-				return serv_dto.TagsType{ServiceId: tag.ServiceId, Name: tag.Name}
+				return serv_dto.TagsType{ServiceId: tag.ServiceID, Name: tag.Name}
 			})
 		}
 
