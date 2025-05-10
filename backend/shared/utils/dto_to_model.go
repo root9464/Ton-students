@@ -10,8 +10,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/jinzhu/copier"
 	"github.com/mitchellh/mapstructure"
-	user_model "github.com/root9464/Ton-students/module/user/model"
-	"github.com/samber/lo"
 )
 
 func ConvertMapStructure[T, D any](dto D) (*T, error) {
@@ -41,9 +39,9 @@ func ConvertDtoToEntity[T, D any](dto D, opts ...copier.Option) (*T, error) {
 	return entity, nil
 }
 
-func HandlerError(err error) (*fiber.Map, int) {
+func HandlerError(err error) (fiber.Map, int) {
 	if e, ok := err.(*fiber.Error); ok {
-		return &fiber.Map{
+		return fiber.Map{
 			"status":  "error",
 			"message": e.Message,
 		}, e.Code
@@ -78,32 +76,6 @@ func LimitSlice[T any](slice []T, maxLen int) []T {
 		return slice[:maxLen]
 	}
 	return slice
-}
-
-func GetVisibleName(newUser *user_model.User) string {
-	nameMap := lo.Assign(
-		map[user_model.SelectedName]string{
-			user_model.Username: newUser.Username,
-		},
-		lo.OmitBy(map[user_model.SelectedName]string{
-			user_model.Username:  newUser.Username,
-			user_model.Firstname: lo.FromPtr(newUser.Firstname),
-			user_model.Lastname:  lo.FromPtr(newUser.Lastname),
-			user_model.Nickname:  lo.FromPtr(newUser.Nickname),
-		}, func(_ user_model.SelectedName, value string) bool {
-			return value == ""
-		}),
-	)
-
-	entry, found := lo.Find(lo.Entries(nameMap), func(entry lo.Entry[user_model.SelectedName, string]) bool {
-		return entry.Key == newUser.SelectedName
-	})
-
-	if found {
-		return entry.Value
-	}
-
-	return "none"
 }
 
 func FormatData[T any](service T) (string, error) {

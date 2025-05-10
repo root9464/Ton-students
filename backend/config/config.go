@@ -15,6 +15,8 @@ type Config struct {
 	JwtPrivateKey string `mapstructure:"JWT_PRIVATE_KEY"`
 	JwtPublicKey  string `mapstructure:"JWT_PUBLIC_KEY"`
 
+	HmacKey string `mapstructure:"HMAC_PRIVATE_KEY"`
+
 	TelegramBotToken string `mapstructure:"TELEGRAM_BOT_TOKEN"`
 	AdminId          int64  `mapstructure:"ADMIN_ID"`
 	ChannelId        int64  `mapstructure:"REQUIRED_CHANNEL"`

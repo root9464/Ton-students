@@ -7,7 +7,7 @@ import (
 )
 
 func (c *serviceModuleController) Pong(ctx *fiber.Ctx) error {
-	return ctx.Status(200).JSON(&fiber.Map{"msg": "pong "})
+	return ctx.Status(200).JSON(fiber.Map{"msg": "pong "})
 }
 
 func (c *serviceModuleController) GetServiceById(ctx *fiber.Ctx) error {

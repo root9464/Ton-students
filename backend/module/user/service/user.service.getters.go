@@ -26,7 +26,5 @@ func (s *userService) GetUser(ctx context.Context, id int64) (*user_dto.ShortUse
 		}
 	}
 
-	convert.VisibleName = utils.GetVisibleName(user)
-
 	return convert, nil
 }

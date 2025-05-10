@@ -15,6 +15,7 @@ import (
 const (
 	AccessTokenExpiry  = 15 * time.Minute
 	RefreshTokenExpiry = 24 * time.Hour
+	Issuer             = "Ton-students::admin"
 )
 
 var (
@@ -26,7 +27,7 @@ func (f *JwtFuncs) GenerateKeyPair(userData jwt_dto.UserData) (*string, *string,
 	if err := f.validator.Struct(userData); err != nil {
 		f.logger.Warnf("validate error: %s", err.Error())
 		return nil, nil, &fiber.Error{
-			Code:    400,
+			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
 		}
 	}
@@ -39,10 +40,10 @@ func (f *JwtFuncs) GenerateKeyPair(userData jwt_dto.UserData) (*string, *string,
 	refinedHash := hex.EncodeToString(hash.Sum(nil))
 
 	accessClaims := jwt.MapClaims{
-		"iss":       "Ton-students::admin",
+		"iss":       Issuer,
 		"sub":       userData.ID,
-		"iat":       time.Now().Unix(),
-		"exp":       time.Now().Add(24 * time.Hour).Unix(),
+		"iat":       Now,
+		"exp":       time.Now().Add(AccessTokenExpiry).Unix(),
 		"role":      string(userData.Role),
 		"user_hash": refinedHash,
 	}
@@ -50,10 +51,10 @@ func (f *JwtFuncs) GenerateKeyPair(userData jwt_dto.UserData) (*string, *string,
 	f.logger.Infof("access claims: %+v", accessClaims)
 
 	refreshClaims := jwt.MapClaims{
-		"iss":       "Ton-students::admin",
+		"iss":       Issuer,
 		"sub":       userData.ID,
-		"iat":       time.Now().Unix(),
-		"exp":       time.Now().Add(24 * time.Hour).Unix(),
+		"iat":       Now,
+		"exp":       time.Now().Add(RefreshTokenExpiry).Unix(),
 		"user_hash": refinedHash,
 	}
 
@@ -73,7 +74,6 @@ func (f *JwtFuncs) GenerateKeyPair(userData jwt_dto.UserData) (*string, *string,
 	}
 
 	accessToken, err := f.helpers.CreateJwt(accessClaims, f.privateKey)
-
 	if err != nil {
 		f.logger.Warnf("create access token error: %s", err.Error())
 		return nil, nil, &fiber.Error{
@@ -83,7 +83,6 @@ func (f *JwtFuncs) GenerateKeyPair(userData jwt_dto.UserData) (*string, *string,
 	}
 
 	refreshToken, err := f.helpers.CreateJwt(refreshClaims, f.privateKey)
-
 	if err != nil {
 		f.logger.Warnf("create refresh token error: %s", err.Error())
 		return nil, nil, &fiber.Error{
@@ -113,15 +112,16 @@ func (f *JwtFuncs) RefreshAccessToken(refreshToken string, publicKey ed25519.Pub
 		return nil, fmt.Errorf("invalid claims in refresh token")
 	}
 
-	if exp, ok := claims["exp"].(float64); ok {
-		expTime := time.Unix(int64(exp), 0)
-		if time.Now().After(expTime) {
-			f.logger.Warn("refresh token has expired")
-			return nil, fmt.Errorf("refresh token has expired")
-		}
-	} else {
+	exp, ok := claims["exp"].(float64)
+	if !ok {
 		f.logger.Warn("refresh token missing expiration")
 		return nil, fmt.Errorf("refresh token missing expiration")
+	}
+
+	expTime := time.Unix(int64(exp), 0)
+	if time.Now().After(expTime) {
+		f.logger.Warn("refresh token has expired")
+		return nil, fmt.Errorf("refresh token has expired")
 	}
 
 	userID, ok := claims["sub"].(float64)
@@ -129,6 +129,7 @@ func (f *JwtFuncs) RefreshAccessToken(refreshToken string, publicKey ed25519.Pub
 		f.logger.Warn("refresh token missing user ID")
 		return nil, fmt.Errorf("refresh token missing user ID")
 	}
+
 	userHash, ok := claims["user_hash"].(string)
 	if !ok {
 		f.logger.Warn("refresh token missing user hash")
@@ -136,10 +137,10 @@ func (f *JwtFuncs) RefreshAccessToken(refreshToken string, publicKey ed25519.Pub
 	}
 
 	accessClaims := jwt.MapClaims{
-		"iss":       "Ton-students::admin",
+		"iss":       Issuer,
 		"sub":       int64(userID),
-		"iat":       time.Now().Unix(),
-		"exp":       time.Now().Add(15 * time.Minute).Unix(),
+		"iat":       Now,
+		"exp":       time.Now().Add(AccessTokenExpiry).Unix(),
 		"role":      "admin",
 		"user_hash": userHash,
 	}

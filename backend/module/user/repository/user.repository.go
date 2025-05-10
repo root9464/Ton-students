@@ -20,6 +20,8 @@ type IUserRepository interface {
 	UpdateUserInfo(ctx context.Context, userInfo *user_model.UserInfo) error
 	DeleteUserInfo(ctx context.Context, userInfoID string) error
 	AddManyUserInfo(ctx context.Context, userInfo []*user_model.UserInfo) error
+
+	ChangeUserRole(ctx context.Context, id string, role string) error
 }
 
 type userRepository struct {

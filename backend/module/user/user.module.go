@@ -21,12 +21,14 @@ type UserModule struct {
 	validator *validator.Validate
 	db        *gorm.DB
 
-	jwtModule jwt_module.JwtModule
 	publicKey string
+	hmacKey   string
+
+	jwtModule jwt_module.JwtModule
 }
 
-func NewUserModule(logger *logger.Logger, validator *validator.Validate, db *gorm.DB, jwtModule jwt_module.JwtModule, publicKey string) *UserModule {
-	return &UserModule{logger: logger, validator: validator, db: db, jwtModule: jwtModule, publicKey: publicKey}
+func NewUserModule(logger *logger.Logger, validator *validator.Validate, db *gorm.DB, publicKey string, hmacKey string, jwtModule jwt_module.JwtModule) *UserModule {
+	return &UserModule{logger: logger, validator: validator, db: db, publicKey: publicKey, hmacKey: hmacKey, jwtModule: jwtModule}
 }
 
 func (m *UserModule) UserRepo() user_repository.IUserRepository {
@@ -38,7 +40,7 @@ func (m *UserModule) UserRepo() user_repository.IUserRepository {
 
 func (m *UserModule) UserService() user_service.IUserService {
 	if m.userService == nil {
-		m.userService = user_service.NewUserService(m.logger, m.validator, m.UserRepo())
+		m.userService = user_service.NewUserService(m.logger, m.validator, m.hmacKey, m.UserRepo())
 	}
 	return m.userService
 }
@@ -57,7 +59,6 @@ func (m *UserModule) UserRoutes(router fiber.Router) {
 
 	user.Get("/get-user", m.UserController().GetUser)
 	user.Post("/add-info", m.UserController().AddUserInfo)
-	user.Patch("/select-name", m.UserController().SelectVisibleName)
 	user.Patch("/set-nickname", m.UserController().SetUserNickname)
 	user.Put("/update-info", m.UserController().UpdateUserInfo)
 	user.Delete("/delete-info", m.UserController().DeleteUserInfo)

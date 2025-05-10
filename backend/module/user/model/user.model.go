@@ -16,23 +16,13 @@ const (
 	ModerRole   Role = "moderator"
 )
 
-const (
-	Firstname SelectedName = "firstname"
-	Lastname  SelectedName = "lastname"
-	Nickname  SelectedName = "nickname"
-	Username  SelectedName = "username"
-)
-
 type User struct {
-	ID           int64        `gorm:"primaryKey" json:"id"`
-	Username     string       `gorm:"unique;not null" json:"username"`
-	Firstname    *string      `json:"firstname"`
-	Lastname     *string      `json:"lastname"`
-	Nickname     *string      `json:"nickname"`
-	SelectedName SelectedName `gorm:"column:selected_name;type:selected_name;not null;default:username" json:"selectedName"`
-	Role         Role         `gorm:"column:role;type:role;not null;default:user" json:"role"`
-	IsPremium    bool         `gorm:"default:false" json:"isPremium"`
-	Hash         string       `gorm:"not null" json:"hash"`
+	ID        int64  `gorm:"primaryKey" json:"id"`
+	Username  string `gorm:"unique;not null" json:"username"`
+	Nickname  string `gorm:"unique;not null" json:"nickname"`
+	Role      Role   `gorm:"column:role;type:role;not null;default:user" json:"role"`
+	IsPremium bool   `gorm:"default:false" json:"isPremium"`
+	Hash      string `gorm:"not null" json:"hash"`
 
 	Infos         []UserInfo                         `gorm:"foreignKey:UserID" json:"infos"`
 	Notifications []notifications_model.Notification `gorm:"foreignKey:SenderID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"notifications"`

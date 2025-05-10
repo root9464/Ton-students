@@ -13,7 +13,7 @@ import (
 )
 
 func (s *serviceModuleService) GetServiceById(ctx context.Context, id string) (*serv_dto.GetServicesType, error) {
-
+	s.logger.Infof("Getting service by ID: %s", id)
 	serviceInDB, err := s.repo.GetServiceById(ctx, id)
 	if err != nil || serviceInDB == nil {
 		return nil, &fiber.Error{
@@ -22,6 +22,7 @@ func (s *serviceModuleService) GetServiceById(ctx context.Context, id string) (*
 		}
 	}
 
+	s.logger.Infof("Service with ID %v found", serviceInDB)
 	service, err := utils.ConvertDtoToEntity[serv_dto.GetServicesType](serviceInDB)
 	if err != nil {
 		return nil, &fiber.Error{
@@ -29,7 +30,9 @@ func (s *serviceModuleService) GetServiceById(ctx context.Context, id string) (*
 			Message: err.Error()}
 	}
 
-	service.Username = utils.GetVisibleName(&serviceInDB.User)
+	service.Nickname = serviceInDB.User.Nickname
+
+	s.logger.Infof("Service with ID %s retrieved successfully", id)
 
 	return service, nil
 }
@@ -112,12 +115,11 @@ func (s *serviceModuleService) GetShortServices(ctx context.Context, page int, s
 		}
 
 		settings, _ := utils.ConvertDtoToEntity[serv_dto.SettingsType](service.Settings)
-		visibleName := utils.GetVisibleName(&service.User)
 
 		return serv_dto.FeedServiceType{
 			ID:       service.ID,
 			UserID:   service.UserID,
-			Username: &visibleName,
+			Nickname: service.User.Nickname,
 			Price:    service.Price,
 			Infos:    &infos,
 			Settings: settings,

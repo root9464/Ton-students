@@ -55,7 +55,7 @@ func (p *moduleProvider) initDeps() error {
 }
 
 func (p *moduleProvider) UserModule() error {
-	p.userModule = user_module.NewUserModule(p.app.logger, p.app.validator, p.app.db, *p.jwtModule, p.app.config.JwtPublicKey)
+	p.userModule = user_module.NewUserModule(p.app.logger, p.app.validator, p.app.db, p.app.config.JwtPublicKey, p.app.config.HmacKey, *p.jwtModule)
 	return nil
 }
 

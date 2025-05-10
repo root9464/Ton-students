@@ -65,7 +65,9 @@ func NewBotModule(
 		validator: validator,
 		db:        db,
 		config:    config,
-		jwtModule: jwtModule,
+
+		userModule: userModule,
+		jwtModule:  jwtModule,
 	}
 }
 
@@ -75,19 +77,16 @@ func (m *BotModule) registerCommands() {
 	m.dispatcher.AddHandler(handlers.NewPreCheckoutQuery(precheckoutquery.All, m.BotCommand().PreCheckout))
 	m.dispatcher.AddHandler(handlers.NewMessage(message.SuccessfulPayment, m.BotCommand().PaymentComplete))
 
-	m.dispatcher.AddHandler(handlers.NewCommand("support", m.BotCommand().SupportStart))
-	m.dispatcher.AddHandler(handlers.NewCallback(
-		filters.CallbackQuery(func(query *gotgbot.CallbackQuery) bool {
-			return query.Data != "" && query.Data[:6] == "reply_"
-		}),
-		m.BotCommand().SupportReply,
-	))
-	m.dispatcher.AddHandler(handlers.NewMessage(
-		filters.Message(func(msg *gotgbot.Message) bool {
-			return msg.Chat.Id == m.config.AdminId
-		}),
-		m.BotCommand().SendAdminResponse,
-	))
+	m.dispatcher.AddHandler(handlers.NewMessage(message.RefundedPayment, func(b *gotgbot.Bot, ctx *ext.Context) error {
+		m.logger.Error("Payment refunded")
+		_, err := ctx.EffectiveMessage.Reply(b, "вам вернули бабки.", nil)
+		if err != nil {
+			m.logger.Errorf("failed to send payment complete message: %v", err)
+			return err
+		}
+
+		return nil
+	}))
 
 	m.dispatcher.AddHandler(handlers.NewInlineQuery(
 		filters.InlineQuery(func(query *gotgbot.InlineQuery) bool {
@@ -132,7 +131,7 @@ func (m *BotModule) InitBot() error {
 
 func (m *BotModule) BotCommand() bot_command.IBotCommand {
 	if m.botCommand == nil {
-		m.botCommand = bot_command.NewBotCommand(m.logger, m.validator, m.config)
+		m.botCommand = bot_command.NewBotCommand(m.logger, m.validator, m.config, m.userModule.UserRepo())
 	}
 	return m.botCommand
 }
